@@ -1,0 +1,14 @@
+# Config
+ftbguides.config.server_info=服务器信息
+ftbguides.config.server_info.difficulty=难度
+ftbguides.config.server_info.admin_quick_access=管理员快速连接
+
+# Sidebar Buttons
+sidebar_button.ftbguides.guides=指南
+
+# Keys
+key.ftbguides.guides=打开指南
+
+# Misc
+ftbguides.lang.unsupported_format=不支持的格式！请更新 FTB Guides 或联系模组作者！
+ftbguides.lang.commands_failed=无法加载命令

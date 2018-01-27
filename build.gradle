@@ -1,0 +1,60 @@
+buildscript {
+	repositories {
+		jcenter()
+		maven { url = "http://files.minecraftforge.net/maven" }
+	}
+	dependencies {
+		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+	}
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+version = "${mod_version}"
+group = package_group
+archivesBaseName = mod_name
+
+sourceCompatibility = targetCompatibility = "1.8"
+compileJava {
+	sourceCompatibility = targetCompatibility = "1.8"
+}
+
+minecraft {
+	version = "${mc_version}-${forge_version}"
+	runDir = "run"
+	mappings = "${mappings_version}"
+
+	replace "@VERSION@", project.version
+	replaceIn "${mod_reference}"
+}
+
+repositories {
+	ivy { name "com.latmod.mods"; artifactPattern "http://mods.latmod.com/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" }
+	maven { url "http://dvs1.progwml6.com/files/maven" }
+}
+
+dependencies {
+	compile "com.latmod.mods:FTBLib:${ftblib_version}:deobf"
+	deobfProvided "slimeknights.mantle:Mantle:${mantle_version}"
+	deobfProvided "slimeknights:TConstruct:${tconstruct_version}"
+}
+
+processResources {
+	inputs.property "version", project.version
+	inputs.property "mcversion", project.minecraft.version
+
+	from(sourceSets.main.resources.srcDirs) {
+		include 'mcmod.info'
+		expand 'version': project.version, 'mcversion': project.minecraft.version
+	}
+
+	from(sourceSets.main.resources.srcDirs) {
+		exclude 'mcmod.info'
+	}
+}
+
+task deobfJar(type: Jar) {
+	from sourceSets.main.output
+	classifier = 'deobf'
+}
+
+build.dependsOn deobfJar

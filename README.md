@@ -1,1 +1,1 @@
-# FTBGuides
+# FTBGuides [![](http://cf.way2muchnoise.eu/ftb-guides.svg)](https://minecraft.curseforge.com/projects/ftb-guides) [![](http://cf.way2muchnoise.eu/versions/ftb-guides.svg)](https://minecraft.curseforge.com/projects/ftb-guides)
