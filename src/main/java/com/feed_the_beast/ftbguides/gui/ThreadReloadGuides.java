@@ -2,6 +2,8 @@ package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.FTBGuidesFinals;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
+import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
+import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.FTBLibFinals;
 import com.feed_the_beast.ftblib.client.FTBLibModClient;
 import com.feed_the_beast.ftblib.client.SidebarButton;
@@ -185,6 +187,27 @@ class ThreadReloadGuides extends Thread
 		GuidePageRoot.INSTANCE.cleanup();
 		GuidePageRoot.INSTANCE.updateCachedProperties(true);
 		GuidePageRoot.INSTANCE.sort(false);
+
+		for (GuideType type : guideTypes)
+		{
+			boolean added = false;
+
+			for (GuideTitlePage page : guides)
+			{
+				if (page.type == type)
+				{
+					if (!added)
+					{
+						added = true;
+						GuidePageRoot.INSTANCE.println(new TextGuideComponent(type.titlePlural).setProperty("bold", "true").setProperty("underlined", "true"));
+					}
+
+					GuidePageRoot.INSTANCE.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));
+				}
+			}
+		}
+
+		GuidePageRoot.INSTANCE.println(HRGuideComponent.INSTANCE);
 		return "";
 	}
 

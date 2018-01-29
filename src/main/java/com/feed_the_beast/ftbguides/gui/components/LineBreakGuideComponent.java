@@ -30,12 +30,6 @@ public class LineBreakGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public GuideComponent copy()
-	{
-		return this;
-	}
-
-	@Override
 	public IGuideComponentWidget createWidget(Panel parent)
 	{
 		return new LineBreakWidget(parent.gui);

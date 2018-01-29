@@ -2,6 +2,7 @@ package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
+import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.io.HttpConnection;
 import com.google.gson.JsonElement;
@@ -40,6 +41,11 @@ class ThreadLoadPage extends Thread
 
 		if (!page.pages.isEmpty())
 		{
+			for (GuidePage p : page.pages)
+			{
+				page.println(new TextGuideComponent(p.title.getUnformattedText()).setProperty("icon", p.icon.toString()).setProperty("click", p.getName()));
+			}
+
 			page.println(HRGuideComponent.INSTANCE);
 		}
 

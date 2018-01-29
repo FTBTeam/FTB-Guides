@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
+import com.feed_the_beast.ftbguides.gui.components.ComponentPanel;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftblib.lib.gui.Button;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
@@ -10,12 +11,10 @@ import com.feed_the_beast.ftblib.lib.gui.GuiLang;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.PanelScrollBar;
 import com.feed_the_beast.ftblib.lib.gui.Theme;
-import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.gui.WidgetLayout;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
-import com.feed_the_beast.ftblib.lib.util.CommonUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.google.gson.JsonElement;
@@ -67,7 +66,19 @@ public class GuiGuide extends GuiBase
 		@Override
 		public Icon getPanelBackground()
 		{
-			return CommonUtils.DEV_ENV && Keyboard.isKeyDown(Keyboard.KEY_B) ? Icon.EMPTY.withOutline(Color4I.RED, false) : Icon.EMPTY;
+			return Icon.EMPTY;
+		}
+
+		@Override
+		public Icon getScrollBarBackground()
+		{
+			return Icon.EMPTY;
+		}
+
+		@Override
+		public Icon getScrollBar(boolean grabbed, boolean vertical)
+		{
+			return getContentColor(grabbed).withAlpha(100).withBorder(1);
 		}
 	}
 
@@ -75,10 +86,10 @@ public class GuiGuide extends GuiBase
 	{
 		private GuidePage page;
 
-		public ButtonSelectPage(GuiBase gui, @Nullable GuidePage p, boolean addicon)
+		public ButtonSelectPage(GuiBase gui, @Nullable GuidePage p)
 		{
-			super(gui, 0, 0, 0, 9, getTitle(gui, p), addicon && p != null ? p.icon : Icon.EMPTY);
-			setWidth(gui.getStringWidth(getTitle()) + (icon.isEmpty() ? 0 : 10));
+			super(gui, getTitle(gui, p), Icon.EMPTY);
+			setSize(gui.getStringWidth(getTitle()), 9);
 			page = p;
 		}
 
@@ -118,20 +129,8 @@ public class GuiGuide extends GuiBase
 		{
 			int ax = getAX();
 			int ay = getAY();
-
-			//GuiHelper.drawHollowRect(ax, ay, width, height, Color4I.RED, false);
 			boolean mouseOver = page != null && page != ((GuiGuide) gui).page && gui.isMouseOver(ax, ay, width, height);
-
-			if (icon.isEmpty())
-			{
-				gui.drawString(getTitle(), ax, ay - 1, mouseOver ? MOUSE_OVER : 0);
-			}
-			else
-			{
-				Icon icon = getIcon();
-				icon.draw(ax, ay, 8, 8);
-				gui.drawString(getTitle(), ax + 10, ay - 1, mouseOver ? MOUSE_OVER : 0);
-			}
+			gui.drawString(getTitle(), ax, ay - 1, mouseOver ? MOUSE_OVER : 0);
 		}
 	}
 
@@ -141,7 +140,8 @@ public class GuiGuide extends GuiBase
 
 		public ButtonSpecial(GuiBase gui, SpecialGuideButton b)
 		{
-			super(gui, 0, 0, 12, 12);
+			super(gui);
+			setSize(12, 12);
 			specialInfoButton = b;
 			setTitle(specialInfoButton.title.getFormattedText());
 		}
@@ -163,59 +163,49 @@ public class GuiGuide extends GuiBase
 	}
 
 	public final GuidePage page;
-	public final Panel panelText, panelTitle, panelSpecialButtons;
+	public final ComponentPanel panelText;
+	public final Panel panelTitle, panelSpecialButtons;
 	public final PanelScrollBar scrollBarV;
 
 	public GuiGuide(GuidePage p)
 	{
-		super(0, 0);
 		page = p;
 		addFlags(UNICODE);
 
-		panelText = new Panel(this, 4, 14, 0, 16)
+		panelText = new ComponentPanel(this)
 		{
-			private final WidgetLayout LAYOUT = new WidgetLayout.Vertical(1, 0, 4);
-
 			@Override
-			public void addWidgets()
+			public List<GuideComponent> getComponents()
 			{
-				for (GuidePage p : page.pages)
-				{
-					add(new ButtonSelectPage(gui, p, true));
-				}
-
-				for (GuideComponent component : page.components)
-				{
-					add((Widget) component.createWidget(panelText));
-				}
-
-				if (!widgets.isEmpty())
-				{
-					int s = align(LAYOUT);
-					scrollBarV.setElementSize(s);
-					scrollBarV.setSrollStepFromOneElementSize((s - 6) / widgets.size());
-				}
+				return page.components;
 			}
 
 			@Override
-			public Icon getIcon()
+			public void alignWidgets()
 			{
-				return gui.getTheme().getPanelBackground();
+				fixedWidth = fixedHeight = true;
+				setPosAndSize(4, 12, gui.width - 19, gui.height - 13);
+				super.alignWidgets();
+				scrollBarV.setElementSize(totalHeight + 4);
+				scrollBarV.setSrollStepFromOneElementSize(30);
 			}
 		};
 
-		panelText.addFlags(DEFAULTS | UNICODE);
-
-		panelTitle = new Panel(this, 3, 2, 0, 8)
+		panelTitle = new Panel(this)
 		{
 			@Override
 			public void addWidgets()
 			{
 				List<ButtonSelectPage> list = new ArrayList<>(1);
-				list.add(new ButtonSelectPage(gui, page, false));
+				list.add(new ButtonSelectPage(gui, page));
 				addToList(page, list);
 				Collections.reverse(list);
 				addAll(list);
+			}
+
+			@Override
+			public void alignWidgets()
+			{
 				setWidth(align(WidgetLayout.HORIZONTAL));
 			}
 
@@ -223,8 +213,8 @@ public class GuiGuide extends GuiBase
 			{
 				if (page.parent != null)
 				{
-					list.add(new ButtonSelectPage(gui, null, false));
-					list.add(new ButtonSelectPage(gui, page.parent, false));
+					list.add(new ButtonSelectPage(gui, null));
+					list.add(new ButtonSelectPage(gui, page.parent));
 					addToList(page.parent, list);
 				}
 			}
@@ -236,6 +226,7 @@ public class GuiGuide extends GuiBase
 			}
 		};
 
+		panelTitle.setPosAndSize(3, 2, 0, 8);
 		panelTitle.addFlags(DEFAULTS | UNICODE);
 
 		panelSpecialButtons = new Panel(this)
@@ -259,8 +250,12 @@ public class GuiGuide extends GuiBase
 				{
 					add(new ButtonSpecial(gui, new SpecialGuideButton(new TextComponentTranslation("ftbguides.lang.open_in_browser"), GuiIcons.GLOBE, url.getAsString())));
 				}
+			}
 
-				setWidth(align(WidgetLayout.HORIZONTAL));
+			@Override
+			public void alignWidgets()
+			{
+				setPosAndSize(3, 0, align(WidgetLayout.HORIZONTAL), 12);
 			}
 
 			@Override
@@ -277,14 +272,13 @@ public class GuiGuide extends GuiBase
 		};
 
 		panelSpecialButtons.addFlags(DEFAULTS);
-		panelSpecialButtons.setHeight(12);
 
-		scrollBarV = new PanelScrollBar(this, 0, 10, 12, 0, 18, panelText)
+		scrollBarV = new PanelScrollBar(this, panelText)
 		{
 			@Override
 			public int getAX()
 			{
-				return width - 10 - scrollBarV.width;
+				return gui.width - 12;
 			}
 		};
 	}
@@ -299,6 +293,14 @@ public class GuiGuide extends GuiBase
 	}
 
 	@Override
+	public void alignWidgets()
+	{
+		scrollBarV.setPosAndSize(0, 11, 12, gui.height - 11);
+		panelText.alignWidgets();
+		panelSpecialButtons.alignWidgets();
+	}
+
+	@Override
 	public boolean onInit()
 	{
 		if (!page.textURL.isEmpty())
@@ -308,14 +310,6 @@ public class GuiGuide extends GuiBase
 		}
 
 		return setFullscreen();
-	}
-
-	@Override
-	public void onPostInit()
-	{
-		panelText.setWidth(width - scrollBarV.width - 7);
-		panelText.setHeight(height - 15);
-		scrollBarV.setHeight(height - 20);
 	}
 
 	@Override

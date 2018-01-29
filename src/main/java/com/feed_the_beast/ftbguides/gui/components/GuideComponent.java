@@ -28,8 +28,6 @@ public abstract class GuideComponent
 		return false;
 	}
 
-	public abstract GuideComponent copy();
-
 	public abstract IGuideComponentWidget createWidget(Panel parent);
 
 	public JsonElement toJson()
@@ -42,13 +40,13 @@ public abstract class GuideComponent
 		return properties != null && !properties.isEmpty();
 	}
 
-	public final String getProperty(String key)
+	public final String getProperty(String key, boolean includeParent)
 	{
 		String p = hasProperties() ? properties.get(key) : null;
-		return p == null ? (parent == null ? "" : parent.getProperty(key)) : p;
+		return p == null ? ((parent == null || !includeParent) ? "" : parent.getProperty(key, true)) : p;
 	}
 
-	public final void setProperty(String key, String value)
+	public final GuideComponent setProperty(String key, String value)
 	{
 		if (!value.isEmpty())
 		{
@@ -68,6 +66,8 @@ public abstract class GuideComponent
 				properties = null;
 			}
 		}
+
+		return this;
 	}
 
 	public final void setProperty(String key, @Nullable JsonElement json)
@@ -75,14 +75,13 @@ public abstract class GuideComponent
 		setProperty(key, json == null || json.isJsonNull() ? "" : json.getAsString());
 	}
 
-	public final GuideComponent copyProperties(GuideComponent component)
-	{
-		properties = component.hasProperties() ? new HashMap<>(component.properties) : null;
-		return this;
-	}
-
 	public void loadProperties(JsonObject json)
 	{
+	}
+
+	public static String fixHtmlString(String s)
+	{
+		return s.isEmpty() ? "" : s.replace("\t", "  ").replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");
 	}
 
 	public static GuideComponent create(@Nullable JsonElement json)
@@ -94,7 +93,7 @@ public abstract class GuideComponent
 
 		if (json.isJsonPrimitive())
 		{
-			String s = json.getAsString().replace("\t", "  ").replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");
+			String s = fixHtmlString(json.getAsString());
 			return s.isEmpty() ? EmptyGuideComponent.INSTANCE : new TextGuideComponent(s);
 		}
 		else if (json.isJsonArray())
@@ -118,7 +117,6 @@ public abstract class GuideComponent
 
 				if (!c1.isEmpty())
 				{
-					c1.parent = component;
 					component.add(c1);
 				}
 			}
@@ -162,16 +160,31 @@ public abstract class GuideComponent
 		{
 			component = new ImgGuideComponent(Icon.getIcon(object.get("img_url")));
 		}
+		else if (object.has("codeblock"))
+		{
+			List<String> list = new ArrayList<>();
+
+			for (JsonElement e : object.get("codeblock").getAsJsonArray())
+			{
+				if (e.isJsonPrimitive())
+				{
+					list.add(fixHtmlString(e.getAsString()));
+				}
+				else
+				{
+					list.add(TextFormatting.RED + fixHtmlString(e.toString()));
+				}
+			}
+
+			component = new CodeblockGuideComponent(list);
+		}
 		else if (object.has("list"))
 		{
-			List<GuideComponent> list = new ArrayList<>();
-			component = new GuideListComponent(list);
+			component = new GuideListComponent();
 
 			for (JsonElement e : object.get("list").getAsJsonArray())
 			{
-				GuideComponent component1 = create(e);
-				component1.parent = component;
-				list.add(component1);
+				((GuideListComponent) component).add(create(e));
 			}
 		}
 		else if (object.has("table"))

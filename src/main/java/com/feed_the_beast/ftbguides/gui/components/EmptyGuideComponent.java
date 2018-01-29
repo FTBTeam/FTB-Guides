@@ -35,12 +35,6 @@ public class EmptyGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public GuideComponent copy()
-	{
-		return this;
-	}
-
-	@Override
 	public IGuideComponentWidget createWidget(Panel parent)
 	{
 		return new EmptyComponentWidget(parent.gui);

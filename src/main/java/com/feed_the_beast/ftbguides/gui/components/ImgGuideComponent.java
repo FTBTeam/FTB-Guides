@@ -37,7 +37,7 @@ public class ImgGuideComponent extends GuideComponent
 		@Override
 		public void addMouseOverText(List<String> list)
 		{
-			String s = component.getProperty("hover");
+			String s = component.getProperty("hover", false);
 
 			if (!s.isEmpty())
 			{
@@ -50,7 +50,7 @@ public class ImgGuideComponent extends GuideComponent
 		{
 			if (gui.isMouseOver(this))
 			{
-				String s = component.getProperty("click");
+				String s = component.getProperty("click", true);
 
 				if (!s.isEmpty() && gui.onClickEvent(s))
 				{
@@ -86,15 +86,6 @@ public class ImgGuideComponent extends GuideComponent
 	public boolean isEmpty()
 	{
 		return image.isEmpty();
-	}
-
-	@Override
-	public GuideComponent copy()
-	{
-		ImgGuideComponent c = new ImgGuideComponent(image);
-		c.width = width;
-		c.height = height;
-		return c.copyProperties(this);
 	}
 
 	@Override

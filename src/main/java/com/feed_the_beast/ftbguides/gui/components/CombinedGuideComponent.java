@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -14,37 +13,49 @@ import java.util.List;
  */
 public class CombinedGuideComponent extends GuideComponent implements Iterable<GuideComponent>
 {
-	private static class CombinedComponentWidget extends Panel implements IGuideComponentWidget
+	private static class CombinedComponentWidget extends ComponentPanel
 	{
-		public CombinedComponentWidget(GuiBase gui)
+		private final CombinedGuideComponent component;
+
+		public CombinedComponentWidget(Panel parent, CombinedGuideComponent c)
 		{
-			super(gui);
+			super(parent.gui);
+			component = c;
 		}
 
 		@Override
-		public void addWidgets()
+		public List<GuideComponent> getComponents()
 		{
+			return component.components;
+		}
+
+		@Override
+		public void alignWidgets()
+		{
+			super.alignWidgets();
+			setWidth(totalWidth);
+			setHeight(totalHeight);
 		}
 	}
 
-	private final List<GuideComponent> list = new ArrayList<>();
+	public final List<GuideComponent> components = new ArrayList<>();
 
 	public String toString()
 	{
-		return list.toString();
+		return components.toString();
 	}
 
 	@Override
 	public JsonElement toJson()
 	{
-		if (list.size() == 1)
+		if (components.size() == 1)
 		{
-			return list.get(0).toJson();
+			return components.get(0).toJson();
 		}
 
 		JsonArray array = new JsonArray();
 
-		for (GuideComponent component : list)
+		for (GuideComponent component : components)
 		{
 			array.add(component.toJson());
 		}
@@ -55,7 +66,7 @@ public class CombinedGuideComponent extends GuideComponent implements Iterable<G
 	@Override
 	public boolean isEmpty()
 	{
-		for (GuideComponent c : list)
+		for (GuideComponent c : components)
 		{
 			if (!c.isEmpty())
 			{
@@ -67,33 +78,20 @@ public class CombinedGuideComponent extends GuideComponent implements Iterable<G
 	}
 
 	@Override
-	public GuideComponent copy()
-	{
-		CombinedGuideComponent c = new CombinedGuideComponent();
-
-		for (GuideComponent c1 : list)
-		{
-			c.add(c1.copy());
-		}
-
-		return c.copyProperties(this);
-	}
-
-	@Override
 	public IGuideComponentWidget createWidget(Panel parent)
 	{
-		return new CombinedComponentWidget(parent.gui);
+		return new CombinedComponentWidget(parent, this);
 	}
 
 	@Override
 	public Iterator<GuideComponent> iterator()
 	{
-		return list.iterator();
+		return components.iterator();
 	}
 
 	public void add(GuideComponent c)
 	{
-		list.add(c);
+		components.add(c);
 		c.parent = this;
 	}
 }
