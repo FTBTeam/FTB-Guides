@@ -5,11 +5,10 @@ import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 
 public class FTBGuidesNetHandler
 {
-	static final NetworkWrapper GENERAL = NetworkWrapper.newWrapper(FTBGuidesFinals.MOD_ID);
+	static final NetworkWrapper SERVER_INFO = NetworkWrapper.newWrapper(FTBGuidesFinals.MOD_ID + "_server_info");
 
 	public static void init()
 	{
-		GENERAL.register(1, new MessageServerInfo());
-		GENERAL.register(2, new MessageRequestServerInfo());
+		SERVER_INFO.register(1, new MessageServerInfo());
 	}
 }

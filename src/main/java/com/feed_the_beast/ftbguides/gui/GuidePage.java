@@ -54,7 +54,17 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public String getPath()
 	{
-		return (parent == null || parent == GuidePageRoot.INSTANCE ? "" : parent.getPath()) + '/' + getName();
+		if (parent == null)
+		{
+			return "/";
+		}
+
+		return parent.getPath() + '/' + getName();
+	}
+
+	public GuidePage getRoot()
+	{
+		return parent == null ? this : parent.getRoot();
 	}
 
 	public ITextComponent getDisplayName()
@@ -147,7 +157,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 		}
 		else if (i == 0)
 		{
-			return path.length() == 1 ? GuidePageRoot.INSTANCE : GuidePageRoot.INSTANCE.getSubFromPath(path.substring(1));
+			return path.length() == 1 ? getRoot() : getRoot().getSubFromPath(path.substring(1));
 		}
 		else if (i == path.length() - 1)
 		{

@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.FTBGuidesFinals;
+import com.feed_the_beast.ftbguides.ServerInfoPage;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
@@ -8,6 +9,7 @@ import com.feed_the_beast.ftblib.FTBLibFinals;
 import com.feed_the_beast.ftblib.client.FTBLibModClient;
 import com.feed_the_beast.ftblib.client.SidebarButton;
 import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
+import com.feed_the_beast.ftblib.lib.data.SharedClientData;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.HttpConnection;
@@ -34,6 +36,7 @@ import java.util.Map;
 class ThreadReloadGuides extends Thread
 {
 	GuiLoading gui;
+	GuidePage root;
 
 	ThreadReloadGuides()
 	{
@@ -45,7 +48,7 @@ class ThreadReloadGuides extends Thread
 			public void finishLoading()
 			{
 				Guides.reloadingThread = null;
-				Guides.cachedGui = new GuiGuide(GuidePageRoot.INSTANCE);
+				Guides.cachedGui = new GuiGuide(root);
 				Guides.openGui();
 			}
 		};
@@ -74,7 +77,8 @@ class ThreadReloadGuides extends Thread
 
 	public String run1()
 	{
-		GuidePageRoot.INSTANCE.clear();
+		root = new GuidePage("root", null);
+		root.title = new TextComponentTranslation(FTBGuidesFinals.MOD_ID + ".lang.home");
 		gui.setTitle("Loading Guides\nAPI");
 		JsonElement apijson = HttpConnection.getJson("http://guides.latmod.com/api/api.json");
 
@@ -84,7 +88,7 @@ class ThreadReloadGuides extends Thread
 		}
 
 		JsonObject api = apijson.getAsJsonObject();
-		GuidePageRoot.INSTANCE.readProperties(api.get("default_properties").getAsJsonObject());
+		root.readProperties(api.get("default_properties").getAsJsonObject());
 
 		LinkedHashSet<GuideType> types = new LinkedHashSet<>(4);
 		types.add(GuideType.SERVER_INFO);
@@ -124,7 +128,7 @@ class ThreadReloadGuides extends Thread
 			JsonObject o = e.getAsJsonObject();
 			String id = o.get("id").getAsString();
 			GuideType type = guideTypes.get(o.get("type").getAsString());
-			GuideTitlePage page = new GuideTitlePage(id, type);
+			GuideTitlePage page = new GuideTitlePage(id, root, type);
 
 			if (type == modType && Loader.isModLoaded(o.has("modid") ? o.get("modid").getAsString() : id))
 			{
@@ -148,7 +152,7 @@ class ThreadReloadGuides extends Thread
 
 		gui.setTitle("Loading Guides\n" + I18n.format("sidebar_button"));
 
-		GuideTitlePage sidebarButtons = new GuideTitlePage("sidebar_buttons", GuideType.OTHER);
+		GuideTitlePage sidebarButtons = new GuideTitlePage("sidebar_buttons", root, GuideType.OTHER);
 		sidebarButtons.isPresent = true;
 		sidebarButtons.authors.add("LatvianModder");
 		sidebarButtons.icon = Icon.getIcon(FTBLibFinals.MOD_ID + ":textures/gui/teams.png");
@@ -171,22 +175,28 @@ class ThreadReloadGuides extends Thread
 		gui.setTitle("Loading Guides\nMod Guides");
 
 		Map<String, GuideTitlePage> eventMap = new HashMap<>();
-		new ClientGuideEvent(eventMap, modType).post();
+		new ClientGuideEvent(root, eventMap, modType).post();
 
 		guides.addAll(eventMap.values());
 
 		for (GuideTitlePage guide : guides)
 		{
-			GuidePageRoot.INSTANCE.addSub(guide);
+			root.addSub(guide);
 		}
 
 		gui.setTitle("Loading Guides\nFinishing");
-		GuidePageRoot.INSTANCE.properties.put("browser_url", new JsonPrimitive("http://guides.latmod.com"));
-		GuidePageRoot.INSTANCE.addSub(GuideTitlePage.SERVER_INFO);
-		GuidePageRoot.INSTANCE.addSub(sidebarButtons);
-		GuidePageRoot.INSTANCE.cleanup();
-		GuidePageRoot.INSTANCE.updateCachedProperties(true);
-		GuidePageRoot.INSTANCE.sort(false);
+		root.properties.put("browser_url", new JsonPrimitive("http://guides.latmod.com"));
+		root.addSub(sidebarButtons);
+		root.cleanup();
+		root.updateCachedProperties(true);
+		root.sort(false);
+
+		if (SharedClientData.INSTANCE.optionalServerMods.contains(FTBGuidesFinals.MOD_ID))
+		{
+			//check if server mod is loaded
+			root.println(new TextGuideComponent(ServerInfoPage.INSTANCE.title.getUnformattedText()).setProperty("icon", ServerInfoPage.INSTANCE.icon.toString()).setProperty("click", "command:/ftb server_info"));
+			root.println("");
+		}
 
 		for (GuideType type : guideTypes)
 		{
@@ -199,15 +209,15 @@ class ThreadReloadGuides extends Thread
 					if (!added)
 					{
 						added = true;
-						GuidePageRoot.INSTANCE.println(new TextGuideComponent(type.titlePlural).setProperty("bold", "true").setProperty("underlined", "true"));
+						root.println(new TextGuideComponent(type.titlePlural).setProperty("bold", "true").setProperty("underlined", "true"));
 					}
 
-					GuidePageRoot.INSTANCE.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));
+					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));
 				}
 			}
 		}
 
-		GuidePageRoot.INSTANCE.println(HRGuideComponent.INSTANCE);
+		root.println(HRGuideComponent.INSTANCE);
 		return "";
 	}
 

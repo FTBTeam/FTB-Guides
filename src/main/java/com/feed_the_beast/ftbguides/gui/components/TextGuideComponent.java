@@ -99,7 +99,7 @@ public class TextGuideComponent extends GuideComponent
 			{
 				String s = component.getProperty("click", true);
 
-				if (!s.isEmpty() && gui.onClickEvent(s))
+				if (!s.isEmpty() && gui.handleClick(s))
 				{
 					GuiHelper.playClickSound();
 					return true;

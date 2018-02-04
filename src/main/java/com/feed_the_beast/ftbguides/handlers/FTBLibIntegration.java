@@ -2,7 +2,6 @@ package com.feed_the_beast.ftbguides.handlers;
 
 import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.FTBGuidesFinals;
-import com.feed_the_beast.ftbguides.ServerInfoPage;
 import com.feed_the_beast.ftbguides.util.FTBGuidesTeamData;
 import com.feed_the_beast.ftblib.events.RegisterDataProvidersEvent;
 import com.feed_the_beast.ftblib.events.RegisterOptionalServerModsEvent;
@@ -39,7 +38,8 @@ public class FTBLibIntegration
 
 		if (event.reload(RELOAD_SERVER_INFO))
 		{
-			ServerInfoPage.reloadCachedInfo();
+			//ServerInfoPage.CACHE.clear();
+			//ServerInfoPage.serverGuide = null;
 		}
 	}
 

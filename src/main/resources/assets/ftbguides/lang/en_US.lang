@@ -1,18 +1,16 @@
-# Config
-ftbguides.server_info=Server Info
-ftbguides.server_info.difficulty=Difficulty
-ftbguides.server_info.admin_quick_access=Admin Quick Access
-
 # Client Config
 ftbguides_client.general.background_alpha=Background Alpha
 
 # Sidebar Buttons
-sidebar_button.ftbguides.guides=Guide
+sidebar_button.ftbguides.guides=Guides & Quests
 
 # Keys
 key.ftbguides.guides=Open Guides
 
 # Misc
+ftbguides.lang.home=Home
+ftbguides.lang.server_info=Server Info
+ftbguides.lang.quests=Quests
 ftbguides.lang.unsupported_format=Unsupported format! Please update FTB Guides or contact mod author!
 ftbguides.lang.commands_failed=Failed to load commands
 ftbguides.lang.open_in_browser=Open in Browser

@@ -16,6 +16,7 @@ public class LineBreakGuideComponent extends GuideComponent
 		private LineBreakWidget(GuiBase gui)
 		{
 			super(gui);
+			setHeight(10);
 		}
 
 		@Override

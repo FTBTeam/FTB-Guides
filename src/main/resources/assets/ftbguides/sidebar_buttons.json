@@ -3,10 +3,7 @@
 		"group": "ftblib:info",
 		"icon": "item:minecraft:book",
 		"x": 600,
-		"click": {
-			"action": "run_command",
-			"value": "/ftbc open_guides"
-		},
+		"click": "command:/ftbc open_guides",
 		"config": true
 	}
 }

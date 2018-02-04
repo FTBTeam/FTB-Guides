@@ -15,7 +15,6 @@ import com.feed_the_beast.ftblib.lib.gui.WidgetLayout;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.google.gson.JsonElement;
 import net.minecraft.client.gui.GuiScreen;
@@ -88,34 +87,22 @@ public class GuiGuide extends GuiBase
 
 		public ButtonSelectPage(GuiBase gui, @Nullable GuidePage p)
 		{
-			super(gui, getTitle(gui, p), Icon.EMPTY);
+			super(gui, p == null ? "/" : p.title.getFormattedText(), Icon.EMPTY);
 			setSize(gui.getStringWidth(getTitle()), 9);
 			page = p;
-		}
-
-		private static String getTitle(GuiBase gui, @Nullable GuidePage p)
-		{
-			if (p == null)
-			{
-				return "/";
-			}
-			else if (gui instanceof GuiGuide && ((GuiGuide) gui).page == p)
-			{
-				return StringUtils.bold(p.title.createCopy(), true).getFormattedText();
-			}
-			else
-			{
-				return p.title.getFormattedText();
-			}
 		}
 
 		@Override
 		public void onClicked(MouseButton button)
 		{
-			if (page != null && page != ((GuiGuide) gui).page)
+			if (page != null)
 			{
 				GuiHelper.playClickSound();
-				Guides.openGui(page);
+
+				if (page != ((GuiGuide) gui).page)
+				{
+					Guides.openGui(page);
+				}
 			}
 		}
 
@@ -129,7 +116,7 @@ public class GuiGuide extends GuiBase
 		{
 			int ax = getAX();
 			int ay = getAY();
-			boolean mouseOver = page != null && page != ((GuiGuide) gui).page && gui.isMouseOver(ax, ay, width, height);
+			boolean mouseOver = page != null && gui.isMouseOver(ax, ay, width, height);
 			gui.drawString(getTitle(), ax, ay - 1, mouseOver ? MOUSE_OVER : 0);
 		}
 	}
@@ -149,7 +136,7 @@ public class GuiGuide extends GuiBase
 		@Override
 		public void onClicked(MouseButton button)
 		{
-			if (gui.onClickEvent(specialInfoButton.click))
+			if (gui.handleClick(specialInfoButton.click))
 			{
 				GuiHelper.playClickSound();
 			}
@@ -234,7 +221,7 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void addWidgets()
 			{
-				if (page == GuidePageRoot.INSTANCE || page == GuideTitlePage.SERVER_INFO)
+				if (page == page.getRoot())
 				{
 					add(new ButtonSpecial(gui, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:/")));
 				}
@@ -349,11 +336,17 @@ public class GuiGuide extends GuiBase
 	{
 		if (key == Keyboard.KEY_F5)
 		{
-			return onClickEvent("refresh:/");
+			return handleClick("refresh:/");
 		}
 		else if (key == Keyboard.KEY_HOME)
 		{
-			Guides.openGui(GuidePageRoot.INSTANCE);
+			GuidePage p = page.getRoot();
+
+			if (page != p)
+			{
+				Guides.openGui(p);
+			}
+
 			return true;
 		}
 		else if (key == Keyboard.KEY_BACK)
@@ -394,15 +387,15 @@ public class GuiGuide extends GuiBase
 	}
 
 	@Override
-	public boolean onClickEvent(String scheme, String path)
+	public boolean handleClick(String scheme, String path)
 	{
 		if (scheme.isEmpty() || scheme.equals("page"))
 		{
-			GuidePage page = this.page.getSubFromPath(path);
+			GuidePage p = page.getSubFromPath(path);
 
-			if (page != null)
+			if (p != null)
 			{
-				Guides.openGui(page);
+				Guides.openGui(p);
 				return true;
 			}
 
@@ -411,22 +404,12 @@ public class GuiGuide extends GuiBase
 		else if (scheme.equals("refresh"))
 		{
 			Guides.setShouldReload();
-			GuidePage page = GuidePageRoot.INSTANCE.getSubFromPath(path);
-
-			if (page != null)
-			{
-				Guides.openGui(page);
-			}
-			else
-			{
-				Guides.openGui();
-			}
-
+			Guides.openGui();
 			return true;
 		}
 		else
 		{
-			return super.onClickEvent(scheme, path);
+			return super.handleClick(scheme, path);
 		}
 	}
 

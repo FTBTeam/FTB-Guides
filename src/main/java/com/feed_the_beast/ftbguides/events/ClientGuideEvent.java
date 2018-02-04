@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides.events;
 
+import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.ftbguides.gui.GuideType;
 import net.minecraft.util.text.TextComponentString;
@@ -13,11 +14,13 @@ import java.util.Map;
  */
 public class ClientGuideEvent extends FTBGuidesEvent
 {
+	private final GuidePage root;
 	private final Map<String, GuideTitlePage> map;
 	private final GuideType mod;
 
-	public ClientGuideEvent(Map<String, GuideTitlePage> m, GuideType typeMod)
+	public ClientGuideEvent(GuidePage r, Map<String, GuideTitlePage> m, GuideType typeMod)
 	{
+		root = r;
 		map = m;
 		mod = typeMod;
 	}
@@ -28,7 +31,7 @@ public class ClientGuideEvent extends FTBGuidesEvent
 
 		if (page == null)
 		{
-			page = new GuideTitlePage(modid, mod);
+			page = new GuideTitlePage(modid, root, mod);
 			page.isPresent = true;
 			ModContainer mod = Loader.instance().getIndexedModList().get(modid);
 
@@ -59,7 +62,7 @@ public class ClientGuideEvent extends FTBGuidesEvent
 
 		if (page == null)
 		{
-			page = new GuideTitlePage(id, GuideType.OTHER);
+			page = new GuideTitlePage(id, root, GuideType.OTHER);
 			page.isPresent = true;
 			map.put(id, page);
 		}

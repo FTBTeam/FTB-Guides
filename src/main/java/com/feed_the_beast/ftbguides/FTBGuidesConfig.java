@@ -16,20 +16,11 @@ public class FTBGuidesConfig
 {
 	public static final Quests quests = new Quests();
 
-	public static final ServerInfo server_info = new ServerInfo();
-
 	public static class Quests
 	{
 		@Config.LangKey(GuiLang.LANG_ENABLED)
 		@Config.Comment("Enables quests")
 		public boolean enabled = false;
-	}
-
-	public static class ServerInfo
-	{
-		@Config.Comment("Show current world difficulty in server info")
-		public boolean difficulty = true;
-		//public boolean admin_quick_access = true;
 	}
 
 	public static void sync()
