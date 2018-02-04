@@ -8,6 +8,7 @@ buildscript {
 	}
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
 
 version = "${mod_version}"
 group = package_group
@@ -28,12 +29,13 @@ minecraft {
 }
 
 repositories {
-	ivy { name "com.latmod.mods"; artifactPattern "http://mods.latmod.com/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" }
+	mavenLocal()
+	maven { url "http://maven.latmod.com/" }
 	maven { url "http://dvs1.progwml6.com/files/maven" }
 }
 
 dependencies {
-	compile "com.latmod.mods:FTBLib:${ftblib_version}:deobf"
+	deobfCompile "com.feed_the_beast.ftblib:FTBLib:${ftblib_version}"
 	deobfProvided "slimeknights.mantle:Mantle:${mantle_version}"
 	deobfProvided "slimeknights:TConstruct:${tconstruct_version}"
 }
@@ -52,9 +54,19 @@ processResources {
 	}
 }
 
-task deobfJar(type: Jar) {
-	from sourceSets.main.output
-	classifier = 'deobf'
+artifacts {
+	archives jar
+	archives sourceJar
 }
 
-build.dependsOn deobfJar
+publishing {
+	publications {
+		FTBGuides(MavenPublication) {
+			groupId = project.group
+			artifactId = project.archivesBaseName
+			version = project.version
+			artifact jar
+			artifact sourceJar
+		}
+	}
+}
