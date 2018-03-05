@@ -1,7 +1,7 @@
 [
 	{
 		"modid": "ftbguides",
-		"name": "FTBGuides",
+		"name": "FTB Guides",
 		"description": "",
 		"version": "${version}",
 		"mcversion": "${mcversion}",

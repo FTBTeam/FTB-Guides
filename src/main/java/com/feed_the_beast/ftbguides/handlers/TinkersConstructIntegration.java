@@ -1,12 +1,12 @@
-package com.feed_the_beast.ftbguides.integration;
+package com.feed_the_beast.ftbguides.handlers;
 
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
-import com.feed_the_beast.ftbguides.gui.components.ImgGuideComponent;
-import com.feed_the_beast.ftblib.FTBLibFinals;
+import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftblib.lib.EventHandler;
+import com.feed_the_beast.ftblib.lib.OtherMods;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
@@ -22,7 +22,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import slimeknights.tconstruct.library.TinkerRegistry;
 import slimeknights.tconstruct.library.materials.IMaterialStats;
@@ -37,15 +36,14 @@ import javax.annotation.Nullable;
 /**
  * @author LatvianModder
  */
-@GameRegistry.ObjectHolder(FTBLibFinals.TINKERS_CONSTRUCT)
-@EventHandler(value = Side.CLIENT, requiredMods = FTBLibFinals.TINKERS_CONSTRUCT)
-public class TiCIntegration
+@EventHandler(value = Side.CLIENT, requiredMods = OtherMods.TINKERS_CONSTRUCT)
+public class TinkersConstructIntegration
 {
 	@SubscribeEvent
 	public static void onGuideEvent(ClientGuideEvent event)
 	{
-		GuideTitlePage page = event.getModPage(FTBLibFinals.TINKERS_CONSTRUCT);
-		page.icon = ItemIcon.getItemIcon(FTBLibFinals.TINKERS_CONSTRUCT + ":toolforge");
+		GuideTitlePage page = event.getModPage(OtherMods.TINKERS_CONSTRUCT);
+		page.icon = ItemIcon.getItemIcon(OtherMods.TINKERS_CONSTRUCT + ":toolforge");
 		page.println(HRGuideComponent.INSTANCE);
 		int i;
 
@@ -54,7 +52,7 @@ public class TiCIntegration
 		if (pageIntro != null)
 		{
 			pageIntro.title = new TextComponentString("Introduction");
-			pageIntro.icon = ItemIcon.getItemIcon(FTBLibFinals.TINKERS_CONSTRUCT + ":tooltables");
+			pageIntro.icon = ItemIcon.getItemIcon(OtherMods.TINKERS_CONSTRUCT + ":tooltables");
 			page.addSub(pageIntro);
 		}
 
@@ -90,7 +88,7 @@ public class TiCIntegration
 				{
 					if (part.hasUseForStat(stats.getIdentifier()))
 					{
-						page1.components.add(new ImgGuideComponent(ItemIcon.getItemIcon(part.getItemstackWithMaterial(material))));
+						page1.components.add(new ImageGuideComponent(ItemIcon.getItemIcon(part.getItemstackWithMaterial(material))));
 						i++;
 
 						if (i % 8 == 0)
@@ -124,7 +122,7 @@ public class TiCIntegration
 
 			try
 			{
-				JsonElement json = JsonUtils.fromJson(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(FTBLibFinals.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json")));
+				JsonElement json = JsonUtils.fromJson(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json")));
 
 				if (json.isJsonObject())
 				{
@@ -162,7 +160,7 @@ public class TiCIntegration
 
 							if (item instanceof ToolCore)
 							{
-								page1.components.add(new ImgGuideComponent(ItemIcon.getItemIcon(((ToolCore) item).buildItemForRendering(mats.subList(0, ((ToolCore) item).getRequiredComponents().size())))));
+								page1.components.add(new ImageGuideComponent(ItemIcon.getItemIcon(((ToolCore) item).buildItemForRendering(mats.subList(0, ((ToolCore) item).getRequiredComponents().size())))));
 								i++;
 
 								if (i % 8 == 0)
@@ -186,7 +184,7 @@ public class TiCIntegration
 		if (pageSmeltry != null)
 		{
 			pageSmeltry.title = new TextComponentString("Smeltry");
-			pageSmeltry.icon = ItemIcon.getItemIcon(FTBLibFinals.TINKERS_CONSTRUCT + ":toolstation");
+			pageSmeltry.icon = ItemIcon.getItemIcon(OtherMods.TINKERS_CONSTRUCT + ":toolstation");
 			page.addSub(pageSmeltry);
 		}
 
@@ -205,12 +203,12 @@ public class TiCIntegration
 	}
 
 	@Nullable
-	private static GuidePage loadPage(String id, GuidePage p)
+	private static GuidePage loadPage(String id, GuidePage p) //FIXME
 	{
+		/*
 		try
 		{
-			//FIXME
-			JsonElement json = JsonUtils.fromJson(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(FTBLibFinals.TINKERS_CONSTRUCT, "book/en_US/sections/" + id + ".json")));
+			JsonElement json = JsonUtils.fromJson(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/sections/" + id + ".json")));
 
 			if (json.isJsonArray())
 			{
@@ -226,6 +224,7 @@ public class TiCIntegration
 		catch (Exception ex)
 		{
 		}
+		*/
 
 		return null;
 	}

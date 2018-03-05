@@ -16,13 +16,11 @@ public class ClientGuideEvent extends FTBGuidesEvent
 {
 	private final GuidePage root;
 	private final Map<String, GuideTitlePage> map;
-	private final GuideType mod;
 
-	public ClientGuideEvent(GuidePage r, Map<String, GuideTitlePage> m, GuideType typeMod)
+	public ClientGuideEvent(GuidePage r, Map<String, GuideTitlePage> m)
 	{
 		root = r;
 		map = m;
-		mod = typeMod;
 	}
 
 	public GuideTitlePage getModPage(String modid)
@@ -31,7 +29,7 @@ public class ClientGuideEvent extends FTBGuidesEvent
 
 		if (page == null)
 		{
-			page = new GuideTitlePage(modid, root, mod);
+			page = new GuideTitlePage(modid, root, GuideType.MOD);
 			page.isPresent = true;
 			ModContainer mod = Loader.instance().getIndexedModList().get(modid);
 

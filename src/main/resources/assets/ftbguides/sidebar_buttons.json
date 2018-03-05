@@ -1,9 +1,10 @@
 {
 	"guides": {
 		"group": "ftblib:info",
-		"icon": "item:minecraft:book",
+		"icon": "minecraft:items/book_normal",
 		"x": 600,
 		"click": "command:/ftbc open_guides",
-		"config": true
+		"config": true,
+		"custom_text": true
 	}
 }

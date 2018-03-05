@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.GuiBase;
+import com.feed_the_beast.ftbguides.FTBGuides;
+import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
@@ -12,16 +13,22 @@ import java.util.List;
  */
 public abstract class ComponentPanel extends Panel implements IGuideComponentWidget
 {
-	public boolean fixedWidth = false, fixedHeight = false;
+	public boolean fixedWidth = false;
 	public int totalWidth, totalHeight;
 
-	public ComponentPanel(GuiBase gui)
+	public ComponentPanel(Panel panel)
 	{
-		super(gui);
+		super(panel);
 		addFlags(DEFAULTS | UNICODE);
 	}
 
 	public abstract List<GuideComponent> getComponents();
+
+	@Override
+	public int getMaxWidth()
+	{
+		return fixedWidth ? width : Integer.MAX_VALUE;
+	}
 
 	@Override
 	public void addWidgets()
@@ -47,6 +54,11 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 
 		for (Widget widget : widgets)
 		{
+			if (widget instanceof Panel)
+			{
+				((Panel) widget).alignWidgets();
+			}
+
 			IGuideComponentWidget cwidget = (IGuideComponentWidget) widget;
 			if (!cwidget.isInline() || fixedWidth && x + widget.width > width)
 			{
@@ -66,20 +78,15 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 
 		totalHeight = y + h;
 
-		if (!fixedWidth)
+		if (FTBLibConfig.debugging.print_more_info)
 		{
-			setWidth(totalWidth);
-		}
-
-		if (!fixedHeight)
-		{
-			setHeight(totalHeight);
+			FTBGuides.LOGGER.info("Total W:H: " + totalWidth + ":" + totalHeight + " of " + widgets.size() + " widgets in " + getClass().getName());
 		}
 	}
 
 	@Override
 	public Icon getIcon()
 	{
-		return gui.getTheme().getPanelBackground();
+		return getTheme().getPanelBackground();
 	}
 }

@@ -9,4 +9,9 @@ public interface IGuideComponentWidget
 	{
 		return true;
 	}
+
+	default int getMaxWidth()
+	{
+		return Integer.MAX_VALUE;
+	}
 }

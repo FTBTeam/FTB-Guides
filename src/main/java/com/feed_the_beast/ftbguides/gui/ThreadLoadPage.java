@@ -1,11 +1,16 @@
 package com.feed_the_beast.ftbguides.gui;
 
+import com.feed_the_beast.ftbguides.FTBGuides;
+import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.io.HttpConnection;
+import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.google.gson.JsonElement;
+
+import java.io.File;
 
 /**
  * @author LatvianModder
@@ -25,7 +30,7 @@ class ThreadLoadPage extends Thread
 			@Override
 			public void finishLoading()
 			{
-				Guides.openGui(page);
+				FTBGuidesClient.openGuidesGui(page);
 			}
 		};
 
@@ -36,25 +41,42 @@ class ThreadLoadPage extends Thread
 	@Override
 	public void run()
 	{
-		JsonElement json = HttpConnection.getJson(page.textURL);
-		page.textURL = "";
-
-		if (!page.pages.isEmpty())
+		try
 		{
-			for (GuidePage p : page.pages)
+			JsonElement json;
+
+			if (page.textURL.startsWith("http:") || page.textURL.startsWith("https:"))
 			{
-				page.println(new TextGuideComponent(p.title.getUnformattedText()).setProperty("icon", p.icon.toString()).setProperty("click", p.getName()));
+				json = HttpConnection.getJson(page.textURL);
+			}
+			else
+			{
+				json = JsonUtils.fromJson(new File(page.textURL));
 			}
 
-			page.println(HRGuideComponent.INSTANCE);
-		}
+			page.textURL = "";
 
-		if (json.isJsonArray())
-		{
+			if (!page.pages.isEmpty())
+			{
+				for (GuidePage p : page.pages)
+				{
+					page.println(new TextGuideComponent(p.title.getUnformattedText()).setProperty("icon", p.icon.toString()).setProperty("click", p.getName()));
+				}
+
+				page.println(HRGuideComponent.INSTANCE);
+			}
+
 			for (JsonElement e : json.getAsJsonArray())
 			{
 				page.println(GuideComponent.create(e));
 			}
+		}
+		catch (Exception ex)
+		{
+			page.clear();
+			page.println("Error while loading the page! See log!");
+			FTBGuides.LOGGER.error("Error while loading page " + page.getPath() + ":");
+			ex.printStackTrace();
 		}
 
 		gui.setFinished();

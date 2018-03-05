@@ -1,6 +1,6 @@
 package com.feed_the_beast.ftbguides.client;
 
-import com.feed_the_beast.ftbguides.FTBGuidesFinals;
+import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftblib.lib.gui.GuiLang;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -11,8 +11,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 /**
  * @author LatvianModder
  */
-@Mod.EventBusSubscriber(modid = FTBGuidesFinals.MOD_ID)
-@Config(modid = FTBGuidesFinals.MOD_ID + "_client", category = "", name = "../local/client/ftbguides")
+@Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
+@Config(modid = FTBGuides.MOD_ID + "_client", category = "", name = "../local/client/" + FTBGuides.MOD_ID)
 public class FTBGuidesClientConfig
 {
 	@Config.LangKey(GuiLang.LANG_GENERAL)
@@ -20,20 +20,23 @@ public class FTBGuidesClientConfig
 
 	public static class General
 	{
-		@Config.Comment("Background alpha of the Guide GUI")
+		@Config.Comment("Background alpha of the Guide GUI.")
 		@Config.RangeInt(min = 0, max = 255)
 		public int background_alpha = 255;
+
+		@Config.Comment({"Last guide version.", "Do not change, for internal use only."})
+		public String last_guide_version = "";
 	}
 
 	public static void sync()
 	{
-		ConfigManager.sync(FTBGuidesFinals.MOD_ID + "_client", Config.Type.INSTANCE);
+		ConfigManager.sync(FTBGuides.MOD_ID + "_client", Config.Type.INSTANCE);
 	}
 
 	@SubscribeEvent
 	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
 	{
-		if (event.getModID().equals(FTBGuidesFinals.MOD_ID + "_client"))
+		if (event.getModID().equals(FTBGuides.MOD_ID + "_client"))
 		{
 			sync();
 		}

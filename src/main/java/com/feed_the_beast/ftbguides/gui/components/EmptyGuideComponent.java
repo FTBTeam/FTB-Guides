@@ -1,7 +1,5 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.GuiBase;
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 
 /**
@@ -13,9 +11,9 @@ public class EmptyGuideComponent extends GuideComponent
 
 	private static class EmptyComponentWidget extends Widget implements IGuideComponentWidget
 	{
-		private EmptyComponentWidget(GuiBase gui)
+		private EmptyComponentWidget(ComponentPanel panel)
 		{
-			super(gui);
+			super(panel);
 		}
 	}
 
@@ -35,8 +33,8 @@ public class EmptyGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
-		return new EmptyComponentWidget(parent.gui);
+		return new EmptyComponentWidget(parent);
 	}
 }

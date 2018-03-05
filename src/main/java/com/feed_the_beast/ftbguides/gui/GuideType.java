@@ -1,29 +1,35 @@
 package com.feed_the_beast.ftbguides.gui;
 
-import com.feed_the_beast.ftblib.lib.util.FinalIDObject;
+import com.feed_the_beast.ftblib.lib.util.LangKey;
+import com.feed_the_beast.ftblib.lib.util.misc.NameMap;
+import net.minecraft.util.IStringSerializable;
 
 /**
  * @author LatvianModder
  */
-public class GuideType extends FinalIDObject implements Comparable<GuideType>
+public enum GuideType implements IStringSerializable
 {
-	public static final GuideType SERVER_INFO = new GuideType("server_info", "Server Info", "Server Info");
-	public static final GuideType OTHER = new GuideType("other", "Other", "Other");
+	SERVER_INFO("server_info"),
+	MODPACK("modpack"),
+	MOD("mod"),
+	OTHER("other");
 
-	public int index;
-	public final String title;
-	public final String titlePlural;
+	public static final NameMap<GuideType> NAME_MAP = NameMap.create(OTHER, values());
 
-	public GuideType(String s, String t, String tp)
+	private final String name;
+	public final LangKey title;
+	public final LangKey titlePlural;
+
+	GuideType(String n)
 	{
-		super(s);
-		title = t;
-		titlePlural = tp;
+		name = n;
+		title = LangKey.of("guidetype." + name);
+		titlePlural = LangKey.of("guidetype." + name + ".plural");
 	}
 
 	@Override
-	public int compareTo(GuideType o)
+	public String getName()
 	{
-		return index - o.index;
+		return name;
 	}
 }

@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.util.StringJoiner;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
@@ -18,15 +17,15 @@ public class CodeblockGuideComponent extends GuideComponent
 		public final CodeblockGuideComponent component;
 		public final String[] text;
 
-		public CodeblockWidget(Panel parent, CodeblockGuideComponent t)
+		public CodeblockWidget(ComponentPanel parent, CodeblockGuideComponent t)
 		{
-			super(parent.gui);
+			super(parent);
 			component = t;
 			List<String> strings = new ArrayList<>();
 
 			for (String s : component.toString().split("\n"))
 			{
-				strings.addAll(gui.listFormattedStringToWidth(s, parent.width));
+				strings.addAll(listFormattedStringToWidth(s, parent.width));
 			}
 
 			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
@@ -35,7 +34,7 @@ public class CodeblockGuideComponent extends GuideComponent
 
 			for (String s : text)
 			{
-				setWidth(Math.max(width, gui.getStringWidth(s)));
+				setWidth(Math.max(width, getStringWidth(s)));
 			}
 
 			setHeight(text.length * 10);
@@ -51,7 +50,7 @@ public class CodeblockGuideComponent extends GuideComponent
 
 			for (int i = 0; i < text.length; i++)
 			{
-				gui.drawString(text[i], ax, ay + 10 * i);
+				drawString(text[i], ax, ay + 10 * i);
 			}
 		}
 	}
@@ -83,7 +82,7 @@ public class CodeblockGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new CodeblockWidget(parent, this);
 	}

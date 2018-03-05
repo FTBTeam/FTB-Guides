@@ -1,7 +1,6 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
@@ -12,22 +11,22 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class ImgGuideComponent extends GuideComponent
+public class ImageGuideComponent extends GuideComponent
 {
 	private static class ImgWidget extends Widget implements IGuideComponentWidget
 	{
-		private final ImgGuideComponent component;
+		private final ImageGuideComponent component;
 
-		public ImgWidget(Panel parent, ImgGuideComponent c)
+		public ImgWidget(ComponentPanel parent, ImageGuideComponent c)
 		{
-			super(parent.gui);
+			super(parent);
 			component = c;
-			setWidth(component.width / parent.gui.getScreen().getScaleFactor());
-			setHeight(component.height / parent.gui.getScreen().getScaleFactor());
+			setWidth(component.width / getScreen().getScaleFactor());
+			setHeight(component.height / getScreen().getScaleFactor());
 
-			if (width > parent.width)
+			if (width > parent.getMaxWidth())
 			{
-				int w = Math.min(parent.width, width);
+				int w = Math.min(parent.getMaxWidth(), width);
 				double h = height * (w / (double) width);
 				setWidth(w);
 				setHeight(Math.max((int) h, 0));
@@ -48,11 +47,11 @@ public class ImgGuideComponent extends GuideComponent
 		@Override
 		public boolean mousePressed(MouseButton button)
 		{
-			if (gui.isMouseOver(this))
+			if (isMouseOver())
 			{
 				String s = component.getProperty("click", true);
 
-				if (!s.isEmpty() && gui.handleClick(s))
+				if (!s.isEmpty() && handleClick(s))
 				{
 					GuiHelper.playClickSound();
 					return true;
@@ -72,7 +71,7 @@ public class ImgGuideComponent extends GuideComponent
 	public final Icon image;
 	public int width, height;
 
-	public ImgGuideComponent(Icon i)
+	public ImageGuideComponent(Icon i)
 	{
 		image = i;
 	}
@@ -96,7 +95,7 @@ public class ImgGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new ImgWidget(parent, this);
 	}

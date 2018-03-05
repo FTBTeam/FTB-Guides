@@ -1,7 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
+import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
@@ -26,15 +26,15 @@ public class TextGuideComponent extends GuideComponent
 		public final boolean bold, italic, underlined, striketrough, code;
 		public final Icon icon;
 
-		public TextWidget(Panel parent, TextGuideComponent t)
+		public TextWidget(ComponentPanel parent, TextGuideComponent t)
 		{
-			super(parent.gui);
+			super(parent);
 			component = t;
 			List<String> strings = new ArrayList<>();
 
 			for (String s : t.text.split("\n"))
 			{
-				strings.addAll(gui.listFormattedStringToWidth(s, parent.width));
+				strings.addAll(listFormattedStringToWidth(s, parent.getMaxWidth()));
 			}
 
 			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
@@ -70,15 +70,25 @@ public class TextGuideComponent extends GuideComponent
 					text[i] = TextFormatting.STRIKETHROUGH + text[i];
 				}
 
-				setWidth(Math.max(width, gui.getStringWidth(text[i])));
+				//System.out.println(i + " :- " + text[i] + ": " + gui.getStringWidth(text[i]));
+				setWidth(Math.max(width, getStringWidth(text[i])));
 			}
+
+			int h1 = getFontHeight() + 1;
+			setHeight(text.length == 0 ? h1 : h1 * text.length);
 
 			if (!icon.isEmpty())
 			{
 				setWidth(width + 10);
 			}
 
-			setHeight(text.length * 10);
+			FTBLib.LOGGER.info(strings + " @ " + width + ":" + height);
+		}
+
+		@Override
+		public int getMaxWidth()
+		{
+			return width;
 		}
 
 		@Override
@@ -95,11 +105,11 @@ public class TextGuideComponent extends GuideComponent
 		@Override
 		public boolean mousePressed(MouseButton button)
 		{
-			if (gui.isMouseOver(this))
+			if (isMouseOver())
 			{
 				String s = component.getProperty("click", true);
 
-				if (!s.isEmpty() && gui.handleClick(s))
+				if (!s.isEmpty() && handleClick(s))
 				{
 					GuiHelper.playClickSound();
 					return true;
@@ -112,10 +122,9 @@ public class TextGuideComponent extends GuideComponent
 		@Override
 		public void draw()
 		{
+			boolean mouseOver = isMouseOver() && (!component.getProperty("click", true).isEmpty() || !component.getProperty("hover", false).isEmpty());
 			int ax = getAX();
 			int ay = getAY();
-
-			boolean mouseOver = gui.isMouseOver(ax, ay, width, height) && (!component.getProperty("click", true).isEmpty() || !component.getProperty("hover", false).isEmpty());
 
 			if (!icon.isEmpty())
 			{
@@ -127,10 +136,10 @@ public class TextGuideComponent extends GuideComponent
 			{
 				if (code)
 				{
-					CODE_BACKGROUND.draw(ax - 1, ay + 10 * i, gui.getStringWidth(text[i]) + 2, 10);
+					CODE_BACKGROUND.draw(ax - 1, ay + 10 * i, getStringWidth(text[i]) + 2, 10);
 				}
 
-				gui.drawString(text[i], ax, ay + 10 * i, mouseOver ? MOUSE_OVER : 0);
+				drawString(text[i], ax, ay + 10 * i, mouseOver ? MOUSE_OVER : 0);
 			}
 		}
 	}
@@ -154,7 +163,7 @@ public class TextGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new TextWidget(parent, this);
 	}

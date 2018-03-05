@@ -10,28 +10,31 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 /**
  * @author LatvianModder
  */
-@Mod.EventBusSubscriber(modid = FTBGuidesFinals.MOD_ID)
-@Config(modid = FTBGuidesFinals.MOD_ID, category = "")
+@Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
+@Config(modid = FTBGuides.MOD_ID, category = "", name = FTBGuides.MOD_ID + "/config")
 public class FTBGuidesConfig
 {
-	public static final Quests quests = new Quests();
+	@Config.LangKey(GuiLang.LANG_GENERAL)
+	public static final General general = new General();
 
-	public static class Quests
+	public static class General
 	{
-		@Config.LangKey(GuiLang.LANG_ENABLED)
-		@Config.Comment("Enables quests")
-		public boolean enabled = false;
+		@Config.Comment("Change this to allow client to see when there is a new update for the modpack guide.")
+		public String modpack_guide_version = "";
+
+		@Config.Comment("Flash Guides button with '!' before the first time it's opened, and open modpack guide.")
+		public boolean flash_guides = true;
 	}
 
 	public static void sync()
 	{
-		ConfigManager.sync(FTBGuidesFinals.MOD_ID, Config.Type.INSTANCE);
+		ConfigManager.sync(FTBGuides.MOD_ID, Config.Type.INSTANCE);
 	}
 
 	@SubscribeEvent
 	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
 	{
-		if (event.getModID().equals(FTBGuidesFinals.MOD_ID))
+		if (event.getModID().equals(FTBGuides.MOD_ID))
 		{
 			sync();
 		}

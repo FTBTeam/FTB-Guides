@@ -1,13 +1,11 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
+import com.feed_the_beast.ftblib.lib.gui.WidgetType;
 import com.feed_the_beast.ftblib.lib.icon.BulletIcon;
 import com.feed_the_beast.ftblib.lib.util.misc.NameMap;
 import com.google.gson.JsonObject;
 import net.minecraft.util.IStringSerializable;
-
-import java.util.List;
 
 /**
  * @author LatvianModder
@@ -43,7 +41,7 @@ public class GuideListComponent extends CombinedGuideComponent
 	public int spacing = 0;
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new PanelList(parent, this);
 	}
@@ -60,30 +58,16 @@ public class GuideListComponent extends CombinedGuideComponent
 		spacing = s.isEmpty() ? 0 : Integer.parseInt(s);
 	}
 
-	private static class PanelList extends ComponentPanel
+	private static class PanelList extends CombinedComponentPanel
 	{
-		private final GuideListComponent component;
 		private BulletIcon bullet;
+		private GuideListComponent list;
 
-		private PanelList(Panel parent, GuideListComponent c)
+		private PanelList(ComponentPanel parent, GuideListComponent c)
 		{
-			super(parent.gui);
-			component = c;
-			bullet = new BulletIcon().setColor(gui.getTheme().getContentColor(false));
-		}
-
-		@Override
-		public List<GuideComponent> getComponents()
-		{
-			return component.components;
-		}
-
-		@Override
-		public void alignWidgets()
-		{
-			super.alignWidgets();
-			setWidth(totalWidth);
-			setHeight(totalHeight);
+			super(parent, c);
+			list = c;
+			bullet = new BulletIcon().setColor(getTheme().getContentColor(WidgetType.NORMAL));
 		}
 
 		@Override
@@ -91,17 +75,17 @@ public class GuideListComponent extends CombinedGuideComponent
 		{
 			super.drawWidget(widget, index, ax, ay, w, h);
 
-			if (component.ordering.size > 0 && widget.getClass() != Widget.class && !(widget instanceof PanelList))
+			if (list.ordering.size > 0 && widget.getClass() != Widget.class && !(widget instanceof PanelList))
 			{
 				String n;
-				switch (component.ordering)
+				switch (list.ordering)
 				{
 					case BULLET:
 						bullet.draw(ax - 7, widget.getAY() + 3, 4, 4);
 						break;
 					case NUMBER:
 						n = Integer.toString(index + 1);
-						gui.drawString(n, ax - 1 - gui.getStringWidth(n), widget.getAY() + 1);
+						drawString(n, ax - 1 - getStringWidth(n), widget.getAY() + 1);
 						break;
 					case LETTER:
 						char c = (char) ('a' + index);
@@ -115,7 +99,7 @@ public class GuideListComponent extends CombinedGuideComponent
 						}
 
 						n = Character.toString(c);
-						gui.drawString(n, ax - 1 - gui.getStringWidth(n), widget.getAY() + 1);
+						drawString(n, ax - 1 - getStringWidth(n), widget.getAY() + 1);
 						break;
 				}
 			}

@@ -1,8 +1,17 @@
-# Client Config
+tile.ftbguides.quest_block.name=Quest Block
+
+# Config
+ftbguides.general.modpack_guide_version=Modpack Guide Version
+ftbguides.general.flash_guides=Flash Guides Button
+ftbguides.quests.editing_mode=Editing Mode
+ftbguides.quests.add_block=Add Block
+
 ftbguides_client.general.background_alpha=Background Alpha
+ftbguides_client.general.last_guide_version=Last Guide Version
 
 # Sidebar Buttons
-sidebar_button.ftbguides.guides=Guides & Quests
+sidebar_button.ftbguides.guides=Guides
+sidebar_button.ftbguides.quests=Quests
 
 # Keys
 key.ftbguides.guides=Open Guides
@@ -14,3 +23,12 @@ ftbguides.lang.quests=Quests
 ftbguides.lang.unsupported_format=Unsupported format! Please update FTB Guides or contact mod author!
 ftbguides.lang.commands_failed=Failed to load commands
 ftbguides.lang.open_in_browser=Open in Browser
+
+guidetype.server_info=Server Info
+guidetype.server_info.plural=Server Info
+guidetype.mod=Mod
+guidetype.mod.plural=Mods
+guidetype.modpack=Modpack
+guidetype.modpack.plural=Modpacks
+guidetype.other=Other
+guidetype.other.plural=Other

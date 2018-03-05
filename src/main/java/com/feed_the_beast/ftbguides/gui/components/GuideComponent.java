@@ -1,8 +1,8 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftbguides.events.CreateGuideComponentEvent;
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
+import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -28,7 +28,7 @@ public abstract class GuideComponent
 		return false;
 	}
 
-	public abstract IGuideComponentWidget createWidget(Panel parent);
+	public abstract IGuideComponentWidget createWidget(ComponentPanel parent);
 
 	public JsonElement toJson()
 	{
@@ -72,7 +72,7 @@ public abstract class GuideComponent
 
 	public final void setProperty(String key, @Nullable JsonElement json)
 	{
-		setProperty(key, json == null || json.isJsonNull() ? "" : json.getAsString());
+		setProperty(key, JsonUtils.isNull(json) ? "" : json.getAsString());
 	}
 
 	public void loadProperties(JsonObject json)
@@ -84,9 +84,14 @@ public abstract class GuideComponent
 		return s.isEmpty() ? "" : s.replace("\t", "  ").replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");
 	}
 
+	public String toString()
+	{
+		return getClass().getSimpleName();
+	}
+
 	public static GuideComponent create(@Nullable JsonElement json)
 	{
-		if (json == null || json.isJsonNull())
+		if (JsonUtils.isNull(json))
 		{
 			return EmptyGuideComponent.INSTANCE;
 		}
@@ -158,7 +163,7 @@ public abstract class GuideComponent
 		}
 		else if (object.has("img"))
 		{
-			component = new ImgGuideComponent(Icon.getIcon(object.get("img_url")));
+			component = new ImageGuideComponent(Icon.getIcon(object.get("img_url")));
 		}
 		else if (object.has("codeblock"))
 		{
@@ -186,9 +191,11 @@ public abstract class GuideComponent
 			{
 				((GuideListComponent) component).add(create(e));
 			}
+			//component = new TextGuideComponent("Lists aren't supported yet!").setProperty("bold", "true");
 		}
 		else if (object.has("table"))
 		{
+			component = new TextGuideComponent("Tables aren't supported yet!").setProperty("bold", "true");
 		}
 		else if (object.has("text") || object.has("code"))
 		{

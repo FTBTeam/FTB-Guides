@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
@@ -13,13 +12,13 @@ import java.util.List;
  */
 public class CombinedGuideComponent extends GuideComponent implements Iterable<GuideComponent>
 {
-	private static class CombinedComponentWidget extends ComponentPanel
+	public static class CombinedComponentPanel extends ComponentPanel
 	{
-		private final CombinedGuideComponent component;
+		public final CombinedGuideComponent component;
 
-		public CombinedComponentWidget(Panel parent, CombinedGuideComponent c)
+		public CombinedComponentPanel(ComponentPanel parent, CombinedGuideComponent c)
 		{
-			super(parent.gui);
+			super(parent);
 			component = c;
 		}
 
@@ -78,9 +77,9 @@ public class CombinedGuideComponent extends GuideComponent implements Iterable<G
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
-		return new CombinedComponentWidget(parent, this);
+		return new CombinedComponentPanel(parent, this);
 	}
 
 	@Override

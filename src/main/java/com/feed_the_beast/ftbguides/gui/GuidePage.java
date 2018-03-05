@@ -1,7 +1,7 @@
 package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
-import com.feed_the_beast.ftbguides.gui.components.ImgGuideComponent;
+import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.LineBreakGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
@@ -54,12 +54,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public String getPath()
 	{
-		if (parent == null)
-		{
-			return "/";
-		}
-
-		return parent.getPath() + '/' + getName();
+		return parent == null ? "/" : (parent.getPath() + getName() + '/');
 	}
 
 	public GuidePage getRoot()
@@ -69,7 +64,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public ITextComponent getDisplayName()
 	{
-		return (title == null) ? new TextComponentString(getName()) : title;
+		return title == null ? new TextComponentString(getName()) : title;
 	}
 
 	public void println(GuideComponent component)
@@ -89,7 +84,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void println(Icon icon)
 	{
-		println(new ImgGuideComponent(icon));
+		println(new ImageGuideComponent(icon));
 	}
 
 	public void println(@Nullable ITextComponent component)
@@ -176,7 +171,8 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			return (parent == null ? this : parent).getSubFromPath(path1);
 		}
 
-		return getSubRaw(path1);
+		GuidePage page1 = getSubRaw(s);
+		return page1 == null ? null : page1.getSubFromPath(path1);
 	}
 
 	public void clear()

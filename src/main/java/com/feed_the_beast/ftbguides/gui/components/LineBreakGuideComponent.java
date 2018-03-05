@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 
@@ -13,9 +12,9 @@ public class LineBreakGuideComponent extends GuideComponent
 
 	private static class LineBreakWidget extends Widget implements IGuideComponentWidget
 	{
-		private LineBreakWidget(GuiBase gui)
+		private LineBreakWidget(Panel panel)
 		{
-			super(gui);
+			super(panel);
 			setHeight(10);
 		}
 
@@ -31,9 +30,9 @@ public class LineBreakGuideComponent extends GuideComponent
 	}
 
 	@Override
-	public IGuideComponentWidget createWidget(Panel parent)
+	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
-		return new LineBreakWidget(parent.gui);
+		return new LineBreakWidget(parent);
 	}
 
 	public String toString()
