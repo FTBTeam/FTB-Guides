@@ -185,13 +185,14 @@ public abstract class GuideComponent
 		}
 		else if (object.has("list"))
 		{
+			/*
 			component = new GuideListComponent();
 
 			for (JsonElement e : object.get("list").getAsJsonArray())
 			{
 				((GuideListComponent) component).add(create(e));
-			}
-			//component = new TextGuideComponent("Lists aren't supported yet!").setProperty("bold", "true");
+			}*/
+			component = new TextGuideComponent("Lists aren't supported yet!").setProperty("bold", "true");
 		}
 		else if (object.has("table"))
 		{
