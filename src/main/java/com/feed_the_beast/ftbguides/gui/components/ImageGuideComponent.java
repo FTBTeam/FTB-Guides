@@ -4,7 +4,6 @@ import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
-import com.google.gson.JsonObject;
 
 import java.util.List;
 
@@ -21,12 +20,12 @@ public class ImageGuideComponent extends GuideComponent
 		{
 			super(parent);
 			component = c;
-			setWidth(component.width / getScreen().getScaleFactor());
-			setHeight(component.height / getScreen().getScaleFactor());
+			setWidth((int) (component.width / (double) getScreen().getScaleFactor()));
+			setHeight((int) (component.height / (double) getScreen().getScaleFactor()));
 
-			if (width > parent.getMaxWidth())
+			if (width > parent.maxWidth)
 			{
-				int w = Math.min(parent.getMaxWidth(), width);
+				int w = Math.min(parent.maxWidth, width);
 				double h = height * (w / (double) width);
 				setWidth(w);
 				setHeight(Math.max((int) h, 0));
@@ -69,11 +68,18 @@ public class ImageGuideComponent extends GuideComponent
 	}
 
 	public final Icon image;
-	public int width, height;
+	public final int width, height;
+
+	public ImageGuideComponent(Icon i, int w, int h)
+	{
+		image = i;
+		width = w;
+		height = h;
+	}
 
 	public ImageGuideComponent(Icon i)
 	{
-		image = i;
+		this(i, 16, 16);
 	}
 
 	public String toString()
@@ -85,13 +91,6 @@ public class ImageGuideComponent extends GuideComponent
 	public boolean isEmpty()
 	{
 		return image.isEmpty();
-	}
-
-	@Override
-	public void loadProperties(JsonObject json)
-	{
-		width = json.get("img_width").getAsInt();
-		height = json.get("img_height").getAsInt();
 	}
 
 	@Override

@@ -8,6 +8,8 @@ ftbguides.quests.add_block=Add Block
 
 ftbguides_client.general.background_alpha=Background Alpha
 ftbguides_client.general.last_guide_version=Last Guide Version
+ftbguides_client.general.hide_mods_not_present=Hide Missing Mod Guides
+ftbguides_client.general.hide_other=Hide Other Guides
 
 # Sidebar Buttons
 sidebar_button.ftbguides.guides=Guides

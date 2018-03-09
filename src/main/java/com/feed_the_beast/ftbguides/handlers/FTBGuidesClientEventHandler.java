@@ -36,7 +36,7 @@ public class FTBGuidesClientEventHandler
 	{
 		if (FTBGuidesClient.KEY_GUIDE.isPressed())
 		{
-			FTBGuidesClient.openGuidesGui();
+			FTBGuidesClient.openGuidesGui("");
 		}
 	}
 }

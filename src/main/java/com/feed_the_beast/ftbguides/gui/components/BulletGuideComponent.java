@@ -6,16 +6,16 @@ import com.feed_the_beast.ftblib.lib.gui.Widget;
 /**
  * @author LatvianModder
  */
-public class HRGuideComponent extends GuideComponent
+public class BulletGuideComponent extends GuideComponent
 {
-	public static final HRGuideComponent INSTANCE = new HRGuideComponent();
+	public static final BulletGuideComponent INSTANCE = new BulletGuideComponent();
 
-	private static class HRWidget extends Widget implements IGuideComponentWidget
+	private static class BulletWidget extends Widget implements IGuideComponentWidget
 	{
-		public HRWidget(ComponentPanel parent)
+		public BulletWidget(ComponentPanel parent)
 		{
 			super(parent);
-			setSize(1, 3);
+			setSize(8, 8);
 		}
 
 		@Override
@@ -27,22 +27,22 @@ public class HRGuideComponent extends GuideComponent
 		@Override
 		public void draw()
 		{
-			((GuiGuide) getGui()).page.lineColor.draw(getAX(), getAY() + 1, ((ComponentPanel) parent).width, height - 2);
+			((GuiGuide) getGui()).page.lineColor.draw(getAX() + 2, getAY() + 2, 4, 4);
 		}
 	}
 
-	private HRGuideComponent()
+	private BulletGuideComponent()
 	{
 	}
 
 	@Override
 	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
-		return new HRWidget(parent);
+		return new BulletWidget(parent);
 	}
 
 	public String toString()
 	{
-		return "";
+		return "*";
 	}
 }

@@ -1,10 +1,10 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.gui.Widget;
+import com.feed_the_beast.ftblib.lib.icon.Color4I;
+import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.StringJoiner;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +14,8 @@ public class CodeblockGuideComponent extends GuideComponent
 {
 	private static class CodeblockWidget extends Widget implements IGuideComponentWidget
 	{
+		public static final Icon CODE_BACKGROUND = Color4I.rgba(0x33AAAAAA);
+
 		public final CodeblockGuideComponent component;
 		public final String[] text;
 
@@ -21,14 +23,7 @@ public class CodeblockGuideComponent extends GuideComponent
 		{
 			super(parent);
 			component = t;
-			List<String> strings = new ArrayList<>();
-
-			for (String s : component.toString().split("\n"))
-			{
-				strings.addAll(listFormattedStringToWidth(s, parent.width));
-			}
-
-			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
+			text = component.toString().split("\n");
 
 			setWidth(0);
 
@@ -46,7 +41,7 @@ public class CodeblockGuideComponent extends GuideComponent
 			int ax = getAX();
 			int ay = getAY();
 
-			TextGuideComponent.CODE_BACKGROUND.draw(ax, ay, width, height);
+			CODE_BACKGROUND.draw(ax, ay, width, height);
 
 			for (int i = 0; i < text.length; i++)
 			{

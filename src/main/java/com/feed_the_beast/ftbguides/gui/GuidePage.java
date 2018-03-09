@@ -37,7 +37,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public ITextComponent title;
 	public Icon icon = DEFAULT_ICON;
 	public final List<SpecialGuideButton> specialButtons = new ArrayList<>(0);
-	public String textURL = "";
+	public ThreadLoadPage textLoader = null;
 	public final HashMap<String, JsonElement> properties = new HashMap<>();
 
 	public GuideType type = GuideType.OTHER;
@@ -45,6 +45,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public Color4I textColor = Icon.EMPTY;
 	public Color4I textColorMouseOver = Icon.EMPTY;
 	public Color4I lineColor = Icon.EMPTY;
+	public String basePath = "";
 
 	public GuidePage(String id, @Nullable GuidePage p)
 	{
@@ -69,12 +70,12 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void println(GuideComponent component)
 	{
-		if (!component.isEmpty())
+		if (!components.isEmpty())
 		{
-			components.add(component);
+			components.add(LineBreakGuideComponent.INSTANCE);
 		}
 
-		components.add(LineBreakGuideComponent.INSTANCE);
+		components.add(component);
 	}
 
 	public void println(String text)
@@ -203,7 +204,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			}
 		}
 
-		return textURL.isEmpty();
+		return textLoader == null;
 	}
 
 	public void sort(boolean tree)
@@ -258,7 +259,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	{
 		if (path.indexOf(':') == -1)
 		{
-			return Icon.getIcon("https://raw.githubusercontent.com/LatvianModder/FTBGuidesWeb/master/" + getPath() + "/" + path);
+			return Icon.getIcon(basePath + '/' + path);
 		}
 
 		return Icon.getIcon(path);

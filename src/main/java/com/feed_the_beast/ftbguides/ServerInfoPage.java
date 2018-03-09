@@ -27,7 +27,7 @@ public class ServerInfoPage extends GuidePage
 			{
 				for (JsonElement e : json.getAsJsonArray())
 				{
-					p.println(GuideComponent.create(e));
+					p.println(GuideComponent.create(p, e));
 				}
 			}
 		}

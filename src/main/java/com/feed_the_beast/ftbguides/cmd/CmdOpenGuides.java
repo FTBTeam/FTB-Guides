@@ -18,11 +18,6 @@ public class CmdOpenGuides extends CmdBase
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args)
 	{
-		if (args.length > 0)
-		{
-			FTBGuidesClient.pageToOpen = args[0];
-		}
-
-		FTBGuidesClient.openGuidesGui();
+		FTBGuidesClient.openGuidesGui(args.length > 0 ? args[0] : "");
 	}
 }

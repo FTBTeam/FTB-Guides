@@ -1,12 +1,12 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
-import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.ArrayList;
@@ -17,11 +17,10 @@ import java.util.List;
  */
 public class TextGuideComponent extends GuideComponent
 {
-	public static final Icon CODE_BACKGROUND = Color4I.rgba(0x33AAAAAA);
-
 	private static class TextWidget extends Widget implements IGuideComponentWidget
 	{
 		public final TextGuideComponent component;
+		public final double scale;
 		public final String[] text;
 		public final boolean bold, italic, underlined, striketrough, code;
 		public final Icon icon;
@@ -30,21 +29,22 @@ public class TextGuideComponent extends GuideComponent
 		{
 			super(parent);
 			component = t;
+			scale = MathHelper.clamp(Double.parseDouble(component.getProperty("text_scale", true, "1")), 0.25D, 4D);
 			List<String> strings = new ArrayList<>();
 
 			for (String s : t.text.split("\n"))
 			{
-				strings.addAll(listFormattedStringToWidth(s, parent.getMaxWidth()));
+				strings.addAll(listFormattedStringToWidth(s, (int) (parent.maxWidth / scale)));
 			}
 
 			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
 
-			bold = t.getProperty("bold", true).equals("true");
-			italic = t.getProperty("italic", true).equals("true");
-			underlined = t.getProperty("underlined", true).equals("true");
-			striketrough = t.getProperty("striketrough", true).equals("true");
-			code = t.getProperty("code", true).equals("true");
-			icon = Icon.getIcon(t.getProperty("icon", false));
+			bold = component.getProperty("bold", true).equals("true");
+			italic = component.getProperty("italic", true).equals("true");
+			underlined = component.getProperty("underlined", true).equals("true");
+			striketrough = component.getProperty("striketrough", true).equals("true");
+			code = component.getProperty("code", true).equals("true");
+			icon = Icon.getIcon(component.getProperty("icon", false));
 
 			setWidth(0);
 
@@ -70,25 +70,23 @@ public class TextGuideComponent extends GuideComponent
 					text[i] = TextFormatting.STRIKETHROUGH + text[i];
 				}
 
-				//System.out.println(i + " :- " + text[i] + ": " + gui.getStringWidth(text[i]));
-				setWidth(Math.max(width, getStringWidth(text[i])));
+				if (code)
+				{
+					setWidth(Math.max(width, (int) (text[i].length() * 4 * scale)));
+				}
+				else
+				{
+					setWidth(Math.max(width, (int) (getStringWidth(text[i]) * scale)));
+				}
 			}
 
-			int h1 = getFontHeight() + 1;
+			int h1 = (int) ((getFontHeight() + 1D) * scale);
 			setHeight(text.length == 0 ? h1 : h1 * text.length);
 
 			if (!icon.isEmpty())
 			{
 				setWidth(width + 10);
 			}
-
-			FTBLib.LOGGER.info(strings + " @ " + width + ":" + height);
-		}
-
-		@Override
-		public int getMaxWidth()
-		{
-			return width;
 		}
 
 		@Override
@@ -132,14 +130,37 @@ public class TextGuideComponent extends GuideComponent
 				ax += 10;
 			}
 
+			int h1 = getFontHeight() + 1;
+
+			if (scale != 1D)
+			{
+				GuiHelper.setFixUnicode(false);
+			}
+
+			GlStateManager.pushMatrix();
+			GlStateManager.translate(ax, ay, 0);
+			GlStateManager.scale(scale, scale, 1D);
+
 			for (int i = 0; i < text.length; i++)
 			{
 				if (code)
 				{
-					CODE_BACKGROUND.draw(ax - 1, ay + 10 * i, getStringWidth(text[i]) + 2, 10);
+					for (int ci = 0; ci < text[i].length(); ci++)
+					{
+						drawString(Character.toString(text[i].charAt(ci)), ci * 4, h1 * i, mouseOver ? MOUSE_OVER : 0);
+					}
 				}
+				else
+				{
+					drawString(text[i], 0, h1 * i, mouseOver ? MOUSE_OVER : 0);
+				}
+			}
 
-				drawString(text[i], ax, ay + 10 * i, mouseOver ? MOUSE_OVER : 0);
+			GlStateManager.popMatrix();
+
+			if (scale != 1D)
+			{
+				GuiHelper.setFixUnicode(getGui().fixUnicode);
 			}
 		}
 	}

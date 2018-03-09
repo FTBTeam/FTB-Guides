@@ -20,6 +20,12 @@ public class FTBGuidesClientConfig
 
 	public static class General
 	{
+		@Config.Comment("Hide mod guides that aren't loaded.")
+		public boolean hide_mods_not_present = true;
+
+		@Config.Comment("Hide all guides with type 'other'")
+		public boolean hide_other = false;
+
 		@Config.Comment("Background alpha of the Guide GUI.")
 		@Config.RangeInt(min = 0, max = 255)
 		public int background_alpha = 255;

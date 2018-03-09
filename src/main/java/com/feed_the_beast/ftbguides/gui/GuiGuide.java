@@ -1,10 +1,12 @@
 package com.feed_the_beast.ftbguides.gui;
 
+import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftbguides.gui.components.ComponentPanel;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
+import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.Button;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
@@ -32,6 +34,8 @@ import java.util.List;
 
 public class GuiGuide extends GuiBase
 {
+	private static final int SCROLLBAR_SIZE = 7;
+
 	public static class GuideTheme extends Theme
 	{
 		public final GuidePage page;
@@ -101,11 +105,7 @@ public class GuiGuide extends GuiBase
 			if (page != null)
 			{
 				GuiHelper.playClickSound();
-
-				if (page != ((GuiGuide) getGui()).page)
-				{
-					FTBGuidesClient.openGuidesGui(page);
-				}
+				FTBGuidesClient.openGuidesGui(page.getPath());
 			}
 		}
 
@@ -153,12 +153,22 @@ public class GuiGuide extends GuiBase
 	public final GuidePage page;
 	public final ComponentPanel panelText;
 	public final Panel panelTitle, panelSpecialButtons;
-	public final PanelScrollBar scrollBarV;
+	public final PanelScrollBar scrollBarH, scrollBarV;
 
 	public GuiGuide(GuidePage p)
 	{
 		page = p;
-		addFlags(UNICODE);
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.warn("GUI CREATE");
+		}
+
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.info("Gui opened for page " + p.getPath());
+		}
+
+		addFlags(DEFAULTS | UNICODE);
 
 		panelText = new ComponentPanel(this)
 		{
@@ -169,12 +179,18 @@ public class GuiGuide extends GuiBase
 			}
 
 			@Override
+			public void addWidgets()
+			{
+				setPosAndSize(2, 1 + panelSpecialButtons.height, getGui().width - 3 - SCROLLBAR_SIZE, getGui().height - 2 - panelSpecialButtons.height - SCROLLBAR_SIZE);
+				maxWidth = width;
+			}
+
+			@Override
 			public void alignWidgets()
 			{
-				fixedWidth = true;
-				setPosAndSize(4, 12, getGui().width - 19, getGui().height - 13);
-				super.alignWidgets();
-				scrollBarV.setElementSize(totalHeight + 4);
+				scrollBarH.setElementSize(totalWidth);
+				scrollBarH.setSrollStepFromOneElementSize(10);
+				scrollBarV.setElementSize(totalHeight);
 				scrollBarV.setSrollStepFromOneElementSize(30);
 			}
 		};
@@ -245,13 +261,7 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void alignWidgets()
 			{
-				setPosAndSize(3, 0, align(WidgetLayout.HORIZONTAL), 12);
-			}
-
-			@Override
-			public int getAX()
-			{
-				return getGui().width - width;
+				setWidth(align(WidgetLayout.HORIZONTAL));
 			}
 
 			@Override
@@ -262,20 +272,39 @@ public class GuiGuide extends GuiBase
 		};
 
 		panelSpecialButtons.addFlags(DEFAULTS);
+		panelSpecialButtons.setHeight(12);
 
-		scrollBarV = new PanelScrollBar(this, panelText)
+		scrollBarH = new PanelScrollBar(this, panelText)
 		{
 			@Override
-			public int getAX()
+			public Plane getPlane()
 			{
-				return getGui().width - 12;
+				return Plane.HORIZONTAL;
 			}
 		};
+
+		scrollBarV = new PanelScrollBar(this, panelText);
+
+		if (page.textLoader != null)
+		{
+			if (FTBLibConfig.debugging.print_more_info)
+			{
+				FTBGuides.LOGGER.info("Started page loader for " + page.getPath());
+			}
+
+			page.textLoader.start();
+		}
 	}
 
 	@Override
 	public void addWidgets()
 	{
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.warn("GUI ADD WIDGETS");
+		}
+
+		add(scrollBarH);
 		add(scrollBarV);
 		add(panelText);
 		add(panelTitle);
@@ -285,36 +314,36 @@ public class GuiGuide extends GuiBase
 	@Override
 	public void alignWidgets()
 	{
-		scrollBarV.setPosAndSize(0, 11, 12, getGui().height - 11);
-		panelText.alignWidgets();
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.warn("GUI ALIGN");
+		}
+
 		panelSpecialButtons.alignWidgets();
+		panelSpecialButtons.setPos(width - panelSpecialButtons.width, 0);
+		scrollBarH.setPosAndSize(0, height - SCROLLBAR_SIZE, width - SCROLLBAR_SIZE, SCROLLBAR_SIZE);
+		scrollBarV.setPosAndSize(width - SCROLLBAR_SIZE, panelSpecialButtons.height - 1, SCROLLBAR_SIZE, height - SCROLLBAR_SIZE);
+		panelText.alignWidgets();
 	}
 
 	@Override
 	public boolean onInit()
 	{
-		if (!FTBGuidesClient.pageToOpen.isEmpty())
+		if (page.textLoader != null)
 		{
-			GuidePage page1 = page.getSubFromPath(FTBGuidesClient.pageToOpen);
-			FTBGuidesClient.pageToOpen = "";
-
-			if (page1 != null)
-			{
-				FTBGuidesClient.openGuidesGui(page1);
-			}
+			return false;
 		}
 
-		if (!page.textURL.isEmpty())
+		if (FTBLibConfig.debugging.print_more_info)
 		{
-			new ThreadLoadPage(page).start();
-			return false;
+			FTBGuides.LOGGER.warn("GUI INIT OPEN");
 		}
 
 		if (page == page.getRoot() && !FTBGuidesClientConfig.general.last_guide_version.equals(FTBGuidesConfig.general.modpack_guide_version) && page.getSubRaw("modpack_guide") != null)
 		{
 			FTBGuidesClientConfig.general.last_guide_version = FTBGuidesConfig.general.modpack_guide_version;
 			FTBGuidesClientConfig.sync();
-			FTBGuidesClient.openGuidesGui(page.getSub("modpack_guide"));
+			FTBGuidesClient.openGuidesGui("/modpack_guide");
 		}
 
 		return setFullscreen();
@@ -324,8 +353,9 @@ public class GuiGuide extends GuiBase
 	public void drawBackground()
 	{
 		GuiHelper.drawHollowRect(0, 0, width, height, page.lineColor, false);
-		page.lineColor.draw(width - scrollBarV.width, 12, 1, height - 12);
-		page.lineColor.draw(0, 11, width, 1);
+		page.lineColor.draw(scrollBarV.getAX(), scrollBarV.getAY(), 1, scrollBarV.height);
+		page.lineColor.draw(0, scrollBarH.getAY(), scrollBarH.width, 1);
+		page.lineColor.draw(0, panelSpecialButtons.height - 1, width, 1);
 		GlStateManager.color(1F, 1F, 1F, 1F);
 	}
 
@@ -357,26 +387,26 @@ public class GuiGuide extends GuiBase
 	{
 		if (key == Keyboard.KEY_F5)
 		{
-			return handleClick("refresh:/");
+			return handleClick("refresh:" + page.getPath());
 		}
 		else if (key == Keyboard.KEY_HOME)
 		{
-			GuidePage p = page.getRoot();
-
-			if (page != p)
-			{
-				FTBGuidesClient.openGuidesGui(p);
-			}
-
+			FTBGuidesClient.openGuidesGui("/");
 			return true;
 		}
 		else if (key == Keyboard.KEY_BACK)
 		{
-			return mousePressed(MouseButton.get(3));
+			if (page.parent != null)
+			{
+				FTBGuidesClient.openGuidesGui(page.parent.getPath());
+			}
+
+			return true;
 		}
 		else if (key == Keyboard.KEY_NEXT)
 		{
-			return mousePressed(MouseButton.get(4));
+			//TODO: Implement going forward
+			return true;
 		}
 		else
 		{
@@ -389,17 +419,11 @@ public class GuiGuide extends GuiBase
 	{
 		if (button.id == 3)
 		{
-			if (page.parent != null)
-			{
-				FTBGuidesClient.openGuidesGui(page.parent);
-			}
-
-			return true;
+			return keyPressed(Keyboard.KEY_BACK, '\0');
 		}
 		else if (button.id == 4)
 		{
-			System.out.println("Forward pressed!");
-			return true;
+			return keyPressed(Keyboard.KEY_NEXT, '\0');
 		}
 		else
 		{
@@ -416,7 +440,7 @@ public class GuiGuide extends GuiBase
 
 			if (p != null)
 			{
-				FTBGuidesClient.openGuidesGui(p);
+				FTBGuidesClient.openGuidesGui(p.getPath());
 				return true;
 			}
 
@@ -430,7 +454,7 @@ public class GuiGuide extends GuiBase
 		else if (scheme.equals("refresh"))
 		{
 			FTBGuidesClient.setShouldReload();
-			FTBGuidesClient.openGuidesGui();
+			FTBGuidesClient.openGuidesGui(path);
 			return true;
 		}
 		else
