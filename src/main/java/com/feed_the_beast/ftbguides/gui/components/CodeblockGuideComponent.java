@@ -14,7 +14,7 @@ public class CodeblockGuideComponent extends GuideComponent
 {
 	private static class CodeblockWidget extends Widget implements IGuideComponentWidget
 	{
-		public static final Icon CODE_BACKGROUND = Color4I.rgba(0x33AAAAAA);
+		public static final Icon CODE_BACKGROUND = Color4I.rgba(0x247B6534);
 
 		public final CodeblockGuideComponent component;
 		public final String[] text;

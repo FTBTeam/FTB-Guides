@@ -12,6 +12,7 @@ import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.FTBLib;
+import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.client.FTBLibClient;
 import com.feed_the_beast.ftblib.client.SidebarButton;
 import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
@@ -368,12 +369,17 @@ class ThreadLoadGuides extends Thread
 					if (shortFile.exists())
 					{
 						page1.textLoader = new ThreadLoadPage(page1, shortFile.getAbsolutePath());
-						page1.basePath = folder.toURI().getPath();
+						page1.basePath = folder.toURI().toString();
 					}
 					else
 					{
 						page1.textLoader = new ThreadLoadPage(page1, new File(folder1, "index.json").getAbsolutePath());
-						page1.basePath = folder1.toURI().getPath();
+						page1.basePath = folder1.toURI().toString();
+					}
+
+					if (FTBLibConfig.debugging.print_more_info)
+					{
+						FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.basePath);
 					}
 				}
 				catch (Exception ex)
@@ -382,7 +388,5 @@ class ThreadLoadGuides extends Thread
 				}
 			}
 		}
-
-		FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.basePath);
 	}
 }

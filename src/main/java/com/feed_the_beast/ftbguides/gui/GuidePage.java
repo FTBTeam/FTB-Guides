@@ -7,6 +7,7 @@ import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
+import com.feed_the_beast.ftblib.lib.icon.URLImageIcon;
 import com.feed_the_beast.ftblib.lib.util.FinalIDObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -259,7 +260,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	{
 		if (path.indexOf(':') == -1)
 		{
-			return Icon.getIcon(basePath + '/' + path);
+			return new URLImageIcon(basePath + '/' + path);
 		}
 
 		return Icon.getIcon(path);
