@@ -28,7 +28,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	public ComponentPanel(Panel panel)
 	{
 		super(panel);
-		addFlags(DEFAULTS | UNICODE);
+		addFlags(UNICODE);
 	}
 
 	public abstract List<GuideComponent> getComponents();

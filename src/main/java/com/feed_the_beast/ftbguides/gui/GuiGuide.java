@@ -195,6 +195,8 @@ public class GuiGuide extends GuiBase
 			}
 		};
 
+		panelText.addFlags(DEFAULTS);
+
 		panelTitle = new Panel(this)
 		{
 			@Override
