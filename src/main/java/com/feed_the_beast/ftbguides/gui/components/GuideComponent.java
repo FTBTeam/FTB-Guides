@@ -257,12 +257,10 @@ public abstract class GuideComponent
 		else if (object.has("list"))
 		{
 			TableGuideComponent list = new TableGuideComponent();
-			TableGuideComponent.HeadCellComponent left = new TableGuideComponent.HeadCellComponent(list);
+			TableGuideComponent.HeadCellComponent left = list.addRow();
 			left.setProperty("align", "right");
-			TableGuideComponent.HeadCellComponent right = new TableGuideComponent.HeadCellComponent(list);
+			TableGuideComponent.HeadCellComponent right = list.addRow();
 
-			list.rows.add(left);
-			list.rows.add(right);
 			list.setProperty("borders", "false");
 			list.setProperty("padding", "0");
 			list.hasHead = false;
@@ -296,8 +294,7 @@ public abstract class GuideComponent
 
 				for (JsonElement element : object.get("head").getAsJsonArray())
 				{
-					TableGuideComponent.HeadCellComponent head = new TableGuideComponent.HeadCellComponent(table);
-					table.rows.add(head);
+					TableGuideComponent.HeadCellComponent head = table.addRow();
 					head.add(create(page, element));
 
 					/* FIXME: align, type, style properties

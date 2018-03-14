@@ -76,7 +76,7 @@ public class GuiGuide extends GuiBase
 		}
 
 		@Override
-		public Icon getScrollBarBackground()
+		public Icon getScrollBarBackground(WidgetType type)
 		{
 			return Icon.EMPTY;
 		}

@@ -66,6 +66,13 @@ public class TableGuideComponent extends CombinedGuideComponent
 		rows = new ArrayList<>();
 	}
 
+	public HeadCellComponent addRow()
+	{
+		HeadCellComponent component = new HeadCellComponent(this);
+		rows.add(component);
+		return component;
+	}
+
 	@Override
 	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{

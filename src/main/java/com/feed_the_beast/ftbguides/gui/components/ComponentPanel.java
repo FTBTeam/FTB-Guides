@@ -73,6 +73,8 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 			}
 			else
 			{
+				int ci = 0;
+
 				for (GuideComponent component : getComponents())
 				{
 					if (!component.isEmpty())
@@ -84,7 +86,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 							((Panel) widget).refreshWidgets();
 						}
 
-						if (moveToNewLine(widget, x))
+						if (moveToNewLine(widget, x, ci, i))
 						{
 							if (widget.width > maxWidth)
 							{
@@ -115,9 +117,13 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 						add(widget);
 						i++;
 					}
+
+					ci++;
 				}
 
-				totalHeight = y + h;
+				totalWidth = Math.max(totalWidth, x);
+				y += h;
+				totalHeight = y;
 			}
 		}
 		catch (MismatchingParentPanelException ex)
@@ -139,7 +145,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		popFontUnicode();
 	}
 
-	public boolean moveToNewLine(Widget widget, int x)
+	public boolean moveToNewLine(Widget widget, int x, int componentIndex, int widgetIndex)
 	{
 		return x + widget.width > maxWidth || !((IGuideComponentWidget) widget).isInline();
 	}

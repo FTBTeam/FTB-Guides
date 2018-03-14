@@ -59,9 +59,10 @@ public class CombinedGuideComponent extends GuideComponent implements Iterable<G
 		return components.iterator();
 	}
 
-	public void add(GuideComponent c)
+	public CombinedGuideComponent add(GuideComponent c)
 	{
 		components.add(c);
 		c.parent = this;
+		return this;
 	}
 }
