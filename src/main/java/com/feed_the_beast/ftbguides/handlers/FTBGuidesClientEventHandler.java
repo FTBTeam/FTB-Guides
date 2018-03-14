@@ -6,7 +6,9 @@ import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.events.CustomSidebarButtonTextEvent;
 import com.feed_the_beast.ftblib.lib.EventHandler;
+import net.minecraft.init.Items;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,6 +39,15 @@ public class FTBGuidesClientEventHandler
 		if (FTBGuidesClient.KEY_GUIDE.isPressed())
 		{
 			FTBGuidesClient.openGuidesGui("");
+		}
+	}
+
+	@SubscribeEvent
+	public static void onItemRightClick(PlayerInteractEvent.RightClickItem event)
+	{
+		if (event.getWorld().isRemote && event.getItemStack().getItem() == Items.BOOK && event.getItemStack().hasTagCompound() && event.getItemStack().getTagCompound().hasKey("Guide"))
+		{
+			FTBGuidesClient.openGuidesGui(event.getItemStack().getTagCompound().getString("Guide"));
 		}
 	}
 }
