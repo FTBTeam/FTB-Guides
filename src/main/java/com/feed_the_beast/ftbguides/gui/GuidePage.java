@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides.gui;
 
+import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.LineBreakGuideComponent;
@@ -9,6 +10,7 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.icon.URLImageIcon;
 import com.feed_the_beast.ftblib.lib.util.FinalIDObject;
+import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -18,6 +20,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,13 +35,18 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public static final Icon DEFAULT_ICON = ItemIcon.getItemIcon(new ItemStack(Items.BOOK));
 	public static final Collection<String> STANDARD_KEYS = new HashSet<>(Arrays.asList("id", "title", "icon", "icon_url", "buttons", "pages"));
 
+	public static final int STATE_NOT_LOADING = 0;
+	public static final int STATE_LOADING = 1;
+	public static final int STATE_LOADED = 2;
+
 	public final GuidePage parent;
 	public final List<GuideComponent> components = new ArrayList<>();
 	public final List<GuidePage> pages = new ArrayList<>(0);
 	public ITextComponent title;
 	public Icon icon = DEFAULT_ICON;
 	public final List<SpecialGuideButton> specialButtons = new ArrayList<>(0);
-	public ThreadLoadPage textLoader = null;
+	public URI textURI = null;
+	public int textLoadingState = STATE_NOT_LOADING;
 	public final HashMap<String, JsonElement> properties = new HashMap<>();
 
 	public GuideType type = GuideType.OTHER;
@@ -46,7 +54,6 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public Color4I textColor = Icon.EMPTY;
 	public Color4I textColorMouseOver = Icon.EMPTY;
 	public Color4I lineColor = Icon.EMPTY;
-	public String basePath = "";
 
 	public GuidePage(String id, @Nullable GuidePage p)
 	{
@@ -205,7 +212,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			}
 		}
 
-		return textLoader == null;
+		return textURI == null;
 	}
 
 	public void sort(boolean tree)
@@ -242,10 +249,14 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void updateCachedProperties(boolean tree)
 	{
-		background = Icon.getIcon(getProperty("background"));
-		textColor = Color4I.fromJson(getProperty("text_color"));
-		textColorMouseOver = Color4I.fromJson(getProperty("text_color_mouse_over"));
-		lineColor = Color4I.fromJson(getProperty("line_color"));
+		JsonElement e = getProperty("background");
+		background = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.background : Icon.getIcon(e);
+		e = getProperty("text_color");
+		textColor = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.text : Color4I.fromJson(getProperty("text_color"));
+		e = getProperty("text_color_mouse_over");
+		textColorMouseOver = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.textMouseOver : Color4I.fromJson(getProperty("text_color_mouse_over"));
+		e = getProperty("line_color");
+		lineColor = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.lines : Color4I.fromJson(getProperty("line_color"));
 
 		if (tree)
 		{
@@ -258,9 +269,9 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public Icon getIcon(String path)
 	{
-		if (path.indexOf(':') == -1)
+		if (path.indexOf(':') == -1 && textURI != null)
 		{
-			return new URLImageIcon(basePath + '/' + path);
+			return new URLImageIcon(textURI.resolve("./" + path));
 		}
 
 		return Icon.getIcon(path);

@@ -32,6 +32,9 @@ public class FTBGuidesClientConfig
 
 		@Config.Comment({"Last guide version.", "Do not change, for internal use only."})
 		public String last_guide_version = "";
+
+		@Config.Comment("Current theme of guides.")
+		public EnumGuideTheme theme = EnumGuideTheme.PAPER;
 	}
 
 	public static void sync()

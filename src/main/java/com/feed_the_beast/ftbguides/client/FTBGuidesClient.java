@@ -1,11 +1,10 @@
 package com.feed_the_beast.ftbguides.client;
 
-import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.FTBGuidesCommon;
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
+import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftblib.FTBLib;
-import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
@@ -48,6 +47,11 @@ public class FTBGuidesClient extends FTBGuidesCommon
 
 	public static boolean openGuidesGui(String path)
 	{
+		if (!path.isEmpty())
+		{
+			pageToOpen = path;
+		}
+
 		if (guidesGui == null)
 		{
 			if (reloadingThread == null)
@@ -61,25 +65,15 @@ public class FTBGuidesClient extends FTBGuidesCommon
 		}
 		else
 		{
-			if (!path.isEmpty())
-			{
-				pageToOpen = path;
-			}
-
 			if (!pageToOpen.isEmpty())
 			{
 				GuidePage page = guidesGui.page.getSubFromPath(pageToOpen);
 
-				if (page != null && page != guidesGui.page)
+				if (page != null)
 				{
-					if (page.textLoader != null)
+					if (page.textURI != null && page.textLoadingState == GuidePage.STATE_NOT_LOADING)
 					{
-						if (FTBLibConfig.debugging.print_more_info)
-						{
-							FTBGuides.LOGGER.info("Started page loader for " + page.getPath());
-						}
-
-						page.textLoader.start();
+						new ThreadLoadPage(page).start();
 						return false;
 					}
 					else

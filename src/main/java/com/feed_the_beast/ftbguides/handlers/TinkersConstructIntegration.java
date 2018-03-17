@@ -9,6 +9,7 @@ import com.feed_the_beast.ftblib.lib.EventHandler;
 import com.feed_the_beast.ftblib.lib.OtherMods;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
+import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.common.collect.ImmutableList;
@@ -122,7 +123,7 @@ public class TinkersConstructIntegration
 
 			try
 			{
-				JsonElement json = JsonUtils.fromJson(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json")));
+				JsonElement json = DataReader.get(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json"))).json();
 
 				if (json.isJsonObject())
 				{

@@ -8,7 +8,6 @@ import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.ftbguides.gui.GuideType;
 import com.feed_the_beast.ftbguides.gui.SpecialGuideButton;
-import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.FTBLib;
@@ -18,13 +17,14 @@ import com.feed_the_beast.ftblib.client.SidebarButton;
 import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
+import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
-import com.feed_the_beast.ftblib.lib.io.HttpConnection;
+import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.CommonUtils;
-import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.client.resources.I18n;
@@ -33,6 +33,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.Loader;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,10 +98,35 @@ class ThreadLoadGuides extends Thread
 
 	public String run1()
 	{
+		EnumGuideTheme.PAPER.background = Icon.getIcon("ftbguides:textures/background.png");
+		EnumGuideTheme.PAPER.text = Color4I.rgb(0x7B6534);
+		EnumGuideTheme.PAPER.textMouseOver = Color4I.rgb(0xD5A71A);
+		EnumGuideTheme.PAPER.lines = Color4I.rgb(0xC6B285);
+
+		EnumGuideTheme.LIGHT.background = Color4I.rgb(0xF9F9F9);
+		EnumGuideTheme.LIGHT.text = Color4I.rgb(0x36393E);
+		EnumGuideTheme.LIGHT.textMouseOver = Color4I.rgb(0x4D5056);
+		EnumGuideTheme.LIGHT.lines = Color4I.rgb(0xD8D8D8);
+
+		EnumGuideTheme.DARK.background = Color4I.rgb(0x36393E);
+		EnumGuideTheme.DARK.text = Color4I.rgb(0xF9F9F9);
+		EnumGuideTheme.DARK.textMouseOver = Color4I.WHITE;
+		EnumGuideTheme.DARK.lines = Color4I.rgb(0x4D5056);
+
 		root = new GuidePage("root", null);
 		root.title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.home");
 		gui.setTitle("Loading Guides\nAPI");
-		JsonElement apijson = HttpConnection.getJson("http://guides.latmod.com/api/api.json", ClientUtils.MC.getProxy(), false);
+
+		JsonElement apijson = JsonNull.INSTANCE;
+
+		try
+		{
+			apijson = DataReader.get(new URL("http://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 
 		if (!apijson.isJsonObject())
 		{
@@ -107,21 +134,29 @@ class ThreadLoadGuides extends Thread
 		}
 
 		JsonObject api = apijson.getAsJsonObject();
-		root.readProperties(api.get("default_properties").getAsJsonObject());
-		root.basePath = "https://raw.githubusercontent.com/LatvianModder/FTBGuidesWeb/master";
+
+		try
+		{
+			root.textURI = new URI("https://raw.githubusercontent.com/LatvianModder/FTBGuidesWeb/master");
+			root.textLoadingState = GuidePage.STATE_LOADED;
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return "Base path is incorrect!";
+		}
 
 		List<GuideTitlePage> guides = new ArrayList<>();
 		JsonArray guidesArray = api.get("guides").getAsJsonArray();
 
-		JsonElement modpackGuide = JsonUtils.fromJson(new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide/data.json"));
+		JsonElement modpackGuide = DataReader.get(new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide/data.json")).safeJson();
 
 		if (modpackGuide.isJsonObject())
 		{
 			GuideTitlePage page = new GuideTitlePage("modpack_guide", root, GuideType.MODPACK);
 			File folder = new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide");
 			loadLocalPage(folder, page, modpackGuide.getAsJsonObject());
-			page.basePath = folder.getAbsolutePath();
-			page.textLoader = new ThreadLoadPage(page, page.basePath + "/index.json");
+			page.textURI = folder.toURI().resolve("index.json");
 			page.properties.put("browser_url", new JsonPrimitive(""));
 			guides.add(page);
 		}
@@ -134,7 +169,7 @@ class ThreadLoadGuides extends Thread
 			{
 				if (modGuideFile.isDirectory())
 				{
-					JsonElement modGuide = JsonUtils.fromJson(new File(modGuideFile, "data.json"));
+					JsonElement modGuide = DataReader.get(new File(modGuideFile, "data.json")).safeJson();
 
 					if (modGuide.isJsonObject())
 					{
@@ -145,8 +180,7 @@ class ThreadLoadGuides extends Thread
 						{
 							GuideTitlePage page = new GuideTitlePage(modGuideFile.getName(), root, GuideType.MOD);
 							loadLocalPage(modGuideFile, page, json);
-							page.basePath = modGuideFile.getAbsolutePath();
-							page.textLoader = new ThreadLoadPage(page, page.basePath + "/index.json");
+							page.textURI = modGuideFile.toURI().resolve("index.json");
 							page.properties.put("browser_url", new JsonPrimitive(""));
 							guides.add(page);
 						}
@@ -180,8 +214,15 @@ class ThreadLoadGuides extends Thread
 				}
 			}
 
-			loadPage(page, o);
-			guides.add(page);
+			try
+			{
+				loadPage(page, o);
+				guides.add(page);
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 
 		//gui.setTitle("Loading Guides\nModpack Guide");
@@ -258,10 +299,15 @@ class ThreadLoadGuides extends Thread
 		return "";
 	}
 
-	private void loadPage(GuidePage page, JsonObject json)
+	private void loadPage(GuidePage page, JsonObject json) throws Exception
 	{
-		page.title = new TextComponentString(json.get("title").getAsString());
-		page.basePath = "https://raw.githubusercontent.com/LatvianModder/FTBGuidesWeb/master" + page.getPath();
+		page.title = json.has("title") ? new TextComponentString(json.get("title").getAsString()) : new TextComponentString(page.getName());
+		page.textURI = new URI(json.get("original_text_url").getAsString());
+
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.textURI.resolve("."));
+		}
 
 		if (!json.has("icon"))
 		{
@@ -279,9 +325,6 @@ class ThreadLoadGuides extends Thread
 				page.icon = GuidePage.DEFAULT_ICON;
 			}
 		}
-
-		//page.textLoader = new ThreadLoadPage(page, "http://guides.latmod.com" + page.getPath() + "/index.json");
-		page.textLoader = new ThreadLoadPage(page, json.get("original_text_url").getAsString());
 
 		if (json.has("buttons"))
 		{
@@ -368,18 +411,16 @@ class ThreadLoadGuides extends Thread
 
 					if (shortFile.exists())
 					{
-						page1.textLoader = new ThreadLoadPage(page1, shortFile.getAbsolutePath());
-						page1.basePath = folder.toURI().toString();
+						page1.textURI = shortFile.toURI();
 					}
 					else
 					{
-						page1.textLoader = new ThreadLoadPage(page1, new File(folder1, "index.json").getAbsolutePath());
-						page1.basePath = folder1.toURI().toString();
+						page1.textURI = new File(folder1, "index.json").toURI();
 					}
 
 					if (FTBLibConfig.debugging.print_more_info)
 					{
-						FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.basePath);
+						FTBGuides.LOGGER.info("Base path of " + page1.getPath() + ": " + page1.textURI.resolve("."));
 					}
 				}
 				catch (Exception ex)

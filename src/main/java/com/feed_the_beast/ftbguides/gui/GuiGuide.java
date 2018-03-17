@@ -158,10 +158,6 @@ public class GuiGuide extends GuiBase
 	public GuiGuide(GuidePage p)
 	{
 		page = p;
-		if (FTBLibConfig.debugging.print_more_info)
-		{
-			FTBGuides.LOGGER.warn("GUI CREATE");
-		}
 
 		if (FTBLibConfig.debugging.print_more_info)
 		{
@@ -240,10 +236,8 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void addWidgets()
 			{
-				if (page == page.getRoot())
-				{
-					add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:/")));
-				}
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": " + FTBGuidesClientConfig.general.theme.toString().toLowerCase()), GuiIcons.COLOR_RGB, "theme:/")));
+				add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:" + page.getPath())));
 
 				for (SpecialGuideButton button : page.specialButtons)
 				{
@@ -286,26 +280,11 @@ public class GuiGuide extends GuiBase
 		};
 
 		scrollBarV = new PanelScrollBar(this, panelText);
-
-		if (page.textLoader != null)
-		{
-			if (FTBLibConfig.debugging.print_more_info)
-			{
-				FTBGuides.LOGGER.info("Started page loader for " + page.getPath());
-			}
-
-			page.textLoader.start();
-		}
 	}
 
 	@Override
 	public void addWidgets()
 	{
-		if (FTBLibConfig.debugging.print_more_info)
-		{
-			FTBGuides.LOGGER.warn("GUI ADD WIDGETS");
-		}
-
 		add(scrollBarH);
 		add(scrollBarV);
 		add(panelText);
@@ -316,11 +295,6 @@ public class GuiGuide extends GuiBase
 	@Override
 	public void alignWidgets()
 	{
-		if (FTBLibConfig.debugging.print_more_info)
-		{
-			FTBGuides.LOGGER.warn("GUI ALIGN");
-		}
-
 		panelSpecialButtons.alignWidgets();
 		panelSpecialButtons.setPos(width - panelSpecialButtons.width, 0);
 		scrollBarH.setPosAndSize(0, height - SCROLLBAR_SIZE, width - SCROLLBAR_SIZE, SCROLLBAR_SIZE);
@@ -331,16 +305,6 @@ public class GuiGuide extends GuiBase
 	@Override
 	public boolean onInit()
 	{
-		if (page.textLoader != null)
-		{
-			return false;
-		}
-
-		if (FTBLibConfig.debugging.print_more_info)
-		{
-			FTBGuides.LOGGER.warn("GUI INIT OPEN");
-		}
-
 		if (page == page.getRoot() && !FTBGuidesClientConfig.general.last_guide_version.equals(FTBGuidesConfig.general.modpack_guide_version) && page.getSubRaw("modpack_guide") != null)
 		{
 			FTBGuidesClientConfig.general.last_guide_version = FTBGuidesConfig.general.modpack_guide_version;
@@ -455,8 +419,25 @@ public class GuiGuide extends GuiBase
 		}
 		else if (scheme.equals("refresh"))
 		{
-			FTBGuidesClient.setShouldReload();
+			if (path.equals("/") || page.textURI == null)
+			{
+				FTBGuidesClient.setShouldReload();
+			}
+			else
+			{
+				page.textLoadingState = GuidePage.STATE_NOT_LOADING;
+				new ThreadLoadPage(page).start();
+			}
+
 			FTBGuidesClient.openGuidesGui(path);
+			return true;
+		}
+		else if (scheme.equals("theme"))
+		{
+			FTBGuidesClientConfig.general.theme = FTBGuidesClientConfig.general.theme.next();
+			FTBGuidesClientConfig.sync();
+			page.getRoot().updateCachedProperties(true);
+			refreshWidgets();
 			return true;
 		}
 		else

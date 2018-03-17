@@ -17,5 +17,6 @@ public class FTBGuidesCommands
 	public static void registerClientCommands(RegisterFTBClientCommandsEvent event)
 	{
 		event.add(new CmdOpenGuides());
+		event.add(new CmdReloadGuides());
 	}
 }

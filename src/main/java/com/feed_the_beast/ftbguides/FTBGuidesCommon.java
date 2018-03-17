@@ -1,8 +1,8 @@
 package com.feed_the_beast.ftbguides;
 
 import com.feed_the_beast.ftbguides.net.FTBGuidesNetHandler;
+import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.CommonUtils;
-import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.google.gson.JsonElement;
 
 import java.io.File;
@@ -25,7 +25,7 @@ public class FTBGuidesCommon
 	{
 		if (serverGuide == null)
 		{
-			serverGuide = JsonUtils.fromJson(new File(CommonUtils.folderLocal, "server_guide.json"));
+			serverGuide = DataReader.get(new File(CommonUtils.folderLocal, "server_guide.json")).safeJson();
 		}
 
 		return serverGuide;
