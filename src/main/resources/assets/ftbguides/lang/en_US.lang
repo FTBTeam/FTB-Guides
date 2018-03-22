@@ -23,11 +23,16 @@ ftbguides.lang.unsupported_format=Unsupported format! Please update FTB Guides o
 ftbguides.lang.commands_failed=Failed to load commands
 ftbguides.lang.open_in_browser=Open in Browser
 
-guidetype.server_info=Server Info
-guidetype.server_info.plural=Server Info
-guidetype.mod=Mod
-guidetype.mod.plural=Mods
-guidetype.modpack=Modpack
-guidetype.modpack.plural=Modpacks
-guidetype.other=Other
-guidetype.other.plural=Other
+ftbguides.lang.type.server_info=Server Info
+ftbguides.lang.type.server_info.plural=Server Info
+ftbguides.lang.type.mod=Mod
+ftbguides.lang.type.mod.plural=Mods
+ftbguides.lang.type.modpack=Modpack
+ftbguides.lang.type.modpack.plural=Modpacks
+ftbguides.lang.type.other=Other
+ftbguides.lang.type.other.plural=Other
+
+ftbguides.lang.theme.dark=Dark
+ftbguides.lang.theme.light=Light
+ftbguides.lang.theme.solarized_dark=Solarized Dark
+ftbguides.lang.theme.solarized_light=Solarized Light

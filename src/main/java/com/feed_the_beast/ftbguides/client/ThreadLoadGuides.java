@@ -21,6 +21,7 @@ import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.CommonUtils;
+import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -28,11 +29,14 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.Loader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -98,20 +102,78 @@ class ThreadLoadGuides extends Thread
 
 	public String run1()
 	{
-		EnumGuideTheme.PAPER.background = Icon.getIcon("ftbguides:textures/background.png");
-		EnumGuideTheme.PAPER.text = Color4I.rgb(0x7B6534);
-		EnumGuideTheme.PAPER.textMouseOver = Color4I.rgb(0xD5A71A);
-		EnumGuideTheme.PAPER.lines = Color4I.rgb(0xC6B285);
+		GuideTheme.THEMES.clear();
 
-		EnumGuideTheme.LIGHT.background = Color4I.rgb(0xF9F9F9);
-		EnumGuideTheme.LIGHT.text = Color4I.rgb(0x36393E);
-		EnumGuideTheme.LIGHT.textMouseOver = Color4I.rgb(0x4D5056);
-		EnumGuideTheme.LIGHT.lines = Color4I.rgb(0xD8D8D8);
+		try
+		{
+			for (IResource resource : ClientUtils.MC.getResourceManager().getAllResources(new ResourceLocation(FTBGuides.MOD_ID, "themes/index.json")))
+			{
+				JsonElement json = DataReader.get(resource).json();
 
-		EnumGuideTheme.DARK.background = Color4I.rgb(0x36393E);
-		EnumGuideTheme.DARK.text = Color4I.rgb(0xF9F9F9);
-		EnumGuideTheme.DARK.textMouseOver = Color4I.WHITE;
-		EnumGuideTheme.DARK.lines = Color4I.rgb(0x4D5056);
+				if (json.isJsonArray())
+				{
+					for (JsonElement element : json.getAsJsonArray())
+					{
+						String id = element.getAsString();
+
+						JsonElement json1 = DataReader.get(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(FTBGuides.MOD_ID, "themes/" + id + ".json"))).json();
+
+						if (json1.isJsonObject())
+						{
+							JsonObject o = json1.getAsJsonObject();
+							GuideTheme theme = new GuideTheme(id);
+							GuideTheme.THEMES.put(id, theme);
+
+							if (o.has("title"))
+							{
+								theme.title = JsonUtils.deserializeTextComponent(o.get("title"));
+							}
+							else
+							{
+								theme.title = new TextComponentString(id);
+							}
+
+							theme.background = Icon.getIcon(o.get("background"));
+							theme.text = Color4I.fromJson(o.get("text"));
+							theme.textMouseOver = Color4I.fromJson(o.get("text_mouse_over"));
+							theme.lines = Color4I.fromJson(o.get("lines"));
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			if (!(ex instanceof FileNotFoundException))
+			{
+				ex.printStackTrace();
+			}
+		}
+
+		if (!GuideTheme.THEMES.isEmpty())
+		{
+			GuideTheme prevTheme = null;
+
+			for (GuideTheme theme : GuideTheme.THEMES.values())
+			{
+				if (prevTheme != null)
+				{
+					prevTheme.next = theme;
+				}
+
+				prevTheme = theme;
+			}
+
+			if (prevTheme != null)
+			{
+				prevTheme.next = GuideTheme.THEMES.values().iterator().next();
+			}
+		}
+
+		if (FTBLibConfig.debugging.print_more_info)
+		{
+			FTBGuides.LOGGER.info("Loaded Guide Themes: " + GuideTheme.THEMES.values());
+		}
 
 		root = new GuidePage("root", null);
 		root.title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.home");
@@ -155,8 +217,8 @@ class ThreadLoadGuides extends Thread
 		{
 			GuideTitlePage page = new GuideTitlePage("modpack_guide", root, GuideType.MODPACK);
 			File folder = new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide");
-			loadLocalPage(folder, page, modpackGuide.getAsJsonObject());
 			page.textURI = folder.toURI().resolve("index.json");
+			loadLocalPage(folder, page, modpackGuide.getAsJsonObject());
 			page.properties.put("browser_url", new JsonPrimitive(""));
 			guides.add(page);
 		}
@@ -179,8 +241,8 @@ class ThreadLoadGuides extends Thread
 						if (!FTBGuidesClientConfig.general.hide_mods_not_present || modid.isEmpty() || Loader.isModLoaded(modid))
 						{
 							GuideTitlePage page = new GuideTitlePage(modGuideFile.getName(), root, GuideType.MOD);
-							loadLocalPage(modGuideFile, page, json);
 							page.textURI = modGuideFile.toURI().resolve("index.json");
+							loadLocalPage(modGuideFile, page, json);
 							page.properties.put("browser_url", new JsonPrimitive(""));
 							guides.add(page);
 						}
@@ -271,7 +333,6 @@ class ThreadLoadGuides extends Thread
 
 		if (FTBLibClient.isModLoadedOnServer(FTBGuides.MOD_ID + "_server_info"))
 		{
-			//check if server mod is loaded
 			root.println(new TextGuideComponent(ServerInfoPage.INSTANCE.title.getUnformattedText()).setProperty("icon", ServerInfoPage.INSTANCE.icon.toString()).setProperty("click", "command:/ftb server_info"));
 			root.println("");
 		}
@@ -287,7 +348,7 @@ class ThreadLoadGuides extends Thread
 					if (!added)
 					{
 						added = true;
-						root.println(new TextGuideComponent(type.titlePlural.translate()).setProperty("bold", "true").setProperty("underlined", "true"));
+						root.println(new TextGuideComponent(type.titlePlural.translate()).setProperty("text_scale", "1.5").setProperty("bold", "true"));
 					}
 
 					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));

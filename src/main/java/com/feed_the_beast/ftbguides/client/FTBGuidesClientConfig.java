@@ -34,7 +34,7 @@ public class FTBGuidesClientConfig
 		public String last_guide_version = "";
 
 		@Config.Comment("Current theme of guides.")
-		public EnumGuideTheme theme = EnumGuideTheme.PAPER;
+		public String theme = "paper";
 	}
 
 	public static void sync()

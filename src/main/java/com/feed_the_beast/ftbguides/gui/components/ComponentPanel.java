@@ -86,7 +86,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 							((Panel) widget).refreshWidgets();
 						}
 
-						if (moveToNewLine(widget, x, ci, i))
+						if (x + widget.width > maxWidth || !component.isInline())
 						{
 							if (widget.width > maxWidth)
 							{
@@ -145,11 +145,6 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		popFontUnicode();
 	}
 
-	public boolean moveToNewLine(Widget widget, int x, int componentIndex, int widgetIndex)
-	{
-		return x + widget.width > maxWidth || !((IGuideComponentWidget) widget).isInline();
-	}
-
 	@Override
 	public void addWidgets()
 	{
@@ -166,7 +161,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	@Override
 	protected void drawOffsetPanelBackground(int ax, int ay)
 	{
-		if (!FTBLibConfig.debugging.print_more_info)
+		if (!GuiBase.renderDebugBoxes)
 		{
 			return;
 		}

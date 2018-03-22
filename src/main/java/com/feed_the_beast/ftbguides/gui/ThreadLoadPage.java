@@ -55,6 +55,16 @@ public class ThreadLoadPage extends Thread
 					page.println(HRGuideComponent.INSTANCE);
 				}
 
+				if (!page.specialButtons.isEmpty())
+				{
+					for (SpecialGuideButton button : page.specialButtons)
+					{
+						page.println(new TextGuideComponent(button.title.getUnformattedText()).setProperty("icon", button.icon.toString()).setProperty("click", button.click));
+					}
+
+					page.println(HRGuideComponent.INSTANCE);
+				}
+
 				if (json.isJsonArray())
 				{
 					for (JsonElement e : json.getAsJsonArray())

@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui;
 
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
+import com.feed_the_beast.ftbguides.client.GuideTheme;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.LineBreakGuideComponent;
@@ -78,7 +79,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void println(GuideComponent component)
 	{
-		if (!components.isEmpty())
+		if (!components.isEmpty() && component.isInline())
 		{
 			components.add(LineBreakGuideComponent.INSTANCE);
 		}
@@ -249,14 +250,15 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void updateCachedProperties(boolean tree)
 	{
+		GuideTheme theme = GuideTheme.get(FTBGuidesClientConfig.general.theme);
 		JsonElement e = getProperty("background");
-		background = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.background : Icon.getIcon(e);
+		background = JsonUtils.isNull(e) ? theme.background : Icon.getIcon(e);
 		e = getProperty("text_color");
-		textColor = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.text : Color4I.fromJson(getProperty("text_color"));
+		textColor = JsonUtils.isNull(e) ? theme.text : Color4I.fromJson(getProperty("text_color"));
 		e = getProperty("text_color_mouse_over");
-		textColorMouseOver = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.textMouseOver : Color4I.fromJson(getProperty("text_color_mouse_over"));
+		textColorMouseOver = JsonUtils.isNull(e) ? theme.textMouseOver : Color4I.fromJson(getProperty("text_color_mouse_over"));
 		e = getProperty("line_color");
-		lineColor = JsonUtils.isNull(e) ? FTBGuidesClientConfig.general.theme.lines : Color4I.fromJson(getProperty("line_color"));
+		lineColor = JsonUtils.isNull(e) ? theme.lines : Color4I.fromJson(getProperty("line_color"));
 
 		if (tree)
 		{

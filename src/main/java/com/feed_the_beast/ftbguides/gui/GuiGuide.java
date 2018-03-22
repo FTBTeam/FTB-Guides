@@ -4,6 +4,7 @@ import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
+import com.feed_the_beast.ftbguides.client.GuideTheme;
 import com.feed_the_beast.ftbguides.gui.components.ComponentPanel;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftblib.FTBLibConfig;
@@ -36,11 +37,11 @@ public class GuiGuide extends GuiBase
 {
 	private static final int SCROLLBAR_SIZE = 7;
 
-	public static class GuideTheme extends Theme
+	public static class GuideGuiTheme extends Theme
 	{
 		public final GuidePage page;
 
-		public GuideTheme(GuidePage p)
+		public GuideGuiTheme(GuidePage p)
 		{
 			page = p;
 		}
@@ -236,17 +237,12 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void addWidgets()
 			{
-				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": " + FTBGuidesClientConfig.general.theme.toString().toLowerCase()), GuiIcons.COLOR_RGB, "theme:/")));
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesClientConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
 				add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:" + page.getPath())));
-
-				for (SpecialGuideButton button : page.specialButtons)
-				{
-					add(new ButtonSpecial(this, button));
-				}
 
 				JsonElement url = page.getProperty("browser_url");
 
-				if (url.isJsonPrimitive())
+				if (url.isJsonPrimitive() && !url.getAsString().isEmpty())
 				{
 					add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.lang.open_in_browser"), GuiIcons.GLOBE, url.getAsString())));
 				}
@@ -328,7 +324,7 @@ public class GuiGuide extends GuiBase
 	@Override
 	public Theme createTheme()
 	{
-		return new GuideTheme(page);
+		return new GuideGuiTheme(page);
 	}
 
 	@Override
@@ -434,7 +430,7 @@ public class GuiGuide extends GuiBase
 		}
 		else if (scheme.equals("theme"))
 		{
-			FTBGuidesClientConfig.general.theme = FTBGuidesClientConfig.general.theme.next();
+			FTBGuidesClientConfig.general.theme = GuideTheme.get(FTBGuidesClientConfig.general.theme).next.getName();
 			FTBGuidesClientConfig.sync();
 			page.getRoot().updateCachedProperties(true);
 			refreshWidgets();

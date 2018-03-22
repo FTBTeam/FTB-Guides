@@ -23,8 +23,8 @@ public enum GuideType implements IStringSerializable
 	GuideType(String n)
 	{
 		name = n;
-		title = LangKey.of("guidetype." + name);
-		titlePlural = LangKey.of("guidetype." + name + ".plural");
+		title = LangKey.of("ftbguides.lang.type." + name);
+		titlePlural = LangKey.of("ftbguides.lang.type." + name + ".plural");
 	}
 
 	@Override

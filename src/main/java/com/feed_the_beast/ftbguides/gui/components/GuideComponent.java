@@ -81,6 +81,11 @@ public abstract class GuideComponent
 		setProperty(key, JsonUtils.isNull(json) ? "" : json.getAsString());
 	}
 
+	public boolean isInline()
+	{
+		return true;
+	}
+
 	public static String fixHtmlString(String s)
 	{
 		return s.isEmpty() ? "" : StringUtils.fixTabs(s, 2).replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");

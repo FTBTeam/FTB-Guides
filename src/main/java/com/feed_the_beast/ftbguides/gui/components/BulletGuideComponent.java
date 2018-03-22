@@ -19,12 +19,6 @@ public class BulletGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public boolean isInline()
-		{
-			return false;
-		}
-
-		@Override
 		public void draw()
 		{
 			((GuiGuide) getGui()).page.lineColor.draw(getAX() + 2, getAY() + 2, 4, 4);
@@ -39,6 +33,12 @@ public class BulletGuideComponent extends GuideComponent
 	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new BulletWidget(parent);
+	}
+
+	@Override
+	public boolean isInline()
+	{
+		return false;
 	}
 
 	public String toString()

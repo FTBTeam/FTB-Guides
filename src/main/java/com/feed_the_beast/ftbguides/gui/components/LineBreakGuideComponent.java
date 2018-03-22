@@ -17,12 +17,6 @@ public class LineBreakGuideComponent extends GuideComponent
 			super(panel);
 			setHeight(10);
 		}
-
-		@Override
-		public boolean isInline()
-		{
-			return false;
-		}
 	}
 
 	private LineBreakGuideComponent()
@@ -33,6 +27,12 @@ public class LineBreakGuideComponent extends GuideComponent
 	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new LineBreakWidget(parent);
+	}
+
+	@Override
+	public boolean isInline()
+	{
+		return false;
 	}
 
 	public String toString()

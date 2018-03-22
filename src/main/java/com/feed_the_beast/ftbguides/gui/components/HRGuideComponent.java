@@ -19,12 +19,6 @@ public class HRGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public boolean isInline()
-		{
-			return false;
-		}
-
-		@Override
 		public void draw()
 		{
 			((GuiGuide) getGui()).page.lineColor.draw(getAX(), getAY() + 1, ((ComponentPanel) parent).width, height - 2);
@@ -39,6 +33,12 @@ public class HRGuideComponent extends GuideComponent
 	public IGuideComponentWidget createWidget(ComponentPanel parent)
 	{
 		return new HRWidget(parent);
+	}
+
+	@Override
+	public boolean isInline()
+	{
+		return false;
 	}
 
 	public String toString()

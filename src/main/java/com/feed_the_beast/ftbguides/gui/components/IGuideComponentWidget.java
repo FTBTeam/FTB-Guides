@@ -5,8 +5,4 @@ package com.feed_the_beast.ftbguides.gui.components;
  */
 public interface IGuideComponentWidget
 {
-	default boolean isInline()
-	{
-		return true;
-	}
 }
