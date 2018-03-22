@@ -1,7 +1,7 @@
 {
 	"title": {"translate": "ftbguides.lang.theme.light"},
 	"background": "#F9F9F9",
-	"text": "#36393E",
-	"text_mouse_over": "#4D5056",
+	"text": "#4D5056",
+	"text_mouse_over": "#80858E",
 	"lines": "#D8D8D8"
 }

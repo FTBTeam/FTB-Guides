@@ -2,6 +2,8 @@ package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
+import com.feed_the_beast.ftblib.lib.gui.WidgetType;
+import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
@@ -140,6 +142,7 @@ public class TextGuideComponent extends GuideComponent
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(ax, ay, 0);
 			GlStateManager.scale(scale, scale, 1D);
+			Color4I color = getTheme().getContentColor((mouseOver || code) ? WidgetType.MOUSE_OVER : WidgetType.NORMAL);
 
 			for (int i = 0; i < text.length; i++)
 			{
@@ -147,12 +150,12 @@ public class TextGuideComponent extends GuideComponent
 				{
 					for (int ci = 0; ci < text[i].length(); ci++)
 					{
-						drawString(Character.toString(text[i].charAt(ci)), ci * 4, h1 * i, mouseOver ? MOUSE_OVER : 0);
+						drawString(Character.toString(text[i].charAt(ci)), ci * 4, h1 * i, color, 0);
 					}
 				}
 				else
 				{
-					drawString(text[i], 0, h1 * i, mouseOver ? MOUSE_OVER : 0);
+					drawString(text[i], 0, h1 * i, color, 0);
 				}
 			}
 
