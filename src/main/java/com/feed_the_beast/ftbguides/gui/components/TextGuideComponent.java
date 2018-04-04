@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
+import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.gui.WidgetType;
@@ -74,7 +75,7 @@ public class TextGuideComponent extends GuideComponent
 
 				if (code)
 				{
-					setWidth(Math.max(width, (int) (text[i].length() * 4 * scale)));
+					setWidth(Math.max(width, (int) (text[i].length() * (FTBGuidesClientConfig.general.use_unicode_font ? 4 : 6) * scale)));
 				}
 				else
 				{
@@ -150,7 +151,7 @@ public class TextGuideComponent extends GuideComponent
 				{
 					for (int ci = 0; ci < text[i].length(); ci++)
 					{
-						drawString(Character.toString(text[i].charAt(ci)), ci * 4, h1 * i, color, 0);
+						drawString(Character.toString(text[i].charAt(ci)), ci * (FTBGuidesClientConfig.general.use_unicode_font ? 4 : 6), h1 * i, color, 0);
 					}
 				}
 				else

@@ -3,12 +3,13 @@ tile.ftbguides.quest_block.name=Quest Block
 # Config
 ftbguides.general.modpack_guide_version=Modpack Guide Version
 ftbguides.general.flash_guides=Flash Guides Button
-ftbguides.general.theme=Theme
 
+ftbguides_client.general.use_unicode_font=Use Unicode Font
 ftbguides_client.general.background_alpha=Background Alpha
 ftbguides_client.general.last_guide_version=Last Guide Version
 ftbguides_client.general.hide_mods_not_present=Hide Missing Mod Guides
 ftbguides_client.general.hide_other=Hide Other Guides
+ftbguides_client.general.theme=Theme
 
 # Sidebar Buttons
 sidebar_button.ftbguides.guides=Guides

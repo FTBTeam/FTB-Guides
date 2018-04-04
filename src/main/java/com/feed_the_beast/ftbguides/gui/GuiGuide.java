@@ -119,7 +119,7 @@ public class GuiGuide extends GuiBase
 		public void draw()
 		{
 			boolean mouseOver = page != null && isMouseOver();
-			drawString(getTitle(), getAX(), getAY() - 1, mouseOver ? MOUSE_OVER : 0);
+			drawString(getTitle(), getAX(), getAY(), mouseOver ? MOUSE_OVER : 0);
 		}
 	}
 
@@ -165,7 +165,12 @@ public class GuiGuide extends GuiBase
 			FTBGuides.LOGGER.info("Gui opened for page " + p.getPath());
 		}
 
-		addFlags(DEFAULTS | UNICODE);
+		addFlags(DEFAULTS);
+
+		if (FTBGuidesClientConfig.general.use_unicode_font)
+		{
+			addFlags(UNICODE);
+		}
 
 		panelText = new ComponentPanel(this)
 		{
@@ -185,10 +190,8 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void alignWidgets()
 			{
-				scrollBarH.setElementSize(totalWidth);
-				scrollBarH.setSrollStepFromOneElementSize(10);
-				scrollBarV.setElementSize(totalHeight);
-				scrollBarV.setSrollStepFromOneElementSize(30);
+				scrollBarH.setMaxValue(totalWidth);
+				scrollBarV.setMaxValue(totalHeight);
 			}
 		};
 
@@ -230,14 +233,19 @@ public class GuiGuide extends GuiBase
 		};
 
 		panelTitle.setPosAndSize(3, 2, 0, 8);
-		panelTitle.addFlags(DEFAULTS | UNICODE);
+		panelTitle.addFlags(DEFAULTS);
+
+		if (FTBGuidesClientConfig.general.use_unicode_font)
+		{
+			panelTitle.addFlags(UNICODE);
+		}
 
 		panelSpecialButtons = new Panel(this)
 		{
 			@Override
 			public void addWidgets()
 			{
-				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesClientConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides_client.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesClientConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
 				add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:" + page.getPath())));
 
 				JsonElement url = page.getProperty("browser_url");
@@ -266,16 +274,13 @@ public class GuiGuide extends GuiBase
 		panelSpecialButtons.addFlags(DEFAULTS);
 		panelSpecialButtons.setHeight(12);
 
-		scrollBarH = new PanelScrollBar(this, panelText)
-		{
-			@Override
-			public Plane getPlane()
-			{
-				return Plane.HORIZONTAL;
-			}
-		};
+		scrollBarH = new PanelScrollBar(this, PanelScrollBar.Plane.HORIZONTAL, panelText);
+		scrollBarH.setCanAlwaysScrollPlane(false);
+		scrollBarH.setScrollStep(10);
 
 		scrollBarV = new PanelScrollBar(this, panelText);
+		scrollBarV.setCanAlwaysScrollPlane(false);
+		scrollBarV.setScrollStep(30);
 	}
 
 	@Override

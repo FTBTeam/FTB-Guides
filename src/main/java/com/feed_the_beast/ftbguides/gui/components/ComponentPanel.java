@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
+import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
@@ -28,7 +29,11 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	public ComponentPanel(Panel panel)
 	{
 		super(panel);
-		addFlags(UNICODE);
+
+		if (FTBGuidesClientConfig.general.use_unicode_font)
+		{
+			addFlags(UNICODE);
+		}
 	}
 
 	public abstract List<GuideComponent> getComponents();
@@ -46,7 +51,8 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		totalWidth = 0;
 		totalHeight = 0;
 		widgets.clear();
-		pushFontUnicode(true);
+
+		pushFontUnicode(FTBGuidesClientConfig.general.use_unicode_font);
 		addWidgets();
 
 		if (printInfo)

@@ -20,6 +20,9 @@ public class FTBGuidesClientConfig
 
 	public static class General
 	{
+		@Config.Comment("Use unicode font for guides.")
+		public boolean use_unicode_font = true;
+
 		@Config.Comment("Hide mod guides that aren't loaded.")
 		public boolean hide_mods_not_present = true;
 
