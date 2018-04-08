@@ -441,10 +441,8 @@ public class GuiGuide extends GuiBase
 			refreshWidgets();
 			return true;
 		}
-		else
-		{
-			return super.handleClick(scheme, path);
-		}
+
+		return super.handleClick(scheme, path);
 	}
 
 	@Override
@@ -452,5 +450,11 @@ public class GuiGuide extends GuiBase
 	public GuiScreen getPrevScreen()
 	{
 		return null;
+	}
+
+	@Override
+	public boolean onClosedByKey(int key)
+	{
+		return super.onClosedByKey(key) || FTBGuidesClient.KEY_GUIDE.isActiveAndMatches(key);
 	}
 }

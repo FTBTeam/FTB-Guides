@@ -183,7 +183,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			apijson = DataReader.get(new URL("http://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+			apijson = DataReader.get(new URL("https://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
 		}
 		catch (Exception ex)
 		{
@@ -325,7 +325,7 @@ class ThreadLoadGuides extends Thread
 		}
 
 		gui.setTitle("Loading Guides\nFinishing");
-		root.properties.put("browser_url", new JsonPrimitive("http://guides.latmod.com"));
+		root.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com"));
 		root.addSub(sidebarButtons);
 		root.cleanup();
 		root.updateCachedProperties(true);
@@ -414,7 +414,7 @@ class ThreadLoadGuides extends Thread
 			}
 		}
 
-		page.properties.put("browser_url", new JsonPrimitive("http://guides.latmod.com" + page.getPath()));
+		page.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com" + page.getPath()));
 	}
 
 	private void loadLocalPage(File folder, GuidePage page, JsonObject json)
