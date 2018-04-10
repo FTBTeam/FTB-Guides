@@ -29,11 +29,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	public ComponentPanel(Panel panel)
 	{
 		super(panel);
-
-		if (FTBGuidesClientConfig.general.use_unicode_font)
-		{
-			addFlags(UNICODE);
-		}
+		setUnicode(FTBGuidesClientConfig.general.use_unicode_font);
 	}
 
 	public abstract List<GuideComponent> getComponents();

@@ -165,12 +165,7 @@ public class GuiGuide extends GuiBase
 			FTBGuides.LOGGER.info("Gui opened for page " + p.getPath());
 		}
 
-		addFlags(DEFAULTS);
-
-		if (FTBGuidesClientConfig.general.use_unicode_font)
-		{
-			addFlags(UNICODE);
-		}
+		setUnicode(FTBGuidesClientConfig.general.use_unicode_font);
 
 		panelText = new ComponentPanel(this)
 		{
@@ -194,8 +189,6 @@ public class GuiGuide extends GuiBase
 				scrollBarV.setMaxValue(totalHeight);
 			}
 		};
-
-		panelText.addFlags(DEFAULTS);
 
 		panelTitle = new Panel(this)
 		{
@@ -233,12 +226,7 @@ public class GuiGuide extends GuiBase
 		};
 
 		panelTitle.setPosAndSize(3, 2, 0, 8);
-		panelTitle.addFlags(DEFAULTS);
-
-		if (FTBGuidesClientConfig.general.use_unicode_font)
-		{
-			panelTitle.addFlags(UNICODE);
-		}
+		panelTitle.setUnicode(FTBGuidesClientConfig.general.use_unicode_font);
 
 		panelSpecialButtons = new Panel(this)
 		{
@@ -271,7 +259,6 @@ public class GuiGuide extends GuiBase
 			}
 		};
 
-		panelSpecialButtons.addFlags(DEFAULTS);
 		panelSpecialButtons.setHeight(12);
 
 		scrollBarH = new PanelScrollBar(this, PanelScrollBar.Plane.HORIZONTAL, panelText);

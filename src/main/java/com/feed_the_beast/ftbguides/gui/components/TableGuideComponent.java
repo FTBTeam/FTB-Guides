@@ -88,7 +88,7 @@ public class TableGuideComponent extends CombinedGuideComponent
 		private PanelTable(ComponentPanel parent, TableGuideComponent c)
 		{
 			super(parent);
-			addFlags(DEFAULTS | UNICODE);
+			setUnicode(true);
 			table = c;
 			padding = Integer.parseInt(table.getProperty("padding", true, "2"));
 			drawBorders = table.getProperty("borders", true, "true").equals("true");
