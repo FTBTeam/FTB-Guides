@@ -183,7 +183,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			apijson = DataReader.get(new URL("http://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+			apijson = DataReader.get(new URL("https://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
 		}
 		catch (Exception ex)
 		{
