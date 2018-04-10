@@ -22,7 +22,6 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.CommonUtils;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -302,7 +301,7 @@ class ThreadLoadGuides extends Thread
 		{
 			for (SidebarButton button : group.getButtons())
 			{
-				if (button.isVisible() && StringUtils.canTranslate(button.getTooltipLangKey()))
+				if (button.isVisible() && I18n.hasKey(button.getTooltipLangKey()))
 				{
 					GuidePage page1 = sidebarButtons.getSub(button.id.toString());
 					page1.icon = button.getIcon();
