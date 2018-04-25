@@ -6,7 +6,8 @@ import com.feed_the_beast.ftblib.lib.io.DataOut;
 import com.feed_the_beast.ftblib.lib.net.MessageToClient;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 import com.google.gson.JsonElement;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * @author LatvianModder
@@ -47,8 +48,9 @@ public class MessageServerInfo extends MessageToClient<MessageServerInfo>
 	}
 
 	@Override
-	public void onMessage(MessageServerInfo m, EntityPlayer player)
+	@SideOnly(Side.CLIENT)
+	public void onMessage()
 	{
-		ServerInfoPage.INSTANCE.read(m.page, m.json);
+		ServerInfoPage.INSTANCE.read(page, json);
 	}
 }
