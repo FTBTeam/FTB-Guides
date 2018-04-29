@@ -3,7 +3,7 @@
 		"group": "ftblib:info",
 		"icon": "minecraft:items/book_normal",
 		"x": 600,
-		"click": "command:/ftbc open_guides",
+		"click": "custom:ftbguides:open_gui",
 		"config": true,
 		"custom_text": true
 	}

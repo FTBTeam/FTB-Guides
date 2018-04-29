@@ -9,6 +9,6 @@ public class FTBGuidesNetHandler
 
 	public static void init()
 	{
-		SERVER_INFO.register(1, new MessageServerInfo());
+		SERVER_INFO.register(new MessageServerInfo());
 	}
 }
