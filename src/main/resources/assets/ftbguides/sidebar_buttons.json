@@ -4,7 +4,6 @@
 		"icon": "minecraft:items/book_normal",
 		"x": 600,
 		"click": "custom:ftbguides:open_gui",
-		"config": true,
 		"custom_text": true
 	}
 }
