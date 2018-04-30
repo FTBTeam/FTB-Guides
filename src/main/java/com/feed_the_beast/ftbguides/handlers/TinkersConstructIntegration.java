@@ -5,6 +5,7 @@ import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
+import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.EventHandler;
 import com.feed_the_beast.ftblib.lib.OtherMods;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
@@ -40,6 +41,7 @@ import javax.annotation.Nullable;
 @EventHandler(value = Side.CLIENT, requiredMods = OtherMods.TINKERS_CONSTRUCT)
 public class TinkersConstructIntegration
 {
+	@SuppressWarnings("unchecked")
 	@SubscribeEvent
 	public static void onGuideEvent(ClientGuideEvent event)
 	{
@@ -175,6 +177,10 @@ public class TinkersConstructIntegration
 			}
 			catch (Exception ex)
 			{
+				if (FTBLibConfig.debugging.print_more_errors)
+				{
+					ex.printStackTrace();
+				}
 			}
 		}
 
