@@ -12,7 +12,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 /**
  * @author LatvianModder
  */
-public class MessageServerInfo extends MessageToClient<MessageServerInfo>
+public class MessageServerInfo extends MessageToClient
 {
 	private String page;
 	private JsonElement json;
