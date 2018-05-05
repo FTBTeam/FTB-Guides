@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides.gui;
 
-import com.feed_the_beast.ftblib.lib.util.LangKey;
 import com.feed_the_beast.ftblib.lib.util.misc.NameMap;
 import net.minecraft.util.IStringSerializable;
 
@@ -17,14 +16,14 @@ public enum GuideType implements IStringSerializable
 	public static final NameMap<GuideType> NAME_MAP = NameMap.create(OTHER, values());
 
 	private final String name;
-	public final LangKey title;
-	public final LangKey titlePlural;
+	public final String title;
+	public final String titlePlural;
 
 	GuideType(String n)
 	{
 		name = n;
-		title = LangKey.of("ftbguides.lang.type." + name);
-		titlePlural = LangKey.of("ftbguides.lang.type." + name + ".plural");
+		title = "ftbguides.lang.type." + name;
+		titlePlural = "ftbguides.lang.type." + name + ".plural";
 	}
 
 	@Override

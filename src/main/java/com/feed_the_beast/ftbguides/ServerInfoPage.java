@@ -13,7 +13,7 @@ public class ServerInfoPage extends GuidePage
 	private ServerInfoPage()
 	{
 		super("server_info", null);
-		title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.server_info");
+		title = new TextComponentTranslation("ftbguides.lang.server_info");
 		icon = GuiIcons.BOOK_RED;
 	}
 

@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides;
 
-import com.feed_the_beast.ftblib.lib.gui.GuiLang;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -11,10 +10,10 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  * @author LatvianModder
  */
 @Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
-@Config(modid = FTBGuides.MOD_ID, category = "", name = FTBGuides.MOD_ID + "/config")
+@Config(modid = FTBGuides.MOD_ID, category = "", name = "ftbguides/config")
 public class FTBGuidesConfig
 {
-	@Config.LangKey(GuiLang.LANG_GENERAL)
+	@Config.LangKey("stat.generalButton")
 	public static final General general = new General();
 
 	public static class General

@@ -12,7 +12,6 @@ import com.feed_the_beast.ftblib.lib.gui.Button;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.GuiIcons;
-import com.feed_the_beast.ftblib.lib.gui.GuiLang;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
 import com.feed_the_beast.ftblib.lib.gui.PanelScrollBar;
 import com.feed_the_beast.ftblib.lib.gui.Theme;
@@ -234,7 +233,7 @@ public class GuiGuide extends GuiBase
 			public void addWidgets()
 			{
 				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides_client.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesClientConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
-				add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.REFRESH.textComponent(null), GuiIcons.REFRESH, "refresh:" + page.getPath())));
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("selectServer.refresh"), GuiIcons.REFRESH, "refresh:" + page.getPath())));
 
 				JsonElement url = page.getProperty("browser_url");
 
@@ -243,7 +242,7 @@ public class GuiGuide extends GuiBase
 					add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.lang.open_in_browser"), GuiIcons.GLOBE, url.getAsString())));
 				}
 
-				add(new ButtonSpecial(this, new SpecialGuideButton(GuiLang.CLOSE.textComponent(null), GuiIcons.CLOSE, "close:/")));
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("gui.close"), GuiIcons.CLOSE, "close:/")));
 			}
 
 			@Override

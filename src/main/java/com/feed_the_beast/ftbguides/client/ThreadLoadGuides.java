@@ -347,7 +347,7 @@ class ThreadLoadGuides extends Thread
 					if (!added)
 					{
 						added = true;
-						root.println(new TextGuideComponent(type.titlePlural.translate()).setProperty("text_scale", "1.5").setProperty("bold", "true"));
+						root.println(new TextGuideComponent(I18n.format(type.titlePlural)).setProperty("text_scale", "1.5").setProperty("bold", "true"));
 					}
 
 					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));

@@ -1,7 +1,6 @@
 package com.feed_the_beast.ftbguides.client;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
-import com.feed_the_beast.ftblib.lib.gui.GuiLang;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -12,10 +11,10 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  * @author LatvianModder
  */
 @Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
-@Config(modid = FTBGuides.MOD_ID + "_client", category = "", name = "../local/client/" + FTBGuides.MOD_ID)
+@Config(modid = "ftbguides_client", category = "", name = "../local/client/ftbguides")
 public class FTBGuidesClientConfig
 {
-	@Config.LangKey(GuiLang.LANG_GENERAL)
+	@Config.LangKey("stat.generalButton")
 	public static final General general = new General();
 
 	public static class General
@@ -42,13 +41,13 @@ public class FTBGuidesClientConfig
 
 	public static void sync()
 	{
-		ConfigManager.sync(FTBGuides.MOD_ID + "_client", Config.Type.INSTANCE);
+		ConfigManager.sync("ftbguides_client", Config.Type.INSTANCE);
 	}
 
 	@SubscribeEvent
 	public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
 	{
-		if (event.getModID().equals(FTBGuides.MOD_ID + "_client"))
+		if (event.getModID().equals("ftbguides_client"))
 		{
 			sync();
 		}
