@@ -6,7 +6,7 @@ import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.events.CustomSidebarButtonTextEvent;
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
-import com.feed_the_beast.ftblib.events.client.OpenGuideEvent;
+import com.feed_the_beast.ftblib.events.client.GuideEvent;
 import com.feed_the_beast.ftblib.lib.EventHandler;
 import net.minecraft.init.Items;
 import net.minecraft.util.EnumActionResult;
@@ -58,13 +58,15 @@ public class FTBGuidesClientEventHandler
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public static void openGuide(OpenGuideEvent event)
+	public static void checkGuide(GuideEvent.Check event)
 	{
-		if (!event.checkingIfGuideExists())
-		{
-			FTBGuidesClient.openGuidesGui(event.getPath());
-		}
+		event.setCanceled(true);
+	}
 
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public static void openGuide(GuideEvent.Open event)
+	{
+		FTBGuidesClient.openGuidesGui(event.getPath());
 		event.setCanceled(true);
 	}
 
