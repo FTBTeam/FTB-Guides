@@ -35,12 +35,14 @@ minecraft {
 repositories {
 	maven { url "https://maven.latmod.com/" }
 	maven { url "http://dvs1.progwml6.com/files/maven" }
+	//maven { url "https://maven.tterrag.com/" }
 }
 
 dependencies {
 	deobfCompile "com.feed_the_beast.mods:FTBLib:${ftblib_version}"
 	deobfProvided "slimeknights.mantle:Mantle:${mantle_version}"
 	deobfProvided "slimeknights:TConstruct:${tconstruct_version}"
+	//deobfProvided "mcjty.theoneprobe:TheOneProbe-1.12:${top_version}"
 }
 
 processResources {
