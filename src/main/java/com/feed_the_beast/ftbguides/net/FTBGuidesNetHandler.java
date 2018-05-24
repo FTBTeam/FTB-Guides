@@ -1,13 +1,15 @@
 package com.feed_the_beast.ftbguides.net;
 
+import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftblib.lib.net.NetworkWrapper;
 
 public class FTBGuidesNetHandler
 {
-	static final NetworkWrapper SERVER_INFO = NetworkWrapper.newWrapper("ftbguides_server");
+	static final NetworkWrapper GENERAL = NetworkWrapper.newWrapper(FTBGuides.MOD_ID);
 
 	public static void init()
 	{
-		SERVER_INFO.register(new MessageServerInfo());
+		GENERAL.register(new MessageServerInfo());
+		GENERAL.register(new MessageServerInfoResponse());
 	}
 }

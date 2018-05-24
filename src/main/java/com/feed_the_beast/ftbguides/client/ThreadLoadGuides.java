@@ -1,7 +1,6 @@
 package com.feed_the_beast.ftbguides.client;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
-import com.feed_the_beast.ftbguides.ServerInfoPage;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
@@ -22,6 +21,7 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.CommonUtils;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
+import com.feed_the_beast.ftblib.lib.util.SidedUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -330,10 +330,17 @@ class ThreadLoadGuides extends Thread
 		root.updateCachedProperties(true);
 		root.sort(false);
 
-		if (FTBLibClient.isModLoadedOnServer(FTBGuides.MOD_ID + "_server_info"))
+		if (FTBGuidesClient.serverGuideClient != null && SidedUtils.isModLoadedOnServer(FTBGuides.MOD_ID))
 		{
-			root.println(new TextGuideComponent(ServerInfoPage.INSTANCE.title.getUnformattedText()).setProperty("icon", ServerInfoPage.INSTANCE.icon.toString()).setProperty("click", "command:/ftb server_info"));
-			root.println("");
+			for (Map.Entry<String, JsonElement> entry : FTBGuidesClient.serverGuideClient.entrySet())
+			{
+				if (entry.getValue().isJsonObject())
+				{
+					GuideTitlePage page = new GuideTitlePage(entry.getKey(), root, GuideType.SERVER_INFO);
+					loadServerPage(page, entry.getValue().getAsJsonObject());
+					guides.add(page);
+				}
+			}
 		}
 
 		for (GuideType type : GuideType.NAME_MAP)
@@ -359,12 +366,11 @@ class ThreadLoadGuides extends Thread
 		return "";
 	}
 
-	private void loadPage(GuidePage page, JsonObject json) throws Exception
+	private void loadPageBase(GuidePage page, JsonObject json)
 	{
 		page.title = json.has("title") ? new TextComponentString(json.get("title").getAsString()) : new TextComponentString(page.getName());
-		page.textURI = new URI(json.get("original_text_url").getAsString());
 
-		if (FTBLibConfig.debugging.print_more_info)
+		if (FTBLibConfig.debugging.print_more_info && page.textURI != null)
 		{
 			FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.textURI.resolve("."));
 		}
@@ -403,6 +409,13 @@ class ThreadLoadGuides extends Thread
 				page.properties.put(key, entry.getValue());
 			}
 		}
+	}
+
+	private void loadPage(GuidePage page, JsonObject json) throws Exception
+	{
+		page.textURI = new URI(json.get("original_text_url").getAsString());
+
+		loadPageBase(page, json);
 
 		if (json.has("pages"))
 		{
@@ -418,42 +431,7 @@ class ThreadLoadGuides extends Thread
 
 	private void loadLocalPage(File folder, GuidePage page, JsonObject json)
 	{
-		page.title = new TextComponentString(json.get("title").getAsString());
-
-		if (!json.has("icon"))
-		{
-			json.addProperty("icon", "icon.png");
-		}
-
-		page.icon = page.getIcon(json.get("icon").getAsString());
-
-		if (page.icon.isEmpty())
-		{
-			page.icon = Icon.getIcon(json.get("icon_url").getAsString());
-
-			if (page.icon.isEmpty())
-			{
-				page.icon = GuidePage.DEFAULT_ICON;
-			}
-		}
-
-		if (json.has("buttons"))
-		{
-			for (JsonElement e : json.get("buttons").getAsJsonArray())
-			{
-				page.specialButtons.add(new SpecialGuideButton(e.getAsJsonObject()));
-			}
-		}
-
-		for (Map.Entry<String, JsonElement> entry : json.entrySet())
-		{
-			String key = entry.getKey();
-
-			if (!GuidePage.STANDARD_KEYS.contains(key))
-			{
-				page.properties.put(key, entry.getValue());
-			}
-		}
+		loadPageBase(page, json);
 
 		if (json.has("pages"))
 		{
@@ -477,16 +455,36 @@ class ThreadLoadGuides extends Thread
 					{
 						page1.textURI = new File(folder1, "index.json").toURI();
 					}
-
-					if (FTBLibConfig.debugging.print_more_info)
-					{
-						FTBGuides.LOGGER.info("Base path of " + page1.getPath() + ": " + page1.textURI.resolve("."));
-					}
 				}
 				catch (Exception ex)
 				{
 					ex.printStackTrace();
 				}
+			}
+		}
+	}
+
+	private void loadServerPage(GuidePage page, JsonObject json)
+	{
+		loadPageBase(page, json);
+
+		try
+		{
+			page.textURI = new URI("server_page:" + page.getPath());
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+
+		if (json.has("pages"))
+		{
+			for (JsonElement e : json.get("pages").getAsJsonArray())
+			{
+				JsonObject o = e.getAsJsonObject();
+				String id = o.get("id").getAsString();
+				GuidePage page1 = page.getSub(id);
+				loadServerPage(page1, o);
 			}
 		}
 	}

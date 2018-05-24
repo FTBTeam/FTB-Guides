@@ -6,6 +6,8 @@ import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.settings.KeyConflictContext;
@@ -20,6 +22,7 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	static GuiGuide guidesGui = null;
 	static ThreadLoadGuides reloadingThread = null;
 	public static String pageToOpen = "";
+	public static JsonObject serverGuideClient = null;
 
 	@Override
 	public void preInit()
@@ -37,6 +40,30 @@ public class FTBGuidesClient extends FTBGuidesCommon
 		if (ClientUtils.MC.getResourceManager() instanceof SimpleReloadableResourceManager)
 		{
 			((SimpleReloadableResourceManager) ClientUtils.MC.getResourceManager()).registerReloadListener(resourceManager -> setShouldReload());
+		}
+	}
+
+	@Override
+	public void loadServerGuide(JsonElement json)
+	{
+		serverGuideClient = json.getAsJsonObject();
+	}
+
+	public static void loadServerGuidePage(String page, JsonElement json)
+	{
+		if (json.isJsonArray())
+		{
+			/*
+			GuidePage p = getSubFromPath(page);
+
+			if (p != null)
+			{
+				for (JsonElement e : json.getAsJsonArray())
+				{
+					p.println(GuideComponent.create(p, e));
+				}
+			}
+			*/
 		}
 	}
 
