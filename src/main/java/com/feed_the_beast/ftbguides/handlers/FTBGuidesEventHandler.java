@@ -10,6 +10,7 @@ import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ISyncData;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -39,7 +40,13 @@ public class FTBGuidesEventHandler
 			public NBTTagCompound writeSyncData(EntityPlayerMP player, ForgePlayer forgePlayer)
 			{
 				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setTag("Data", JsonUtils.toNBT(FTBGuidesCommon.getServerGuide()));
+				NBTBase data = JsonUtils.toNBT(FTBGuidesCommon.getServerGuide());
+
+				if (data != null)
+				{
+					nbt.setTag("Data", data);
+				}
+
 				return nbt;
 			}
 
@@ -58,13 +65,10 @@ public class FTBGuidesEventHandler
 		{
 			FTBGuidesConfig.sync();
 		}
-		
-		/*
+
 		if (event.reload(RELOAD_SERVER_INFO))
 		{
-			ServerInfoPage.CACHE.clear();
-			ServerInfoPage.serverGuide = null;
+			FTBGuidesCommon.reloadServerGuide();
 		}
-		*/
 	}
 }

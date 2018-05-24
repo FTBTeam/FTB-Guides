@@ -9,6 +9,7 @@ import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
@@ -211,7 +212,7 @@ public abstract class GuideComponent
 				icon = page.getIcon(object.get("img").getAsString());
 			}
 
-			if (icon instanceof URLImageIcon)
+			if (icon instanceof URLImageIcon && (!object.has("img_width") || !object.has("img_height")))
 			{
 				try
 				{
@@ -357,6 +358,13 @@ public abstract class GuideComponent
 			table.setProperty("padding", object.get("padding"));
 			component = table;
 			//component = new TextGuideComponent("Tables aren't supported yet!").setProperty("bold", "true");
+		}
+		else if (object.has("yt"))
+		{
+			String id = object.get("yt").getAsString();
+			component = new VideoGuideComponent(page.getIcon("https://img.youtube.com/vi/" + id + "/maxresdefault.jpg"), 480, 270);
+			object.addProperty("click", "https://youtu.be/" + id);
+			object.addProperty("hover", I18n.format("ftbguides.lang.open_in_browser"));
 		}
 		else if (object.has("text") || object.has("code"))
 		{

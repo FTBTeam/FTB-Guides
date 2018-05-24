@@ -15,6 +15,9 @@ import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.input.Keyboard;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class FTBGuidesClient extends FTBGuidesCommon
 {
 	public static final KeyBinding KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, KeyModifier.NONE, Keyboard.KEY_G, FTBLib.KEY_CATEGORY);
@@ -23,6 +26,7 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	static ThreadLoadGuides reloadingThread = null;
 	public static String pageToOpen = "";
 	public static JsonObject serverGuideClient = null;
+	public static Map<String, ThreadLoadPage> serverGuideClientLoading;
 
 	@Override
 	public void preInit()
@@ -46,30 +50,57 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	@Override
 	public void loadServerGuide(JsonElement json)
 	{
-		serverGuideClient = json.getAsJsonObject();
+		if (json.isJsonObject())
+		{
+			JsonObject o = json.getAsJsonObject();
+			serverGuideClient = new JsonObject();
+
+			if (o.has("pages") && o.get("pages").isJsonArray())
+			{
+				for (JsonElement element : o.get("pages").getAsJsonArray())
+				{
+					if (element.isJsonObject() && element.getAsJsonObject().has("id"))
+					{
+						serverGuideClient.add(element.getAsJsonObject().get("id").getAsString(), element);
+					}
+				}
+			}
+
+			serverGuideClientLoading = new HashMap<>();
+		}
+		else
+		{
+			serverGuideClient = null;
+			serverGuideClientLoading = null;
+		}
 	}
 
 	public static void loadServerGuidePage(String page, JsonElement json)
 	{
-		if (json.isJsonArray())
+		if (serverGuideClientLoading != null)
 		{
-			/*
-			GuidePage p = getSubFromPath(page);
+			ThreadLoadPage thread = serverGuideClientLoading.get(page);
 
-			if (p != null)
+			if (thread != null)
 			{
-				for (JsonElement e : json.getAsJsonArray())
-				{
-					p.println(GuideComponent.create(p, e));
-				}
+				thread.json = json;
+				thread.gui.setFinished();
+				serverGuideClientLoading.remove(page);
 			}
-			*/
 		}
 	}
 
 	public static void setShouldReload()
 	{
 		guidesGui = null;
+
+		if (serverGuideClientLoading != null)
+		{
+			for (ThreadLoadPage thread : serverGuideClientLoading.values())
+			{
+				thread.gui.setFinished();
+			}
+		}
 	}
 
 	public static boolean openGuidesGui(String path)

@@ -5,6 +5,7 @@ import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftbguides.gui.components.GuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
+import com.feed_the_beast.ftbguides.net.MessageServerInfo;
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
@@ -19,8 +20,8 @@ import net.minecraft.util.text.TextFormatting;
 public class ThreadLoadPage extends Thread
 {
 	private final GuidePage page;
-	private GuiLoading gui;
-	private JsonElement json = JsonNull.INSTANCE;
+	public GuiLoading gui;
+	public JsonElement json = JsonNull.INSTANCE;
 
 	public ThreadLoadPage(GuidePage p)
 	{
@@ -98,6 +99,13 @@ public class ThreadLoadPage extends Thread
 	@Override
 	public void run()
 	{
+		if (page.textURI.getScheme().equals("ftp"))
+		{
+			FTBGuidesClient.serverGuideClientLoading.put(page.getPath(), this);
+			new MessageServerInfo(page.getPath()).sendToServer();
+			return;
+		}
+
 		try
 		{
 			json = DataReader.get(page.textURI, ClientUtils.MC.getProxy()).json();

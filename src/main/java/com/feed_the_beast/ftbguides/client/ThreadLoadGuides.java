@@ -318,18 +318,6 @@ class ThreadLoadGuides extends Thread
 
 		guides.addAll(eventMap.values());
 
-		for (GuideTitlePage guide : guides)
-		{
-			root.addSub(guide);
-		}
-
-		gui.setTitle("Loading Guides\nFinishing");
-		root.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com"));
-		root.addSub(sidebarButtons);
-		root.cleanup();
-		root.updateCachedProperties(true);
-		root.sort(false);
-
 		if (FTBGuidesClient.serverGuideClient != null && SidedUtils.isModLoadedOnServer(FTBGuides.MOD_ID))
 		{
 			for (Map.Entry<String, JsonElement> entry : FTBGuidesClient.serverGuideClient.entrySet())
@@ -342,6 +330,18 @@ class ThreadLoadGuides extends Thread
 				}
 			}
 		}
+
+		for (GuideTitlePage guide : guides)
+		{
+			root.addSub(guide);
+		}
+
+		gui.setTitle("Loading Guides\nFinishing");
+		root.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com"));
+		root.addSub(sidebarButtons);
+		root.cleanup();
+		root.updateCachedProperties(true);
+		root.sort(false);
 
 		for (GuideType type : GuideType.NAME_MAP)
 		{
@@ -470,7 +470,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			page.textURI = new URI("server_page:" + page.getPath());
+			page.textURI = new URI("ftp", page.getPath(), null);
 		}
 		catch (Exception ex)
 		{

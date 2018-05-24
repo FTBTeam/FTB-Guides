@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ImageGuideComponent extends GuideComponent
 {
-	private static class ImgWidget extends Widget implements IGuideComponentWidget
+	public static class ImgWidget extends Widget implements IGuideComponentWidget
 	{
 		private final ImageGuideComponent component;
 
