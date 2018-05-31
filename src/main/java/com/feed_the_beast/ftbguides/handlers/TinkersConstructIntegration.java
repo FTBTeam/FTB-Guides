@@ -12,7 +12,6 @@ import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -206,7 +205,7 @@ public class TinkersConstructIntegration
 
 	private static String transformString(String s)
 	{
-		return StringUtils.trimAllWhitespace(s.replace("\\n", "\n"));
+		return s.replace("\\n", "\n").trim();
 	}
 
 	@Nullable
