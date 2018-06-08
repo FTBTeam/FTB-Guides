@@ -47,8 +47,7 @@ public class FTBGuidesClient extends FTBGuidesCommon
 		}
 	}
 
-	@Override
-	public void loadServerGuide(JsonElement json)
+	public static void loadServerGuide(JsonElement json)
 	{
 		if (json.isJsonObject())
 		{

@@ -27,10 +27,6 @@ public class FTBGuidesCommon
 	{
 	}
 
-	public void loadServerGuide(JsonElement json)
-	{
-	}
-
 	public static void reloadServerGuide()
 	{
 		serverGuide = null;
