@@ -1,12 +1,12 @@
 package com.feed_the_beast.ftbguides.handlers;
 
+import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftblib.FTBLibConfig;
-import com.feed_the_beast.ftblib.lib.EventHandler;
 import com.feed_the_beast.ftblib.lib.OtherMods;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
@@ -22,6 +22,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import slimeknights.tconstruct.library.TinkerRegistry;
@@ -37,12 +39,19 @@ import javax.annotation.Nullable;
 /**
  * @author LatvianModder
  */
-@EventHandler(value = Side.CLIENT, requiredMods = OtherMods.TINKERS_CONSTRUCT)
+@Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID, value = Side.CLIENT)
 public class TinkersConstructIntegration
 {
-	@SuppressWarnings("unchecked")
 	@SubscribeEvent
 	public static void onGuideEvent(ClientGuideEvent event)
+	{
+		if (Loader.isModLoaded(OtherMods.TINKERS_CONSTRUCT))
+		{
+			onGuideEvent0(event);
+		}
+	}
+
+	private static void onGuideEvent0(ClientGuideEvent event)
 	{
 		GuideTitlePage page = event.getModPage(OtherMods.TINKERS_CONSTRUCT);
 		page.icon = ItemIcon.getItemIcon(OtherMods.TINKERS_CONSTRUCT + ":toolforge");

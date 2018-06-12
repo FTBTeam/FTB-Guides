@@ -7,11 +7,11 @@ import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.events.CustomSidebarButtonTextEvent;
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
 import com.feed_the_beast.ftblib.events.client.GuideEvent;
-import com.feed_the_beast.ftblib.lib.EventHandler;
 import net.minecraft.init.Items;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.Side;
 /**
  * @author LatvianModder
  */
-@EventHandler(Side.CLIENT)
+@Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID, value = Side.CLIENT)
 public class FTBGuidesClientEventHandler
 {
 	private static final ResourceLocation GUIDES_BUTTON = new ResourceLocation(FTBGuides.MOD_ID, "guides");

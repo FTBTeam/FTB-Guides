@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides;
 
+import com.feed_the_beast.ftblib.lib.OtherMods;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -13,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 		version = FTBGuides.VERSION,
 		acceptableRemoteVersions = "*",
 		acceptedMinecraftVersions = "[1.12,)",
-		dependencies = "required-after:ftblib"
+		dependencies = "required-after:ftblib;after:" + OtherMods.TINKERS_CONSTRUCT
 )
 public class FTBGuides
 {
