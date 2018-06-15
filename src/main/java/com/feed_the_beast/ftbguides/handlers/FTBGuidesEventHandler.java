@@ -4,8 +4,7 @@ import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.FTBGuidesCommon;
 import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
-import com.feed_the_beast.ftblib.events.RegisterSyncDataEvent;
-import com.feed_the_beast.ftblib.events.ServerReloadEvent;
+import com.feed_the_beast.ftblib.events.FTBLibPreInitRegistryEvent;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
 import com.feed_the_beast.ftblib.lib.data.ISyncData;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
@@ -24,20 +23,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
 public class FTBGuidesEventHandler
 {
-	public static final ResourceLocation RELOAD_CONFIG = new ResourceLocation(FTBGuides.MOD_ID, "config");
-	public static final ResourceLocation RELOAD_SERVER_INFO = new ResourceLocation(FTBGuides.MOD_ID, "server_info");
-
 	@SubscribeEvent
-	public static void registerReloadIds(ServerReloadEvent.RegisterIds event)
+	public static void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event)
 	{
-		event.register(RELOAD_CONFIG);
-		event.register(RELOAD_SERVER_INFO);
-	}
+		FTBLibPreInitRegistryEvent.Registry registry = event.getRegistry();
+		registry.registerServerReloadHandler(new ResourceLocation(FTBGuides.MOD_ID, "config"), reloadEvent -> FTBGuidesConfig.sync());
+		registry.registerServerReloadHandler(new ResourceLocation(FTBGuides.MOD_ID, "server_info"), reloadEvent -> FTBGuidesCommon.reloadServerGuide());
 
-	@SubscribeEvent
-	public static void registerSyncData(RegisterSyncDataEvent event)
-	{
-		event.register(FTBGuides.MOD_ID, new ISyncData()
+		registry.registerSyncData(FTBGuides.MOD_ID, new ISyncData()
 		{
 			@Override
 			public NBTTagCompound writeSyncData(EntityPlayerMP player, ForgePlayer forgePlayer)
@@ -60,19 +53,5 @@ public class FTBGuidesEventHandler
 				FTBGuidesClient.loadServerGuide(JsonUtils.toJson(nbt.getTag("Data")));
 			}
 		});
-	}
-
-	@SubscribeEvent
-	public static void onServerReload(ServerReloadEvent event)
-	{
-		if (event.reload(RELOAD_CONFIG))
-		{
-			FTBGuidesConfig.sync();
-		}
-
-		if (event.reload(RELOAD_SERVER_INFO))
-		{
-			FTBGuidesCommon.reloadServerGuide();
-		}
 	}
 }

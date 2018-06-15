@@ -27,9 +27,10 @@ public class FTBGuidesCommon
 	{
 	}
 
-	public static void reloadServerGuide()
+	public static boolean reloadServerGuide()
 	{
 		serverGuide = null;
+		return true;
 	}
 
 	public static JsonElement getServerGuide()

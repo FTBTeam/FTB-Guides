@@ -25,9 +25,10 @@ public class FTBGuidesConfig
 		public boolean flash_guides = true;
 	}
 
-	public static void sync()
+	public static boolean sync()
 	{
 		ConfigManager.sync(FTBGuides.MOD_ID, Config.Type.INSTANCE);
+		return true;
 	}
 
 	@SubscribeEvent
