@@ -23,6 +23,21 @@ import java.util.Map;
  */
 public class TableGuideComponent extends CombinedGuideComponent
 {
+	public enum Align
+	{
+		NONE(" --- |"),
+		LEFT(" :-- |"),
+		RIGHT(" --: |"),
+		CENTER(" :-: |");
+
+		public final String md;
+
+		Align(String s)
+		{
+			md = s;
+		}
+	}
+
 	public static class HeadCellComponent extends CombinedGuideComponent
 	{
 		public final TableGuideComponent table;
