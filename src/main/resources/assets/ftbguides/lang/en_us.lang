@@ -15,7 +15,7 @@ ftbguides_client.general.theme=Theme
 sidebar_button.ftbguides.guides=Guides
 
 # Keys
-key.ftbguides.guides=Open Guides
+key.ftbguides.guide=Open Guide
 
 # Misc
 ftbguides.lang.home=Home
