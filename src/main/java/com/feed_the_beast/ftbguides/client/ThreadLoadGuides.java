@@ -19,7 +19,7 @@ import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
-import com.feed_the_beast.ftblib.lib.util.CommonUtils;
+import com.feed_the_beast.ftblib.lib.util.Folders;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.SidedUtils;
 import com.google.gson.JsonArray;
@@ -210,19 +210,19 @@ class ThreadLoadGuides extends Thread
 		List<GuideTitlePage> guides = new ArrayList<>();
 		JsonArray guidesArray = api.get("guides").getAsJsonArray();
 
-		JsonElement modpackGuide = DataReader.get(new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide/data.json")).safeJson();
+		JsonElement modpackGuide = DataReader.get(new File(Folders.getConfig(), "ftbguides/modpack_guide/data.json")).safeJson();
 
 		if (modpackGuide.isJsonObject())
 		{
 			GuideTitlePage page = new GuideTitlePage("modpack_guide", root, GuideType.MODPACK);
-			File folder = new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/modpack_guide");
+			File folder = new File(Folders.getConfig(), "ftbguides/modpack_guide");
 			page.textURI = folder.toURI().resolve("index.json");
 			loadLocalPage(folder, page, modpackGuide.getAsJsonObject());
 			page.properties.put("browser_url", new JsonPrimitive(""));
 			guides.add(page);
 		}
 
-		File[] modGuideFiles = new File(CommonUtils.folderConfig, FTBGuides.MOD_ID + "/mod_guides").listFiles();
+		File[] modGuideFiles = new File(Folders.getConfig(), "ftbguides/mod_guides").listFiles();
 
 		if (modGuideFiles != null && modGuideFiles.length > 0)
 		{
