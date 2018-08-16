@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class FTBGuidesClient extends FTBGuidesCommon
 {
-	public static final KeyBinding KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, KeyModifier.NONE, Keyboard.KEY_G, FTBLib.KEY_CATEGORY);
+	public static final KeyBinding KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, Keyboard.KEY_G, FTBLib.KEY_CATEGORY);
 
 	static GuiGuide guidesGui = null;
 	static ThreadLoadGuides reloadingThread = null;
