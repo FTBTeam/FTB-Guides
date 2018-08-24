@@ -34,9 +34,9 @@ minecraft {
 
 repositories {
 	mavenLocal()
-	maven { url "https://maven.latmod.com/" }
-	maven { url "http://dvs1.progwml6.com/files/maven" }
-	//maven { url "https://maven.tterrag.com/" }
+	maven { url "https://maven.latmod.com/" } //FTBLib
+	maven { url "http://dvs1.progwml6.com/files/maven" } //Tinker's Construct and Mantle
+	//maven { url "https://maven.tterrag.com/" } //The One Probe
 }
 
 dependencies {
