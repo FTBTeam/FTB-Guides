@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 
@@ -18,10 +19,10 @@ public class VideoGuideComponent extends ImageGuideComponent
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			super.draw();
-			OVERLAY.draw(getAX(), getAY(), width, height, Color4I.WHITE.withAlpha(150));
+			super.draw(theme, x, y, w, h);
+			OVERLAY.draw(x, y, w, h, Color4I.WHITE.withAlpha(150));
 		}
 	}
 

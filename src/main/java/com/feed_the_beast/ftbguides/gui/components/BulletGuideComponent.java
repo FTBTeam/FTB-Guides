@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 
 /**
@@ -19,9 +20,9 @@ public class BulletGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			((GuiGuide) getGui()).page.lineColor.draw(getAX() + 2, getAY() + 2, 4, 4);
+			((GuiGuide) getGui()).page.lineColor.draw(x + 2, y + 2, 4, 4);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
@@ -24,28 +25,26 @@ public class CodeblockGuideComponent extends GuideComponent
 			super(parent);
 			component = t;
 			text = component.toString().split("\n");
+			Theme theme = getGui().getTheme();
 
 			setWidth(0);
 
 			for (String s : text)
 			{
-				setWidth(Math.max(width, getStringWidth(s)));
+				setWidth(Math.max(width, theme.getStringWidth(s)));
 			}
 
 			setHeight(text.length * 10);
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			int ax = getAX();
-			int ay = getAY();
-
-			CODE_BACKGROUND.draw(ax, ay, width, height);
+			CODE_BACKGROUND.draw(x, y, w, h);
 
 			for (int i = 0; i < text.length; i++)
 			{
-				drawString(text[i], ax, ay + 10 * i);
+				theme.drawString(text[i], x, y + 10 * i);
 			}
 		}
 	}

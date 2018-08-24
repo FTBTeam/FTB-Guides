@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
@@ -61,9 +62,9 @@ public class ImageGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public Icon getIcon()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			return component.image;
+			component.image.draw(x, y, w, h);
 		}
 	}
 

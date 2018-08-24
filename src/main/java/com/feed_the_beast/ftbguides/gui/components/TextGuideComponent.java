@@ -2,6 +2,7 @@ package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.gui.WidgetType;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
@@ -34,10 +35,11 @@ public class TextGuideComponent extends GuideComponent
 			component = t;
 			scale = MathHelper.clamp(Double.parseDouble(component.getProperty("text_scale", true, "1")), 0.25D, 4D);
 			List<String> strings = new ArrayList<>();
+			Theme theme = getGui().getTheme();
 
 			for (String s : t.text.split("\n"))
 			{
-				strings.addAll(listFormattedStringToWidth(s, (int) (parent.maxWidth / scale)));
+				strings.addAll(theme.listFormattedStringToWidth(s, (int) (parent.maxWidth / scale)));
 			}
 
 			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
@@ -79,11 +81,11 @@ public class TextGuideComponent extends GuideComponent
 				}
 				else
 				{
-					setWidth(Math.max(width, (int) (getStringWidth(text[i]) * scale)));
+					setWidth(Math.max(width, (int) (theme.getStringWidth(text[i]) * scale)));
 				}
 			}
 
-			int h1 = (int) ((getFontHeight() + 1D) * scale);
+			int h1 = (int) ((theme.getFontHeight() + 1D) * scale);
 			setHeight(text.length == 0 ? h1 : h1 * text.length);
 
 			if (!icon.isEmpty())
@@ -121,19 +123,17 @@ public class TextGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
 			boolean mouseOver = isMouseOver() && (!component.getProperty("click", true).isEmpty() || !component.getProperty("hover", false).isEmpty());
-			int ax = getAX();
-			int ay = getAY();
 
 			if (!icon.isEmpty())
 			{
-				icon.draw(ax, ay, 8, 8);
-				ax += 10;
+				icon.draw(x, y, 8, 8);
+				x += 10;
 			}
 
-			int h1 = getFontHeight() + 1;
+			int h1 = theme.getFontHeight() + 1;
 
 			if (scale != 1D)
 			{
@@ -141,9 +141,9 @@ public class TextGuideComponent extends GuideComponent
 			}
 
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(ax, ay, 0);
+			GlStateManager.translate(x, y, 0);
 			GlStateManager.scale(scale, scale, 1D);
-			Color4I color = getTheme().getContentColor((mouseOver || code) ? WidgetType.MOUSE_OVER : WidgetType.NORMAL);
+			Color4I color = theme.getContentColor((mouseOver || code) ? WidgetType.MOUSE_OVER : WidgetType.NORMAL);
 
 			for (int i = 0; i < text.length; i++)
 			{
@@ -151,12 +151,12 @@ public class TextGuideComponent extends GuideComponent
 				{
 					for (int ci = 0; ci < text[i].length(); ci++)
 					{
-						drawString(Character.toString(text[i].charAt(ci)), ci * (FTBGuidesClientConfig.general.use_unicode_font ? 4 : 6), h1 * i, color, 0);
+						theme.drawString(Character.toString(text[i].charAt(ci)), ci * (FTBGuidesClientConfig.general.use_unicode_font ? 4 : 6), h1 * i, color, 0);
 					}
 				}
 				else
 				{
-					drawString(text[i], 0, h1 * i, color, 0);
+					theme.drawString(text[i], 0, h1 * i, color, 0);
 				}
 			}
 

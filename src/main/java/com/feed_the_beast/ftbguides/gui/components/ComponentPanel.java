@@ -8,6 +8,7 @@ import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.MismatchingParentPanelException;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -48,7 +49,8 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		totalHeight = 0;
 		widgets.clear();
 
-		pushFontUnicode(FTBGuidesClientConfig.general.use_unicode_font);
+		Theme theme = getGui().getTheme();
+		theme.pushFontUnicode(FTBGuidesClientConfig.general.use_unicode_font);
 		addWidgets();
 
 		if (printInfo)
@@ -144,7 +146,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 			FTBGuides.LOGGER.info(getClass().getName() + ": End " + width + ":" + height);
 		}
 
-		popFontUnicode();
+		theme.popFontUnicode();
 	}
 
 	@Override
@@ -161,9 +163,9 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	}
 
 	@Override
-	protected void drawOffsetPanelBackground(int ax, int ay)
+	public void drawOffsetBackground(Theme theme, int x, int y, int w, int h)
 	{
-		if (!GuiBase.renderDebugBoxes)
+		if (!Theme.renderDebugBoxes)
 		{
 			return;
 		}
@@ -182,7 +184,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 
 			if (!(parent instanceof GuiBase))
 			{
-				GuiHelper.addRectToBuffer(buffer, ax, ay, width, height, color);
+				GuiHelper.addRectToBuffer(buffer, x, y, w, h, color);
 			}
 
 			for (Widget widget : widgets)
@@ -192,7 +194,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 					continue;
 				}
 
-				GuiHelper.addRectToBuffer(buffer, widget.getAX(), widget.getAY(), widget.width, widget.height, color);
+				GuiHelper.addRectToBuffer(buffer, widget.getX(), widget.getY(), widget.width, widget.height, color);
 			}
 
 			tessellator.draw();

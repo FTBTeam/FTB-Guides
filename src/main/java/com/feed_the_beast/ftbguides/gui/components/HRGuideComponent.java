@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.gui.components;
 
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 
 /**
@@ -19,9 +20,9 @@ public class HRGuideComponent extends GuideComponent
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			((GuiGuide) getGui()).page.lineColor.draw(getAX(), getAY() + 1, ((ComponentPanel) parent).width, height - 2);
+			((GuiGuide) getGui()).page.lineColor.draw(x, y + 1, ((ComponentPanel) parent).width, h - 2);
 		}
 	}
 

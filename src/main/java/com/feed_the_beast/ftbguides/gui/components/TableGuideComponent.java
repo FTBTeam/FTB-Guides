@@ -6,6 +6,7 @@ import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.MismatchingParentPanelException;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
+import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -123,7 +124,8 @@ public class TableGuideComponent extends CombinedGuideComponent
 			totalWidth = 0;
 			totalHeight = 0;
 			widgets.clear();
-			pushFontUnicode(true);
+			Theme theme = getGui().getTheme();
+			theme.pushFontUnicode(true);
 			int widths[] = new int[table.rows.size()];
 			int heights[] = new int[table.components.size() / widths.length + (table.hasHead ? 1 : 0)];
 
@@ -263,7 +265,7 @@ public class TableGuideComponent extends CombinedGuideComponent
 				FTBGuides.LOGGER.info("Table: End " + width + ":" + height);
 			}
 
-			popFontUnicode();
+			theme.popFontUnicode();
 		}
 
 		@Override
@@ -277,9 +279,9 @@ public class TableGuideComponent extends CombinedGuideComponent
 		}
 
 		@Override
-		protected void drawOffsetPanelBackground(int ax, int ay)
+		public void drawOffsetBackground(Theme theme, int x, int y, int w, int h)
 		{
-			super.drawOffsetPanelBackground(ax, ay);
+			super.drawOffsetBackground(theme, x, y, w, h);
 
 			if (!drawBorders)
 			{
@@ -295,14 +297,14 @@ public class TableGuideComponent extends CombinedGuideComponent
 
 			for (Widget widget : widgets)
 			{
-				int x = widget.getAX();
-				int y = widget.getAY();
-				GuiHelper.addRectToBuffer(buffer, x, y, widget.width, 1, color);
-				GuiHelper.addRectToBuffer(buffer, x, y, 1, widget.height, color);
+				int wx = widget.getX();
+				int hy = widget.getY();
+				GuiHelper.addRectToBuffer(buffer, wx, hy, widget.width, 1, color);
+				GuiHelper.addRectToBuffer(buffer, wx, hy, 1, widget.height, color);
 			}
 
-			GuiHelper.addRectToBuffer(buffer, ax, ay + height - 1, width, 1, color);
-			GuiHelper.addRectToBuffer(buffer, ax + width - 1, ay, 1, height, color);
+			GuiHelper.addRectToBuffer(buffer, x, y + h - 1, w, 1, color);
+			GuiHelper.addRectToBuffer(buffer, x + w - 1, y, 1, h, color);
 
 			tessellator.draw();
 			GlStateManager.color(1F, 1F, 1F, 1F);

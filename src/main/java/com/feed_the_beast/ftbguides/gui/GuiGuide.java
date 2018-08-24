@@ -52,39 +52,34 @@ public class GuiGuide extends GuiBase
 		}
 
 		@Override
-		public Icon getGui(WidgetType type)
+		public void drawGui(int x, int y, int w, int h, WidgetType type)
 		{
-			return Icon.EMPTY;
 		}
 
 		@Override
-		public Icon getWidget(WidgetType type)
+		public void drawWidget(int x, int y, int w, int h, WidgetType type)
 		{
-			return Icon.EMPTY;
 		}
 
 		@Override
-		public Icon getSlot(WidgetType type)
+		public void drawSlot(int x, int y, int w, int h, WidgetType type)
 		{
-			return Icon.EMPTY;
 		}
 
 		@Override
-		public Icon getPanelBackground()
+		public void drawPanelBackground(int x, int y, int w, int h)
 		{
-			return Icon.EMPTY;
 		}
 
 		@Override
-		public Icon getScrollBarBackground(WidgetType type)
+		public void drawScrollBarBackground(int x, int y, int w, int h, WidgetType type)
 		{
-			return Icon.EMPTY;
 		}
 
 		@Override
-		public Icon getScrollBar(WidgetType type, boolean vertical)
+		public void drawScrollBar(int x, int y, int w, int h, WidgetType type, boolean vertical)
 		{
-			return getContentColor(type).withAlpha(100).withBorder(1);
+			getContentColor(type).withAlpha(100).draw(x + 1, y + 1, w - 2, h - 2);
 		}
 	}
 
@@ -95,7 +90,7 @@ public class GuiGuide extends GuiBase
 		public ButtonSelectPage(Panel panel, @Nullable GuidePage p)
 		{
 			super(panel, p == null ? "/" : p.title.getFormattedText(), Icon.EMPTY);
-			setSize(getStringWidth(getTitle()), 9);
+			setSize(getGui().getTheme().getStringWidth(getTitle()), 9);
 			page = p;
 		}
 
@@ -115,10 +110,10 @@ public class GuiGuide extends GuiBase
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
 			boolean mouseOver = page != null && isMouseOver();
-			drawString(getTitle(), getAX(), getAY(), mouseOver ? MOUSE_OVER : 0);
+			theme.drawString(getTitle(), x, y, mouseOver ? Theme.MOUSE_OVER : 0);
 		}
 	}
 
@@ -144,12 +139,13 @@ public class GuiGuide extends GuiBase
 		}
 
 		@Override
-		public void draw()
+		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			specialInfoButton.icon.draw(getAX() + 2, getAY() + 2, 8, 8);
+			specialInfoButton.icon.draw(x + 2, y + 2, 8, 8);
 		}
 	}
 
+	private Theme guideTheme;
 	public final GuidePage page;
 	public final ComponentPanel panelText;
 	public final Panel panelTitle, panelSpecialButtons;
@@ -158,6 +154,7 @@ public class GuiGuide extends GuiBase
 	public GuiGuide(GuidePage p)
 	{
 		page = p;
+		guideTheme = new GuideGuiTheme(page);
 
 		if (FTBLibConfig.debugging.print_more_info)
 		{
@@ -218,9 +215,8 @@ public class GuiGuide extends GuiBase
 			}
 
 			@Override
-			public Icon getIcon()
+			public void drawBackground(Theme theme, int x, int y, int w, int h)
 			{
-				return getTheme().getPanelBackground();
 			}
 		};
 
@@ -252,9 +248,8 @@ public class GuiGuide extends GuiBase
 			}
 
 			@Override
-			public Icon getIcon()
+			public void drawBackground(Theme theme, int x, int y, int w, int h)
 			{
-				return getTheme().getPanelBackground();
 			}
 		};
 
@@ -303,19 +298,19 @@ public class GuiGuide extends GuiBase
 	}
 
 	@Override
-	public void drawBackground()
+	public void drawBackground(Theme theme, int x, int y, int w, int h)
 	{
-		GuiHelper.drawHollowRect(0, 0, width, height, page.lineColor, false);
-		page.lineColor.draw(scrollBarV.getAX(), scrollBarV.getAY(), 1, scrollBarV.height);
-		page.lineColor.draw(0, scrollBarH.getAY(), scrollBarH.width, 1);
-		page.lineColor.draw(0, panelSpecialButtons.height - 1, width, 1);
+		GuiHelper.drawHollowRect(0, 0, w, h, page.lineColor, false);
+		page.lineColor.draw(scrollBarV.getX(), scrollBarV.getY(), 1, scrollBarV.height);
+		page.lineColor.draw(0, scrollBarH.getY(), scrollBarH.width, 1);
+		page.lineColor.draw(0, panelSpecialButtons.height - 1, w, 1);
 		GlStateManager.color(1F, 1F, 1F, 1F);
 	}
 
 	@Override
-	public Theme createTheme()
+	public Theme getTheme()
 	{
-		return new GuideGuiTheme(page);
+		return guideTheme;
 	}
 
 	@Override
