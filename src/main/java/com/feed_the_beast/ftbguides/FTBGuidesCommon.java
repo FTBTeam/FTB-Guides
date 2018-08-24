@@ -2,10 +2,10 @@ package com.feed_the_beast.ftbguides;
 
 import com.feed_the_beast.ftbguides.net.FTBGuidesNetHandler;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
-import com.feed_the_beast.ftblib.lib.util.Folders;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
 import java.util.HashMap;
@@ -33,11 +33,11 @@ public class FTBGuidesCommon
 		return true;
 	}
 
-	public static JsonElement getServerGuide()
+	public static JsonElement getServerGuide(MinecraftServer server)
 	{
 		if (serverGuide == null)
 		{
-			File folder = new File(Folders.getLocal(), "server_guide");
+			File folder = new File(server.getDataDirectory(), "local/server_guide");
 			serverGuide = DataReader.get(new File(folder, "data.json")).safeJson();
 			LOADED_PAGE_PATHS.clear();
 			LOADED_PAGES.clear();
@@ -100,9 +100,9 @@ public class FTBGuidesCommon
 		}
 	}
 
-	public static JsonElement getLoadedPage(String path)
+	public static JsonElement getLoadedPage(MinecraftServer server, String path)
 	{
-		getServerGuide();
+		getServerGuide(server);
 		JsonElement json = LOADED_PAGES.get(path);
 
 		if (json == null)

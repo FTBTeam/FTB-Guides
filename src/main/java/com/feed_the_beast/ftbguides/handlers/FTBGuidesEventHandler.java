@@ -36,7 +36,7 @@ public class FTBGuidesEventHandler
 			public NBTTagCompound writeSyncData(EntityPlayerMP player, ForgePlayer forgePlayer)
 			{
 				NBTTagCompound nbt = new NBTTagCompound();
-				NBTBase data = JsonUtils.toNBT(FTBGuidesCommon.getServerGuide());
+				NBTBase data = JsonUtils.toNBT(FTBGuidesCommon.getServerGuide(player.server));
 
 				if (data != null)
 				{

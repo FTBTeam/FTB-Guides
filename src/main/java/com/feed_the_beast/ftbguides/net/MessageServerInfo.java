@@ -44,6 +44,6 @@ public class MessageServerInfo extends MessageToServer
 	@Override
 	public void onMessage(EntityPlayerMP player)
 	{
-		new MessageServerInfoResponse(page, FTBGuidesCommon.getLoadedPage(page)).sendTo(player);
+		new MessageServerInfoResponse(page, FTBGuidesCommon.getLoadedPage(player.server, page)).sendTo(player);
 	}
 }
