@@ -22,7 +22,6 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.google.gson.JsonElement;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.input.Keyboard;
@@ -424,13 +423,6 @@ public class GuiGuide extends GuiBase
 		}
 
 		return super.handleClick(scheme, path);
-	}
-
-	@Override
-	@Nullable
-	public GuiScreen getPrevScreen()
-	{
-		return null;
 	}
 
 	@Override
