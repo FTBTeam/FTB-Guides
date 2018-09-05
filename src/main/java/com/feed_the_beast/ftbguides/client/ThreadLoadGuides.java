@@ -21,9 +21,9 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.feed_the_beast.ftblib.lib.util.SidedUtils;
+import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.client.resources.I18n;
@@ -31,6 +31,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Loader;
 
 import java.io.File;
@@ -175,25 +176,6 @@ class ThreadLoadGuides extends Thread
 
 		root = new GuidePage("root", null);
 		root.title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.home");
-		gui.setTitle("Loading Guides\nAPI");
-
-		JsonElement apijson = JsonNull.INSTANCE;
-
-		try
-		{
-			apijson = DataReader.get(new URL("https://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-		}
-
-		if (!apijson.isJsonObject())
-		{
-			return "Failed to load the API!";
-		}
-
-		JsonObject api = apijson.getAsJsonObject();
 
 		try
 		{
@@ -207,7 +189,7 @@ class ThreadLoadGuides extends Thread
 		}
 
 		List<GuideTitlePage> guides = new ArrayList<>();
-		JsonArray guidesArray = api.get("guides").getAsJsonArray();
+		gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.modpack"));
 
 		JsonElement modpackGuide = DataReader.get(new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide/data.json")).safeJson();
 
@@ -229,6 +211,8 @@ class ThreadLoadGuides extends Thread
 			{
 				if (modGuideFile.isDirectory())
 				{
+					gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.mod") + '\n' + modGuideFile.getName());
+
 					JsonElement modGuide = DataReader.get(new File(modGuideFile, "data.json")).safeJson();
 
 					if (modGuide.isJsonObject())
@@ -249,44 +233,61 @@ class ThreadLoadGuides extends Thread
 			}
 		}
 
-		for (JsonElement e : guidesArray)
+		gui.setTitle("Loading Guides\nAPI");
+
+		try
 		{
-			JsonObject o = e.getAsJsonObject();
-			String id = o.get("id").getAsString();
-			GuideType type = GuideType.NAME_MAP.get(o.get("type").getAsString());
+			JsonElement apijson = DataReader.get(new URL("https://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+			JsonObject api = apijson.getAsJsonObject();
 
-			if (type == GuideType.MOD && FTBGuidesClientConfig.general.hide_mods_not_present && o.has("modid") && !Loader.isModLoaded(o.get("modid").getAsString()))
-			{
-				continue;
-			}
-			else if (type == GuideType.OTHER && FTBGuidesClientConfig.general.hide_other)
-			{
-				continue;
-			}
+			JsonArray guidesArray = api.get("guides").getAsJsonArray();
 
-			GuideTitlePage page = new GuideTitlePage(id, root, type);
-
-			if (o.has("authors"))
+			for (JsonElement e : guidesArray)
 			{
-				for (JsonElement e1 : o.get("authors").getAsJsonArray())
+				JsonObject o = e.getAsJsonObject();
+				String id = o.get("id").getAsString();
+				GuideType type = GuideType.NAME_MAP.get(o.get("type").getAsString());
+
+				if (type == GuideType.MOD && FTBGuidesClientConfig.general.hide_mods_not_present && o.has("modid") && !Loader.isModLoaded(o.get("modid").getAsString()))
 				{
-					page.authors.add(e1.getAsString());
+					continue;
+				}
+				else if (type == GuideType.OTHER && FTBGuidesClientConfig.general.hide_other)
+				{
+					continue;
+				}
+
+				GuideTitlePage page = new GuideTitlePage(id, root, type);
+
+				if (o.has("authors"))
+				{
+					for (JsonElement e1 : o.get("authors").getAsJsonArray())
+					{
+						page.authors.add(e1.getAsString());
+					}
+				}
+
+				try
+				{
+					loadPage(page, o);
+					guides.add(page);
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
 				}
 			}
-
-			try
-			{
-				loadPage(page, o);
-				guides.add(page);
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
 		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
 
-		//gui.setTitle("Loading Guides\nModpack Guide");
-		//gui.setTitle("Loading Guides\nMod Guides");
+			GuideTitlePage page = new GuideTitlePage("online_guides", root, GuideType.OTHER);
+			page.title = new TextComponentString("Online Guides");
+			page.icon = GuidePage.DEFAULT_ICON;
+			page.println(StringUtils.color(new TextComponentString("Failed to load online guides! Error: " + ex.getMessage()), TextFormatting.RED));
+			guides.add(page);
+		}
 
 		gui.setTitle("Loading Guides\n" + I18n.format("sidebar_button"));
 
