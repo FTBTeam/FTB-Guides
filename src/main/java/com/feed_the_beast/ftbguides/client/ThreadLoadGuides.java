@@ -11,9 +11,9 @@ import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.FTBLibConfig;
-import com.feed_the_beast.ftblib.client.FTBLibClient;
 import com.feed_the_beast.ftblib.client.SidebarButton;
 import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
+import com.feed_the_beast.ftblib.client.SidebarButtonManager;
 import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
@@ -297,7 +297,7 @@ class ThreadLoadGuides extends Thread
 		sidebarButtons.icon = Icon.getIcon(FTBLib.MOD_ID + ":textures/gui/teams.png");
 		sidebarButtons.title = new TextComponentTranslation("sidebar_button");
 
-		for (SidebarButtonGroup group : FTBLibClient.SIDEBAR_BUTTON_GROUPS)
+		for (SidebarButtonGroup group : SidebarButtonManager.INSTANCE.groups)
 		{
 			for (SidebarButton button : group.getButtons())
 			{
