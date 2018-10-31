@@ -13,6 +13,7 @@ ftbguides_client.general.theme=Theme
 
 # Sidebar Buttons
 sidebar_button.ftbguides.guides=Guides
+sidebar_button.ftbguides.guides.new_version=New version available!
 
 # Keys
 key.ftbguides.guide=Open Guide
