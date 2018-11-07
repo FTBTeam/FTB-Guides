@@ -357,7 +357,7 @@ class ThreadLoadGuides extends Thread
 						root.println(new TextGuideComponent(I18n.format(type.titlePlural)).setProperty("text_scale", "1.5").setProperty("bold", "true"));
 					}
 
-					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getName()));
+					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getID()));
 				}
 			}
 		}
@@ -368,7 +368,7 @@ class ThreadLoadGuides extends Thread
 
 	private void loadPageBase(GuidePage page, JsonObject json)
 	{
-		page.title = json.has("title") ? new TextComponentString(json.get("title").getAsString()) : new TextComponentString(page.getName());
+		page.title = json.has("title") ? new TextComponentString(json.get("title").getAsString()) : new TextComponentString(page.getID());
 
 		if (FTBLibConfig.debugging.print_more_info && page.textURI != null)
 		{

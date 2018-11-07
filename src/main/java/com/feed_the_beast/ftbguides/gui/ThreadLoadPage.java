@@ -50,7 +50,7 @@ public class ThreadLoadPage extends Thread
 				{
 					for (GuidePage p : page.pages)
 					{
-						page.println(new TextGuideComponent(p.title.getUnformattedText()).setProperty("icon", p.icon.toString()).setProperty("click", p.getName()));
+						page.println(new TextGuideComponent(p.title.getUnformattedText()).setProperty("icon", p.icon.toString()).setProperty("click", p.getID()));
 					}
 
 					page.println(HRGuideComponent.INSTANCE);
