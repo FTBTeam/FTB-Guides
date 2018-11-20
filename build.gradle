@@ -86,6 +86,7 @@ if (ENV.CURSEFORGE_KEY) {
 			addGameVersion "${mc_version}"
 			relations {
 				requiredDependency 'ftblib'
+				requiredDependency 'letsencryptcraft'
 			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'
