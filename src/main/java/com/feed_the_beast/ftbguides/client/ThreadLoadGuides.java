@@ -1,6 +1,7 @@
 package com.feed_the_beast.ftbguides.client;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
+import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
@@ -237,7 +238,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			JsonElement apijson = DataReader.get(new URL("https://guides.latmod.com/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+			JsonElement apijson = DataReader.get(new URL(FTBGuidesConfig.general.base_uri + "/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
 			JsonObject api = apijson.getAsJsonObject();
 
 			JsonArray guidesArray = api.get("guides").getAsJsonArray();
@@ -337,7 +338,7 @@ class ThreadLoadGuides extends Thread
 		}
 
 		gui.setTitle("Loading Guides\nFinishing");
-		root.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com"));
+		root.properties.put("browser_url", new JsonPrimitive(FTBGuidesConfig.general.base_uri));
 		root.addSub(sidebarButtons);
 		root.cleanup();
 		root.updateCachedProperties(true);
@@ -426,7 +427,7 @@ class ThreadLoadGuides extends Thread
 			}
 		}
 
-		page.properties.put("browser_url", new JsonPrimitive("https://guides.latmod.com" + page.getPath()));
+		page.properties.put("browser_url", new JsonPrimitive( FTBGuidesConfig.general.base_uri + page.getPath()));
 	}
 
 	private void loadLocalPage(File folder, GuidePage page, JsonObject json)
