@@ -8,13 +8,13 @@ import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.ImageGuideComponent;
 import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.OtherMods;
-import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -133,7 +133,7 @@ public class TinkersConstructIntegration
 
 			try
 			{
-				JsonElement json = DataReader.get(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json"))).json();
+				JsonElement json = DataReader.get(Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(OtherMods.TINKERS_CONSTRUCT, "book/en_US/modifiers/" + modifier.getIdentifier() + ".json"))).json();
 
 				if (json.isJsonObject())
 				{

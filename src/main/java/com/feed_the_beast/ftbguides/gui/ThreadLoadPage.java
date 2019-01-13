@@ -7,11 +7,11 @@ import com.feed_the_beast.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.ftbguides.gui.components.TextGuideComponent;
 import com.feed_the_beast.ftbguides.net.MessageServerInfo;
 import com.feed_the_beast.ftblib.FTBLibConfig;
-import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextFormatting;
 
 /**
@@ -108,7 +108,7 @@ public class ThreadLoadPage extends Thread
 
 		try
 		{
-			json = DataReader.get(page.textURI, ClientUtils.MC.getProxy()).json();
+			json = DataReader.get(page.textURI, Minecraft.getMinecraft().getProxy()).json();
 		}
 		catch (Exception ex)
 		{

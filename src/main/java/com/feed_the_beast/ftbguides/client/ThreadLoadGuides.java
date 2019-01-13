@@ -15,7 +15,6 @@ import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.client.SidebarButton;
 import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
 import com.feed_the_beast.ftblib.client.SidebarButtonManager;
-import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
@@ -27,6 +26,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -106,7 +106,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			for (IResource resource : ClientUtils.MC.getResourceManager().getAllResources(new ResourceLocation(FTBGuides.MOD_ID, "themes/index.json")))
+			for (IResource resource : Minecraft.getMinecraft().getResourceManager().getAllResources(new ResourceLocation(FTBGuides.MOD_ID, "themes/index.json")))
 			{
 				JsonElement json = DataReader.get(resource).json();
 
@@ -116,7 +116,7 @@ class ThreadLoadGuides extends Thread
 					{
 						String id = element.getAsString();
 
-						JsonElement json1 = DataReader.get(ClientUtils.MC.getResourceManager().getResource(new ResourceLocation(FTBGuides.MOD_ID, "themes/" + id + ".json"))).json();
+						JsonElement json1 = DataReader.get(Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(FTBGuides.MOD_ID, "themes/" + id + ".json"))).json();
 
 						if (json1.isJsonObject())
 						{
@@ -238,7 +238,7 @@ class ThreadLoadGuides extends Thread
 
 		try
 		{
-			JsonElement apijson = DataReader.get(new URL(FTBGuidesConfig.general.base_uri + "/api/api.json"), DataReader.JSON, ClientUtils.MC.getProxy()).json();
+			JsonElement apijson = DataReader.get(new URL(FTBGuidesConfig.general.base_uri + "/api/api.json"), DataReader.JSON, Minecraft.getMinecraft().getProxy()).json();
 			JsonObject api = apijson.getAsJsonObject();
 
 			JsonArray guidesArray = api.get("guides").getAsJsonArray();
@@ -427,7 +427,7 @@ class ThreadLoadGuides extends Thread
 			}
 		}
 
-		page.properties.put("browser_url", new JsonPrimitive( FTBGuidesConfig.general.base_uri + page.getPath()));
+		page.properties.put("browser_url", new JsonPrimitive(FTBGuidesConfig.general.base_uri + page.getPath()));
 	}
 
 	private void loadLocalPage(File folder, GuidePage page, JsonObject json)

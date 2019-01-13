@@ -6,9 +6,9 @@ import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.OtherMods;
-import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.settings.KeyConflictContext;
@@ -44,9 +44,9 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	{
 		super.postInit();
 
-		if (ClientUtils.MC.getResourceManager() instanceof SimpleReloadableResourceManager)
+		if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager)
 		{
-			((SimpleReloadableResourceManager) ClientUtils.MC.getResourceManager()).registerReloadListener(resourceManager -> setShouldReload());
+			((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> setShouldReload());
 		}
 	}
 
