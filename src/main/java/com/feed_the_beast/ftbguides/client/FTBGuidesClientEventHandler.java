@@ -1,9 +1,7 @@
-package com.feed_the_beast.ftbguides.handlers;
+package com.feed_the_beast.ftbguides.client;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.FTBGuidesConfig;
-import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
-import com.feed_the_beast.ftbguides.client.FTBGuidesClientConfig;
 import com.feed_the_beast.ftblib.events.SidebarButtonCreatedEvent;
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
 import com.feed_the_beast.ftblib.events.client.GuideEvent;
@@ -99,6 +97,10 @@ public class FTBGuidesClientEventHandler
 			}
 
 			event.setCanceled(true);
+		}
+		else if (event.getID().getNamespace().equals("guide"))
+		{
+			FTBGuidesClient.openGuidesGui(event.getID().getPath());
 		}
 	}
 }

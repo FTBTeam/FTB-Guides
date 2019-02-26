@@ -1,4 +1,4 @@
-package com.feed_the_beast.ftbguides.handlers;
+package com.feed_the_beast.ftbguides.integration;
 
 import com.feed_the_beast.ftbguides.FTBGuides;
 import com.feed_the_beast.ftbguides.events.ClientGuideEvent;

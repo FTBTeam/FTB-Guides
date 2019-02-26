@@ -1,8 +1,5 @@
-package com.feed_the_beast.ftbguides.handlers;
+package com.feed_the_beast.ftbguides;
 
-import com.feed_the_beast.ftbguides.FTBGuides;
-import com.feed_the_beast.ftbguides.FTBGuidesCommon;
-import com.feed_the_beast.ftbguides.FTBGuidesConfig;
 import com.feed_the_beast.ftbguides.client.FTBGuidesClient;
 import com.feed_the_beast.ftblib.events.FTBLibPreInitRegistryEvent;
 import com.feed_the_beast.ftblib.lib.data.ForgePlayer;
