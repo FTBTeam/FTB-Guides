@@ -16,7 +16,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
@@ -33,7 +32,7 @@ import java.util.Objects;
 
 public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 {
-	public static final Icon DEFAULT_ICON = ItemIcon.getItemIcon(new ItemStack(Items.BOOK));
+	public static final Icon DEFAULT_ICON = ItemIcon.getItemIcon(Items.BOOK);
 	public static final Collection<String> STANDARD_KEYS = new HashSet<>(Arrays.asList("id", "title", "icon", "icon_url", "buttons", "pages"));
 
 	public static final int STATE_NOT_LOADING = 0;

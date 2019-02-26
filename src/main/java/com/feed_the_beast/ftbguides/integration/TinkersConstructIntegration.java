@@ -17,7 +17,6 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -69,7 +68,7 @@ public class TinkersConstructIntegration
 
 		GuidePage toolMaterials = page.getSub("materials");
 		toolMaterials.title = new TextComponentString("Materials");
-		toolMaterials.icon = ItemIcon.getItemIcon(new ItemStack(Items.IRON_PICKAXE));
+		toolMaterials.icon = ItemIcon.getItemIcon(Items.IRON_PICKAXE);
 
 		ImmutableList mats = ImmutableList.of(TinkerMaterials.wood, TinkerMaterials.cobalt, TinkerMaterials.ardite, TinkerMaterials.manyullyn);
 
@@ -122,7 +121,7 @@ public class TinkersConstructIntegration
 
 		GuidePage modifiers = page.getSub("modifiers");
 		modifiers.title = new TextComponentString("Modifiers");
-		modifiers.icon = ItemIcon.getItemIcon(new ItemStack(Items.REDSTONE));
+		modifiers.icon = ItemIcon.getItemIcon(Items.REDSTONE);
 
 		for (IModifier modifier : TinkerRegistry.getAllModifiers())
 		{

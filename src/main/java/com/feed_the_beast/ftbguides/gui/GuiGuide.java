@@ -395,7 +395,7 @@ public class GuiGuide extends GuiBase
 		}
 		else if (scheme.equals("close"))
 		{
-			closeGui();
+			closeGui(false);
 			return true;
 		}
 		else if (scheme.equals("refresh"))
