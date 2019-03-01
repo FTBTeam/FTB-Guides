@@ -5,7 +5,6 @@ import com.feed_the_beast.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.ftbguides.gui.GuidePage;
 import com.feed_the_beast.ftbguides.gui.ThreadLoadPage;
 import com.feed_the_beast.ftblib.FTBLib;
-import com.feed_the_beast.ftblib.lib.OtherMods;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
@@ -14,7 +13,6 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Loader;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
@@ -35,8 +33,7 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	{
 		super.preInit();
 		FTBGuidesClientConfig.sync();
-		KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, Loader.isModLoaded(OtherMods.FTBQUESTS) ? KeyModifier.ALT : KeyModifier.NONE, Keyboard.KEY_G, FTBLib.KEY_CATEGORY);
-		ClientRegistry.registerKeyBinding(KEY_GUIDE);
+		ClientRegistry.registerKeyBinding(KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, KeyModifier.NONE, Keyboard.KEY_NONE, FTBLib.KEY_CATEGORY));
 	}
 
 	@Override
