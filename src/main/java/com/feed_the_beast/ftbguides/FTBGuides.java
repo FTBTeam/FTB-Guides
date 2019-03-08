@@ -1,5 +1,6 @@
 package com.feed_the_beast.ftbguides;
 
+import com.feed_the_beast.ftbguides.net.FTBGuidesNetHandler;
 import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.lib.OtherMods;
 import net.minecraftforge.fml.common.Mod;
@@ -29,6 +30,8 @@ public class FTBGuides
 	@Mod.EventHandler
 	public void onPreInit(FMLPreInitializationEvent event)
 	{
+		FTBGuidesConfig.sync();
+		FTBGuidesNetHandler.init();
 		PROXY.preInit();
 	}
 

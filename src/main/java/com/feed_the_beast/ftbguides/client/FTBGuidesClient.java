@@ -31,16 +31,12 @@ public class FTBGuidesClient extends FTBGuidesCommon
 	@Override
 	public void preInit()
 	{
-		super.preInit();
-		FTBGuidesClientConfig.sync();
 		ClientRegistry.registerKeyBinding(KEY_GUIDE = new KeyBinding("key.ftbguides.guide", KeyConflictContext.IN_GAME, KeyModifier.NONE, Keyboard.KEY_NONE, FTBLib.KEY_CATEGORY));
 	}
 
 	@Override
 	public void postInit()
 	{
-		super.postInit();
-
 		if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager)
 		{
 			((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> setShouldReload());

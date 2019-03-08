@@ -24,7 +24,6 @@ public class FTBGuidesEventHandler
 	public static void onFTBLibPreInitRegistry(FTBLibPreInitRegistryEvent event)
 	{
 		FTBLibPreInitRegistryEvent.Registry registry = event.getRegistry();
-		registry.registerServerReloadHandler(new ResourceLocation(FTBGuides.MOD_ID, "config"), reloadEvent -> FTBGuidesConfig.sync());
 		registry.registerServerReloadHandler(new ResourceLocation(FTBGuides.MOD_ID, "server_info"), reloadEvent -> FTBGuidesCommon.reloadServerGuide());
 
 		registry.registerSyncData(FTBGuides.MOD_ID, new ISyncData()

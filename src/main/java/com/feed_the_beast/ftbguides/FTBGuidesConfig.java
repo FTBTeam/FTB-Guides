@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  */
 @Mod.EventBusSubscriber(modid = FTBGuides.MOD_ID)
 @Config(modid = FTBGuides.MOD_ID, category = "", name = "ftbguides/config")
+@Config.LangKey(FTBGuides.MOD_ID)
 public class FTBGuidesConfig
 {
 	@Config.LangKey("stat.generalButton")
@@ -28,10 +29,9 @@ public class FTBGuidesConfig
 		public String base_uri = "https://guides.latmod.com";
 	}
 
-	public static boolean sync()
+	public static void sync()
 	{
 		ConfigManager.sync(FTBGuides.MOD_ID, Config.Type.INSTANCE);
-		return true;
 	}
 
 	@SubscribeEvent

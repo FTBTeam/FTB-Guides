@@ -289,7 +289,7 @@ public class GuiGuide extends GuiBase
 		if (page == page.getRoot() && !FTBGuidesClientConfig.general.last_guide_version.equals(FTBGuidesConfig.general.modpack_guide_version) && page.getSubRaw("modpack_guide") != null)
 		{
 			FTBGuidesClientConfig.general.last_guide_version = FTBGuidesConfig.general.modpack_guide_version;
-			FTBGuidesClientConfig.sync();
+			FTBGuidesConfig.sync();
 			FTBGuidesClient.openGuidesGui("/modpack_guide");
 		}
 
@@ -416,7 +416,7 @@ public class GuiGuide extends GuiBase
 		else if (scheme.equals("theme"))
 		{
 			FTBGuidesClientConfig.general.theme = GuideTheme.get(FTBGuidesClientConfig.general.theme).next.getID();
-			FTBGuidesClientConfig.sync();
+			FTBGuidesConfig.sync();
 			page.getRoot().updateCachedProperties(true);
 			refreshWidgets();
 			return true;

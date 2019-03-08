@@ -1,6 +1,5 @@
 package com.feed_the_beast.ftbguides;
 
-import com.feed_the_beast.ftbguides.net.FTBGuidesNetHandler;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -19,8 +18,6 @@ public class FTBGuidesCommon
 
 	public void preInit()
 	{
-		FTBGuidesConfig.sync();
-		FTBGuidesNetHandler.init();
 	}
 
 	public void postInit()
