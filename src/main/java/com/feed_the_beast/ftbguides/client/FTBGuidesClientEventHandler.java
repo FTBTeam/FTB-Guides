@@ -101,6 +101,7 @@ public class FTBGuidesClientEventHandler
 		else if (event.getID().getNamespace().equals("guide"))
 		{
 			FTBGuidesClient.openGuidesGui(event.getID().getPath());
+			event.setCanceled(true);
 		}
 	}
 }
