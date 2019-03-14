@@ -1,12 +1,12 @@
 tile.ftbguides.quest_block.name=Quest Block
 
 # Config
-ftbguides=FTB Guides Common
+ftbguides=FTB Guides Modpack
 ftbguides.general.modpack_guide_version=Modpack Guide Version
 ftbguides.general.flash_guides=Flash Guides Button
 ftbguides.general.base_uri=Base URI
 
-ftbguides_client=FTB Guides Client
+ftbguides_local=FTB Guides Local
 ftbguides.general.use_unicode_font=Use Unicode Font
 ftbguides.general.background_alpha=Background Alpha
 ftbguides.general.last_guide_version=Last Guide Version
