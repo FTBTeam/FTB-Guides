@@ -1,16 +1,11 @@
 package com.feed_the_beast.mods.ftbguides;
 
-import com.feed_the_beast.ftblib.FTBLib;
 import com.feed_the_beast.ftblib.FTBLibConfig;
-import com.feed_the_beast.ftblib.client.SidebarButton;
-import com.feed_the_beast.ftblib.client.SidebarButtonGroup;
-import com.feed_the_beast.ftblib.client.SidebarButtonManager;
 import com.feed_the_beast.ftblib.lib.gui.misc.GuiLoading;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
-import com.feed_the_beast.ftblib.lib.util.StringUtils;
 import com.feed_the_beast.mods.ftbguides.events.ClientGuideEvent;
 import com.feed_the_beast.mods.ftbguides.gui.GuiGuide;
 import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
@@ -18,8 +13,7 @@ import com.feed_the_beast.mods.ftbguides.gui.GuideTitlePage;
 import com.feed_the_beast.mods.ftbguides.gui.GuideType;
 import com.feed_the_beast.mods.ftbguides.gui.SpecialGuideButton;
 import com.feed_the_beast.mods.ftbguides.gui.components.HRGuideComponent;
-import com.feed_the_beast.mods.ftbguides.gui.components.TextGuideComponent;
-import com.google.gson.JsonArray;
+import com.feed_the_beast.mods.ftbguides.gui.components.ImageGuideComponent;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -29,15 +23,14 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.Proxy;
 import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +93,7 @@ class ThreadLoadGuides extends Thread
 	public String run1()
 	{
 		GuideTheme.THEMES.clear();
+		Proxy proxy = Minecraft.getMinecraft().getProxy();
 
 		try
 		{
@@ -172,278 +166,193 @@ class ThreadLoadGuides extends Thread
 			FTBGuides.LOGGER.info("Loaded Guide Themes: " + GuideTheme.THEMES.values());
 		}
 
+		gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.modpack"));
+		URI modpackGuide = new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide/").toURI();
+
 		root = new GuidePage("root", null);
 		root.title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.home");
+		root.textURI = modpackGuide.resolve("README.md");
 
-		try
+		GuideTitlePage modpackGuidePage = new GuideTitlePage("modpack", root, GuideType.MODPACK);
+		modpackGuidePage.title = new TextComponentTranslation(GuideType.MODPACK.title);
+		loadChildPages(modpackGuidePage, modpackGuide, proxy, 0);
+		modpackGuidePage.cleanup();
+
+		if (!modpackGuidePage.isEmpty())
 		{
-			root.textURI = new URI("https://raw.githubusercontent.com/LatvianModder/FTBGuidesWeb/master");
-			root.textLoadingState = GuidePage.STATE_LOADED;
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return "Base path is incorrect!";
-		}
-
-		List<GuideTitlePage> guides = new ArrayList<>();
-		gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.modpack"));
-
-		JsonElement modpackGuide = DataReader.get(new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide/data.json")).safeJson();
-
-		if (modpackGuide.isJsonObject())
-		{
-			GuideTitlePage page = new GuideTitlePage("modpack_guide", root, GuideType.MODPACK);
-			File folder = new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide");
-			page.textURI = folder.toURI().resolve("index.json");
-			loadLocalPage(folder, page, modpackGuide.getAsJsonObject());
-			page.properties.put("browser_url", new JsonPrimitive(""));
-			guides.add(page);
+			root.addSub(modpackGuidePage);
 		}
 
-		File[] modGuideFiles = new File(Loader.instance().getConfigDir(), "ftbguides/mod_guides").listFiles();
-
-		if (modGuideFiles != null && modGuideFiles.length > 0)
+		if (!FTBGuidesConfig.general.disable_non_modpack_guides)
 		{
-			for (File modGuideFile : modGuideFiles)
+			for (String modid : Minecraft.getMinecraft().getResourceManager().getResourceDomains())
 			{
-				if (modGuideFile.isDirectory())
+				gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.mod") + "\n" + modid);
+				GuideTitlePage page;
+
+				ModContainer mod = Loader.instance().getIndexedModList().get(modid);
+
+				if (mod != null)
 				{
-					gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.mod") + '\n' + modGuideFile.getName());
+					page = new GuideTitlePage(modid, root, GuideType.MOD);
+					page.title = new TextComponentString(mod.getName());
+					String logo = mod.getMetadata().logoFile;
+					Icon logoIcon = Icon.EMPTY;
 
-					JsonElement modGuide = DataReader.get(new File(modGuideFile, "data.json")).safeJson();
-
-					if (modGuide.isJsonObject())
+					if (!logo.isEmpty())
 					{
-						JsonObject json = modGuide.getAsJsonObject();
-						String modid = json.has("modid") ? json.get("modid").getAsString() : "";
+						String s = "assets/" + modid + "/";
 
-						if (!FTBGuidesLocalConfig.general.hide_mods_not_present || modid.isEmpty() || Loader.isModLoaded(modid))
+						if (logo.startsWith(s))
 						{
-							GuideTitlePage page = new GuideTitlePage(modGuideFile.getName(), root, GuideType.MOD);
-							page.textURI = modGuideFile.toURI().resolve("index.json");
-							loadLocalPage(modGuideFile, page, json);
-							page.properties.put("browser_url", new JsonPrimitive(""));
-							guides.add(page);
+							page.icon = Icon.getIcon(modid + ":" + logo.substring(s.length()));
+						}
+					}
+
+					if (!logoIcon.isEmpty())
+					{
+						page.icon = logoIcon;
+					}
+
+					if (!mod.getMetadata().url.isEmpty())
+					{
+						root.properties.put("browser_url", new JsonPrimitive(mod.getMetadata().url));
+					}
+
+					page.text.println(new ImageGuideComponent(page.icon));
+					page.text.println("(Auto-generated)");
+
+					if (!mod.getMetadata().description.isEmpty())
+					{
+						page.text.println(HRGuideComponent.INSTANCE);
+
+						for (String s : mod.getMetadata().description.split("\n"))
+						{
+							page.text.println(s);
 						}
 					}
 				}
+				else
+				{
+					page = new GuideTitlePage(modid, root, GuideType.OTHER);
+					page.title = new TextComponentString(modid);
+				}
+
+				try
+				{
+					loadChildPages(page, new URI("mcresource:/" + modid + ":guide/"), proxy, 0);
+				}
+				catch (Exception ex)
+				{
+				}
+
+				root.addSub(page);
 			}
 		}
 
-		gui.setTitle("Loading Guides\nAPI");
+		gui.setTitle("Loading Guides\nCustom Mod Guides");
+		new ClientGuideEvent(root).post();
+
+		gui.setTitle("Loading Guides\nFinishing");
+		root.cleanup();
+		List<String> rootText = Collections.emptyList();
 
 		try
 		{
-			JsonElement apijson = DataReader.get(new URL(FTBGuidesConfig.general.base_uri + "/api/api.json"), DataReader.JSON, Minecraft.getMinecraft().getProxy()).json();
-			JsonObject api = apijson.getAsJsonObject();
-
-			JsonArray guidesArray = api.get("guides").getAsJsonArray();
-
-			for (JsonElement e : guidesArray)
-			{
-				JsonObject o = e.getAsJsonObject();
-				String id = o.get("id").getAsString();
-				GuideType type = GuideType.NAME_MAP.get(o.get("type").getAsString());
-
-				if (type == GuideType.MOD && FTBGuidesLocalConfig.general.hide_mods_not_present && o.has("modid") && !Loader.isModLoaded(o.get("modid").getAsString()))
-				{
-					continue;
-				}
-				else if (type == GuideType.OTHER && FTBGuidesLocalConfig.general.hide_other)
-				{
-					continue;
-				}
-
-				GuideTitlePage page = new GuideTitlePage(id, root, type);
-
-				if (o.has("authors"))
-				{
-					for (JsonElement e1 : o.get("authors").getAsJsonArray())
-					{
-						page.authors.add(e1.getAsString());
-					}
-				}
-
-				try
-				{
-					loadPage(page, o);
-					guides.add(page);
-				}
-				catch (Exception ex)
-				{
-					ex.printStackTrace();
-				}
-			}
+			rootText = DataReader.get(root.textURI, proxy).safeStringList();
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-
-			GuideTitlePage page = new GuideTitlePage("online_guides", root, GuideType.OTHER);
-			page.title = new TextComponentString("Online Guides");
-			page.icon = GuidePage.DEFAULT_ICON;
-			page.println(StringUtils.color(new TextComponentString("Failed to load online guides! Error: " + ex.getMessage()), TextFormatting.RED));
-			guides.add(page);
 		}
 
-		gui.setTitle("Loading Guides\n" + I18n.format("sidebar_button"));
-
-		GuideTitlePage sidebarButtons = new GuideTitlePage("sidebar_buttons", root, GuideType.OTHER);
-		sidebarButtons.isPresent = true;
-		sidebarButtons.authors.add("LatvianModder");
-		sidebarButtons.icon = Icon.getIcon(FTBLib.MOD_ID + ":textures/gui/teams.png");
-		sidebarButtons.title = new TextComponentTranslation("sidebar_button");
-
-		for (SidebarButtonGroup group : SidebarButtonManager.INSTANCE.groups)
-		{
-			for (SidebarButton button : group.getButtons())
-			{
-				if (button.isVisible() && I18n.hasKey(button.getTooltipLangKey()))
-				{
-					GuidePage page1 = sidebarButtons.getSub(button.id.toString());
-					page1.icon = button.getIcon();
-					page1.title = new TextComponentTranslation(button.getLangKey());
-					page1.println(new TextComponentTranslation(button.getTooltipLangKey()));
-				}
-			}
-		}
-
-		gui.setTitle("Loading Guides\nMod Guides");
-
-		Map<String, GuideTitlePage> eventMap = new HashMap<>();
-		new ClientGuideEvent(root, eventMap).post();
-
-		guides.addAll(eventMap.values());
-
-		for (GuideTitlePage guide : guides)
-		{
-			root.addSub(guide);
-		}
-
-		gui.setTitle("Loading Guides\nFinishing");
-		root.properties.put("browser_url", new JsonPrimitive(FTBGuidesConfig.general.base_uri));
-		root.addSub(sidebarButtons);
-		root.cleanup();
 		root.updateCachedProperties(true);
-		root.sort(false);
+		root.textLoadingState = GuidePage.STATE_LOADING;
 
-		for (GuideType type : GuideType.NAME_MAP)
+		/*
+		if (FTBGuidesConfig.general.disable_non_modpack_guides && root.pages.size() == 1)
 		{
-			boolean added = false;
+			root.pages.addAll(root.pages.get(0).pages);
+			root.pages.remove(0);
+		}*/
 
-			for (GuideTitlePage page : guides)
-			{
-				if (page.type == type)
-				{
-					if (!added)
-					{
-						added = true;
-						root.println(new TextGuideComponent(I18n.format(type.titlePlural)).setProperty("text_scale", "1.5").setProperty("bold", "true"));
-					}
-
-					root.println(new TextGuideComponent(page.title.getUnformattedText()).setProperty("icon", page.icon.toString()).setProperty("click", page.getID()));
-				}
-			}
-		}
-
-		root.println(HRGuideComponent.INSTANCE);
+		root.onPageLoaded(rootText);
 		return "";
 	}
 
-	private void loadPageBase(GuidePage page, JsonObject json)
+	private void loadChildPages(GuidePage parent, URI parentURI, Proxy proxy, int depth)
 	{
-		page.title = json.has("title") ? new TextComponentString(json.get("title").getAsString()) : new TextComponentString(page.getID());
-
-		if (FTBLibConfig.debugging.print_more_info && page.textURI != null)
+		if (depth > 20)
 		{
-			FTBGuides.LOGGER.info("Base path of " + page.getPath() + ": " + page.textURI.resolve("."));
+			FTBGuides.LOGGER.warn("Depth is > 20, stopping at " + parent.getID());
+			return;
 		}
 
-		if (!json.has("icon"))
+		JsonElement index = DataReader.get(parentURI.resolve("index.json"), proxy).safeJson();
+
+		if (index.isJsonArray())
 		{
-			json.addProperty("icon", "icon.png");
-		}
-
-		page.icon = page.getIcon(json.get("icon").getAsString());
-
-		if (page.icon.isEmpty())
-		{
-			page.icon = Icon.getIcon(json.get("icon_url").getAsString());
-
-			if (page.icon.isEmpty())
+			for (JsonElement element : index.getAsJsonArray())
 			{
-				page.icon = GuidePage.DEFAULT_ICON;
-			}
-		}
-
-		if (json.has("buttons"))
-		{
-			for (JsonElement e : json.get("buttons").getAsJsonArray())
-			{
-				page.specialButtons.add(new SpecialGuideButton(e.getAsJsonObject()));
-			}
-		}
-
-		for (Map.Entry<String, JsonElement> entry : json.entrySet())
-		{
-			String key = entry.getKey();
-
-			if (!GuidePage.STANDARD_KEYS.contains(key))
-			{
-				page.properties.put(key, entry.getValue());
-			}
-		}
-	}
-
-	private void loadPage(GuidePage page, JsonObject json) throws Exception
-	{
-		page.textURI = new URI(json.get("original_text_url").getAsString());
-
-		loadPageBase(page, json);
-
-		if (json.has("pages"))
-		{
-			for (JsonElement e : json.get("pages").getAsJsonArray())
-			{
-				JsonObject o = e.getAsJsonObject();
-				loadPage(page.getSub(o.get("id").getAsString()), o);
-			}
-		}
-
-		page.properties.put("browser_url", new JsonPrimitive(FTBGuidesConfig.general.base_uri + page.getPath()));
-	}
-
-	private void loadLocalPage(File folder, GuidePage page, JsonObject json)
-	{
-		loadPageBase(page, json);
-
-		if (json.has("pages"))
-		{
-			for (JsonElement e : json.get("pages").getAsJsonArray())
-			{
-				JsonObject o = e.getAsJsonObject();
-				String id = o.get("id").getAsString();
-				File folder1 = new File(folder, id);
-				GuidePage page1 = page.getSub(id);
-				loadLocalPage(folder1, page1, o);
-
-				try
+				if (element.isJsonObject())
 				{
-					File shortFile = new File(folder, id + ".json");
+					JsonObject pageData = element.getAsJsonObject();
 
-					if (shortFile.exists())
+					if (pageData.has("id"))
 					{
-						page1.textURI = shortFile.toURI();
+						GuidePage page = parent.getSub(pageData.get("id").getAsString());
+						URI uri = parentURI.resolve(page.getID() + "/");
+
+						FTBGuides.LOGGER.info("Loading " + page.getPath() + " from " + uri);
+
+						if (pageData.has("title"))
+						{
+							String t = pageData.get("title").getAsString();
+							page.title = t.startsWith("${") && t.endsWith("}") ? new TextComponentTranslation(t.substring(2, t.length() - 1)) : new TextComponentString(t);
+						}
+						else
+						{
+							page.title = new TextComponentString(page.getID());
+						}
+
+						if (pageData.has("icon"))
+						{
+							page.icon = page.getIcon(pageData.get("icon"));
+
+							if (page.icon.isEmpty())
+							{
+								page.icon = GuidePage.DEFAULT_ICON;
+							}
+						}
+
+						page.textURI = uri.resolve("README.md");
+
+						if (pageData.has("buttons"))
+						{
+							for (JsonElement e : pageData.get("buttons").getAsJsonArray())
+							{
+								page.specialButtons.add(new SpecialGuideButton(e.getAsJsonObject()));
+							}
+						}
+
+						if (pageData.has("properties"))
+						{
+							for (Map.Entry<String, JsonElement> entry : pageData.get("properties").getAsJsonObject().entrySet())
+							{
+								page.properties.put(entry.getKey(), entry.getValue());
+							}
+						}
+
+						//TODO: Style
+
+						try
+						{
+							loadChildPages(page, uri, proxy, depth + 1);
+						}
+						catch (StackOverflowError error)
+						{
+							FTBGuides.LOGGER.error("Failed to load " + page.getPath() + " child pages!");
+						}
 					}
-					else
-					{
-						page1.textURI = new File(folder1, "index.json").toURI();
-					}
-				}
-				catch (Exception ex)
-				{
-					ex.printStackTrace();
 				}
 			}
 		}

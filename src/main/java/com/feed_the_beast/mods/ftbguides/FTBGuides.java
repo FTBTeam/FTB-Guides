@@ -18,6 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
+import java.util.Collections;
+
 @Mod(
 		modid = FTBGuides.MOD_ID,
 		name = FTBGuides.MOD_NAME,
@@ -50,13 +52,26 @@ public class FTBGuides
 	{
 		if (Minecraft.getMinecraft().getResourceManager() instanceof SimpleReloadableResourceManager)
 		{
-			((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(resourceManager -> setShouldReload());
+			((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new GuideReloadListener());
 		}
 	}
 
 	public static void setShouldReload()
 	{
 		guidesGui = null;
+
+		if (reloadingThread != null)
+		{
+			try
+			{
+				reloadingThread.interrupt();
+			}
+			catch (Throwable throwable)
+			{
+			}
+
+			reloadingThread = null;
+		}
 	}
 
 	public static boolean openGuidesGui(String path)
@@ -85,10 +100,17 @@ public class FTBGuides
 
 				if (page != null)
 				{
-					if (page.textURI != null && page.textLoadingState == GuidePage.STATE_NOT_LOADING)
+					if (page.textLoadingState == GuidePage.STATE_NOT_LOADING)
 					{
-						new ThreadLoadPage(page).start();
-						return false;
+						if (page.textURI == null)
+						{
+							page.onPageLoaded(Collections.emptyList());
+						}
+						else
+						{
+							new ThreadLoadPage(page).start();
+							return false;
+						}
 					}
 					else
 					{

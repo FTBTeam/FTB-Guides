@@ -42,13 +42,10 @@ configurations.all {
 repositories {
 	mavenLocal()
 	maven { url "https://maven.latmod.com/" } //FTBLib
-	maven { url "http://dvs1.progwml6.com/files/maven" } //Tinker's Construct
 }
 
 dependencies {
 	deobfCompile "com.feed_the_beast.mods:FTBLib:${ftblib_version}"
-	deobfProvided "slimeknights.mantle:Mantle:${mantle_version}"
-	deobfProvided "slimeknights:TConstruct:${tconstruct_version}"
 }
 
 processResources {

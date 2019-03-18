@@ -26,14 +26,12 @@ public class TextGuideComponent extends GuideComponent
 		public final TextGuideComponent component;
 		public final double scale;
 		public final String[] text;
-		public final boolean bold, italic, underlined, striketrough, code;
-		public final Icon icon;
 
 		public TextWidget(ComponentPanel parent, TextGuideComponent t)
 		{
 			super(parent);
 			component = t;
-			scale = MathHelper.clamp(Double.parseDouble(component.getProperty("text_scale", true, "1")), 0.25D, 4D);
+			scale = MathHelper.clamp(component.textScale, 0.25D, 4D);
 			List<String> strings = new ArrayList<>();
 			Theme theme = getGui().getTheme();
 
@@ -44,38 +42,31 @@ public class TextGuideComponent extends GuideComponent
 
 			text = strings.isEmpty() ? StringUtils.EMPTY_ARRAY : strings.toArray(new String[0]);
 
-			bold = component.getProperty("bold", true).equals("true");
-			italic = component.getProperty("italic", true).equals("true");
-			underlined = component.getProperty("underlined", true).equals("true");
-			striketrough = component.getProperty("striketrough", true).equals("true");
-			code = component.getProperty("code", true).equals("true");
-			icon = Icon.getIcon(component.getProperty("icon", false));
-
 			setWidth(0);
 
 			for (int i = 0; i < text.length; i++)
 			{
-				if (bold)
+				if (component.bold)
 				{
 					text[i] = TextFormatting.BOLD + text[i];
 				}
 
-				if (italic)
+				if (component.italic)
 				{
 					text[i] = TextFormatting.ITALIC + text[i];
 				}
 
-				if (underlined)
+				if (component.underlined)
 				{
 					text[i] = TextFormatting.UNDERLINE + text[i];
 				}
 
-				if (striketrough)
+				if (component.strikethrough)
 				{
 					text[i] = TextFormatting.STRIKETHROUGH + text[i];
 				}
 
-				if (code)
+				if (component.code)
 				{
 					setWidth(Math.max(width, (int) (text[i].length() * (FTBGuidesLocalConfig.general.use_unicode_font ? 4 : 6) * scale)));
 				}
@@ -88,7 +79,7 @@ public class TextGuideComponent extends GuideComponent
 			int h1 = (int) ((theme.getFontHeight() + 1D) * scale);
 			setHeight(text.length == 0 ? h1 : h1 * text.length);
 
-			if (!icon.isEmpty())
+			if (!component.icon.isEmpty())
 			{
 				setWidth(width + 10);
 			}
@@ -97,11 +88,9 @@ public class TextGuideComponent extends GuideComponent
 		@Override
 		public void addMouseOverText(List<String> list)
 		{
-			String s = component.getProperty("hover", false);
-
-			if (!s.isEmpty())
+			if (!component.hover.isEmpty())
 			{
-				list.add(s);
+				list.add(component.hover);
 			}
 		}
 
@@ -110,9 +99,7 @@ public class TextGuideComponent extends GuideComponent
 		{
 			if (isMouseOver())
 			{
-				String s = component.getProperty("click", true);
-
-				if (!s.isEmpty() && handleClick(s))
+				if (!component.click.isEmpty() && handleClick(component.click))
 				{
 					GuiHelper.playClickSound();
 					return true;
@@ -125,11 +112,11 @@ public class TextGuideComponent extends GuideComponent
 		@Override
 		public void draw(Theme theme, int x, int y, int w, int h)
 		{
-			boolean mouseOver = isMouseOver() && (!component.getProperty("click", true).isEmpty() || !component.getProperty("hover", false).isEmpty());
+			boolean mouseOver = isMouseOver() && (!component.click.isEmpty() || !component.hover.isEmpty());
 
-			if (!icon.isEmpty())
+			if (!component.icon.isEmpty())
 			{
-				icon.draw(x, y, 8, 8);
+				component.icon.draw(x, y, 8, 8);
 				x += 10;
 			}
 
@@ -143,11 +130,11 @@ public class TextGuideComponent extends GuideComponent
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(x, y, 0);
 			GlStateManager.scale(scale, scale, 1D);
-			Color4I color = theme.getContentColor((mouseOver || code) ? WidgetType.MOUSE_OVER : WidgetType.NORMAL);
+			Color4I color = theme.getContentColor((mouseOver || component.code) ? WidgetType.MOUSE_OVER : WidgetType.NORMAL);
 
 			for (int i = 0; i < text.length; i++)
 			{
-				if (code)
+				if (component.code)
 				{
 					for (int ci = 0; ci < text[i].length(); ci++)
 					{
@@ -170,6 +157,15 @@ public class TextGuideComponent extends GuideComponent
 	}
 
 	public final String text;
+	public Icon icon = Icon.EMPTY;
+	public boolean bold = false;
+	public boolean italic = false;
+	public boolean underlined = false;
+	public boolean strikethrough = false;
+	public boolean code = false;
+	public String click = "";
+	public String hover = "";
+	public double textScale = 1D;
 
 	public TextGuideComponent(String txt)
 	{

@@ -17,20 +17,14 @@ public class FTBGuidesLocalConfig
 		@Config.Comment("Use unicode font for guides.")
 		public boolean use_unicode_font = true;
 
-		@Config.Comment("Hide mod guides that aren't loaded.")
-		public boolean hide_mods_not_present = true;
-
-		@Config.Comment("Hide all guides with type 'other'.")
-		public boolean hide_other = false;
-
-		@Config.Comment("Background alpha of the Guide GUI.")
-		@Config.RangeInt(min = 0, max = 255)
-		public int background_alpha = 255;
-
 		@Config.Comment({"Last guide version.", "Do not change, for internal use only."})
 		public String last_guide_version = "";
 
 		@Config.Comment("Current theme of guides.")
-		public String theme = "paper";
+		public String theme = "dark";
+
+		@Config.Comment("Width of the GUI based on your window width. Default to 50%.")
+		@Config.RangeInt(min = 10, max = 99)
+		public int width_percent = 50;
 	}
 }

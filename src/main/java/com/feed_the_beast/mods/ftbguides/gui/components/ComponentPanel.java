@@ -1,6 +1,5 @@
 package com.feed_the_beast.mods.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.MismatchingParentPanelException;
@@ -38,8 +37,6 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 	@Override
 	public void refreshWidgets()
 	{
-		boolean printInfo = FTBLibConfig.debugging.print_more_info && false;
-
 		int x = 0;
 		int y = 1;
 		int h = 0;
@@ -53,18 +50,13 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		theme.pushFontUnicode(FTBGuidesLocalConfig.general.use_unicode_font);
 		addWidgets();
 
-		if (printInfo)
-		{
-			FTBGuides.LOGGER.info(getClass().getName() + ": Begin [" + getComponents().size() + " components]");
-		}
-
 		try
 		{
-			int i = 0;
+			List<GuideComponent> components = getComponents();
 
-			if (getComponents().size() == 1)
+			if (components.size() == 1)
 			{
-				Widget widget = (Widget) getComponents().get(0).createWidget(this);
+				Widget widget = (Widget) components.get(0).createWidget(this);
 
 				if (widget instanceof Panel)
 				{
@@ -77,9 +69,7 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 			}
 			else
 			{
-				int ci = 0;
-
-				for (GuideComponent component : getComponents())
+				for (GuideComponent component : components)
 				{
 					if (!component.isEmpty())
 					{
@@ -109,20 +99,12 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 						widget.posX = x;
 						widget.posY = y;
 
-						if (printInfo)
-						{
-							FTBGuides.LOGGER.info(getClass().getName() + ": " + i + " - " + totalWidth + ":" + totalHeight + " ; [" + widget.width + ":" + widget.height + "] " + widget.getClass().getSimpleName());
-						}
-
 						x += widget.width;
 						w = Math.max(w, x);
 						h = Math.max(h, widget.height);
 
 						add(widget);
-						i++;
 					}
-
-					ci++;
 				}
 
 				totalWidth = Math.max(totalWidth, x);
@@ -140,12 +122,6 @@ public abstract class ComponentPanel extends Panel implements IGuideComponentWid
 		}
 
 		alignWidgets();
-
-		if (printInfo)
-		{
-			FTBGuides.LOGGER.info(getClass().getName() + ": End " + width + ":" + height);
-		}
-
 		theme.popFontUnicode();
 	}
 

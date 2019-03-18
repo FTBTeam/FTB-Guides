@@ -1,0 +1,140 @@
+package com.feed_the_beast.mods.ftbguides.gui.components;
+
+import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.event.ClickEvent;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author LatvianModder
+ */
+public class ComponentPage
+{
+	public static final Pattern LINK_PATTERN = Pattern.compile("^\\[(.*)\\]\\((.*)\\)$");
+	public static final Pattern IMAGE_PATTERN = Pattern.compile("^!\\[(.*)\\]\\((.*)\\)$");
+	public static final Pattern HR_PATTERN = Pattern.compile("^-{3,}|\\*{3,}|_{3,}$");
+
+	public final GuidePage page;
+	public final List<GuideComponent> components;
+
+	public ComponentPage(GuidePage p)
+	{
+		page = p;
+		components = new ArrayList<>();
+	}
+
+	public void println(GuideComponent component)
+	{
+		if (!components.isEmpty() && component.isInline())
+		{
+			components.add(LineBreakGuideComponent.INSTANCE);
+		}
+
+		components.add(component);
+	}
+
+	public void println(String text)
+	{
+		println(text.isEmpty() ? LineBreakGuideComponent.INSTANCE : new TextGuideComponent(text));
+	}
+
+	public void println()
+	{
+		println(LineBreakGuideComponent.INSTANCE);
+	}
+
+	public void println(@Nullable ITextComponent component)
+	{
+		if (component != null)
+		{
+			for (ITextComponent c : component)
+			{
+				TextGuideComponent t = new TextGuideComponent(c.getUnformattedComponentText());
+				t.bold = c.getStyle().getBold();
+				t.italic = c.getStyle().getItalic();
+				t.strikethrough = c.getStyle().getStrikethrough();
+				t.underlined = c.getStyle().getUnderlined();
+
+				ClickEvent clickEvent = c.getStyle().getClickEvent();
+
+				if (clickEvent != null)
+				{
+					t.click = clickEvent.getAction().getCanonicalName() + ":" + clickEvent.getValue();
+				}
+
+				components.add(t);
+			}
+		}
+
+		components.add(LineBreakGuideComponent.INSTANCE);
+	}
+
+	public void printlnMarkdown(String s)
+	{
+		s = s.trim();
+
+		if (s.isEmpty())
+		{
+			println(LineBreakGuideComponent.INSTANCE);
+			return;
+		}
+		else if (HR_PATTERN.matcher(s).matches())
+		{
+			println(HRGuideComponent.INSTANCE);
+			return;
+		}
+
+		double scale = 1D;
+		boolean bold = false;
+
+		if (s.startsWith("###"))
+		{
+			s = s.substring(3).trim();
+			scale = 1.25D;
+		}
+		else if (s.startsWith("##"))
+		{
+			s = s.substring(2).trim();
+			scale = 1.25D;
+			bold = true;
+		}
+		else if (s.startsWith("#"))
+		{
+			s = s.substring(1).trim();
+			scale = 1.5D;
+			bold = true;
+		}
+
+		Matcher matcher = IMAGE_PATTERN.matcher(s);
+
+		if (matcher.find())
+		{
+			ImageGuideComponent component = new ImageGuideComponent(page.getIcon(matcher.group(2)));
+			component.hover = matcher.group(1);
+			println(component);
+			return;
+		}
+
+		matcher = LINK_PATTERN.matcher(s);
+
+		if (matcher.find())
+		{
+			TextGuideComponent component = new TextGuideComponent(matcher.group(1));
+			component.textScale = scale;
+			component.bold = bold;
+			component.click = matcher.group(2);
+			println(component);
+			return;
+		}
+
+		TextGuideComponent component = new TextGuideComponent(s);
+		component.textScale = scale;
+		component.bold = bold;
+		println(component);
+	}
+}

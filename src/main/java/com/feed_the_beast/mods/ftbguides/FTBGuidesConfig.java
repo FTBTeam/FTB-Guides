@@ -25,8 +25,8 @@ public class FTBGuidesConfig
 		@Config.Comment("Flash Guides button with '!' before the first time it's opened, and open modpack guide.")
 		public boolean flash_guides = true;
 
-		@Config.Comment("URI to load main guide page from.")
-		public String base_uri = "https://guides.latmod.com";
+		@Config.Comment("Disabled mod and resource pack added guides.")
+		public boolean disable_non_modpack_guides = false;
 	}
 
 	public static void sync()

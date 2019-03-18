@@ -1,6 +1,5 @@
 package com.feed_the_beast.mods.ftbguides.gui.components;
 
-import com.feed_the_beast.ftblib.FTBLibConfig;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.MismatchingParentPanelException;
 import com.feed_the_beast.ftblib.lib.gui.Panel;
@@ -17,7 +16,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author LatvianModder
@@ -42,12 +40,11 @@ public class TableGuideComponent extends CombinedGuideComponent
 	public static class HeadCellComponent extends CombinedGuideComponent
 	{
 		public final TableGuideComponent table;
-		public Map<String, String> style = null;
 
 		public HeadCellComponent(TableGuideComponent t)
 		{
 			table = t;
-			setProperty("bold", "true");
+			//bold = true;
 		}
 	}
 
@@ -58,19 +55,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 		public CellComponent(HeadCellComponent h)
 		{
 			head = h;
-		}
-
-		@Override
-		public String getProperty(String key, boolean includeParent)
-		{
-			String p = hasProperties() ? properties.get(key) : null;
-
-			if (p == null)
-			{
-				p = head.style != null && !head.style.isEmpty() ? head.style.get(key) : null;
-			}
-
-			return p == null ? ((parent == null || !includeParent) ? "" : parent.getProperty(key, true)) : p;
 		}
 	}
 
@@ -106,8 +90,8 @@ public class TableGuideComponent extends CombinedGuideComponent
 			super(parent);
 			setUnicode(true);
 			table = c;
-			padding = Integer.parseInt(table.getProperty("padding", true, "2"));
-			drawBorders = table.getProperty("borders", true, "true").equals("true");
+			padding = 2;
+			drawBorders = true;
 		}
 
 		@Override
@@ -119,8 +103,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 		@Override
 		public void refreshWidgets()
 		{
-			boolean printInfo = FTBLibConfig.debugging.print_more_info && false;
-
 			totalWidth = 0;
 			totalHeight = 0;
 			widgets.clear();
@@ -128,11 +110,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 			theme.pushFontUnicode(true);
 			int[] widths = new int[table.rows.size()];
 			int[] heights = new int[table.components.size() / widths.length + (table.hasHead ? 1 : 0)];
-
-			if (printInfo)
-			{
-				FTBGuides.LOGGER.info("Table: Begin [" + (widths.length * heights.length) + " cells, " + widths.length + "x" + heights.length + "]");
-			}
 
 			int[] minWidths = new int[widths.length];
 			int[] maxWidths = new int[widths.length];
@@ -147,8 +124,8 @@ public class TableGuideComponent extends CombinedGuideComponent
 
 			for (i = 0; i < maxWidths.length; i++)
 			{
-				maxWidths[i] = Integer.parseInt(table.rows.get(i).getProperty("max_width", true, Integer.toString(Integer.MAX_VALUE)));
-				minWidths[i] = Integer.parseInt(table.rows.get(i).getProperty("min_width", true, "8"));
+				minWidths[i] = 8;
+				maxWidths[i] = Integer.MAX_VALUE;
 			}
 
 			try
@@ -164,12 +141,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 
 						widths[i] = Math.max(widths[i], widget.width);
 						heights[0] = Math.max(heights[0], widget.height);
-
-						if (printInfo)
-						{
-							FTBGuides.LOGGER.info("Table Head " + i + ": " + widget.width + ":" + widget.height);
-						}
-
 						add(widget);
 					}
 				}
@@ -195,12 +166,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 
 					widths[hi] = Math.max(widths[hi], widget.width);
 					heights[vi] = Math.max(heights[vi], widget.height);
-
-					if (printInfo)
-					{
-						FTBGuides.LOGGER.info("Table Cell " + hi + ":" + vi + ": " + widget.width + ":" + widget.height);
-					}
-
 					add(widget);
 					i++;
 				}
@@ -259,12 +224,6 @@ public class TableGuideComponent extends CombinedGuideComponent
 			}
 
 			setSize(totalWidth, totalHeight);
-
-			if (printInfo)
-			{
-				FTBGuides.LOGGER.info("Table: End " + width + ":" + height);
-			}
-
 			theme.popFontUnicode();
 		}
 

@@ -6,15 +6,15 @@ import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.icon.URLImageIcon;
 import com.feed_the_beast.ftblib.lib.util.FinalIDObject;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
+import com.feed_the_beast.mods.ftbguides.FTBGuides;
 import com.feed_the_beast.mods.ftbguides.FTBGuidesLocalConfig;
 import com.feed_the_beast.mods.ftbguides.GuideTheme;
+import com.feed_the_beast.mods.ftbguides.gui.components.ComponentPage;
 import com.feed_the_beast.mods.ftbguides.gui.components.GuideComponent;
-import com.feed_the_beast.mods.ftbguides.gui.components.ImageGuideComponent;
-import com.feed_the_beast.mods.ftbguides.gui.components.LineBreakGuideComponent;
+import com.feed_the_beast.mods.ftbguides.gui.components.HRGuideComponent;
 import com.feed_the_beast.mods.ftbguides.gui.components.TextGuideComponent;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
 import net.minecraft.init.Items;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -22,25 +22,20 @@ import net.minecraft.util.text.TextComponentString;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 {
 	public static final Icon DEFAULT_ICON = ItemIcon.getItemIcon(Items.BOOK);
-	public static final Collection<String> STANDARD_KEYS = new HashSet<>(Arrays.asList("id", "title", "icon", "icon_url", "buttons", "pages"));
 
 	public static final int STATE_NOT_LOADING = 0;
 	public static final int STATE_LOADING = 1;
 	public static final int STATE_LOADED = 2;
 
 	public final GuidePage parent;
-	public final List<GuideComponent> components = new ArrayList<>();
+	public final ComponentPage text;
 	public final List<GuidePage> pages = new ArrayList<>(0);
 	public ITextComponent title;
 	public Icon icon = DEFAULT_ICON;
@@ -49,7 +44,6 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public int textLoadingState = STATE_NOT_LOADING;
 	public final HashMap<String, JsonElement> properties = new HashMap<>();
 
-	public GuideType type = GuideType.OTHER;
 	public Icon background = Icon.EMPTY;
 	public Color4I textColor = Icon.EMPTY;
 	public Color4I textColorMouseOver = Icon.EMPTY;
@@ -59,6 +53,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	{
 		super(id);
 		parent = p;
+		text = new ComponentPage(this);
 	}
 
 	public String getPath()
@@ -74,41 +69,6 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public ITextComponent getDisplayName()
 	{
 		return title == null ? new TextComponentString(getID()) : title;
-	}
-
-	public void println(GuideComponent component)
-	{
-		if (!components.isEmpty() && component.isInline())
-		{
-			components.add(LineBreakGuideComponent.INSTANCE);
-		}
-
-		components.add(component);
-	}
-
-	public void println(String text)
-	{
-		println(new TextGuideComponent(text));
-	}
-
-	public void println(Icon icon)
-	{
-		println(new ImageGuideComponent(icon));
-	}
-
-	public void println(@Nullable ITextComponent component)
-	{
-		if (component != null)
-		{
-			for (ITextComponent c : component)
-			{
-				TextGuideComponent t = new TextGuideComponent(c.getUnformattedComponentText());
-				//FIXME: Formatting
-				components.add(t);
-			}
-		}
-
-		components.add(LineBreakGuideComponent.INSTANCE);
 	}
 
 	public GuidePage addSub(GuidePage c)
@@ -186,7 +146,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 	public void clear()
 	{
-		components.clear();
+		text.components.clear();
 		pages.clear();
 		properties.clear();
 	}
@@ -204,7 +164,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			return false;
 		}
 
-		for (GuideComponent component : components)
+		for (GuideComponent component : text.components)
 		{
 			if (!component.isEmpty())
 			{
@@ -224,19 +184,6 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			for (GuidePage p : pages)
 			{
 				p.sort(true);
-			}
-		}
-	}
-
-	public void readProperties(JsonObject json)
-	{
-		properties.clear();
-
-		for (Map.Entry<String, JsonElement> entry : json.entrySet())
-		{
-			if (!STANDARD_KEYS.contains(entry.getKey()))
-			{
-				properties.put(entry.getKey(), entry.getValue() == null ? JsonNull.INSTANCE : entry.getValue());
 			}
 		}
 	}
@@ -278,10 +225,70 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 		return Icon.getIcon(path);
 	}
 
+	public Icon getIcon(JsonElement json)
+	{
+		if (json.isJsonPrimitive())
+		{
+			return getIcon(json.getAsString());
+		}
+
+		return Icon.getIcon(json);
+	}
+
 	@Override
 	public int compareTo(GuidePage o)
 	{
-		int i = type.compareTo(o.type);
-		return i == 0 ? getDisplayName().getUnformattedText().compareToIgnoreCase(o.getDisplayName().getUnformattedText()) : i;
+		return getDisplayName().getUnformattedText().compareToIgnoreCase(o.getDisplayName().getUnformattedText());
+	}
+
+	public void onPageLoaded(List<String> txt)
+	{
+		if (!pages.isEmpty())
+		{
+			GuideType prevType = null;
+
+			for (GuidePage p : pages)
+			{
+				GuideType type = p instanceof GuideTitlePage ? ((GuideTitlePage) p).type : null;
+
+				if (prevType != type)
+				{
+					if (prevType != null)
+					{
+						text.println(HRGuideComponent.INSTANCE);
+					}
+
+					prevType = type;
+				}
+
+				TextGuideComponent component = new TextGuideComponent(p.getDisplayName().getUnformattedText());
+				component.icon = p.icon;
+				component.click = p.getID();
+				text.println(component);
+			}
+
+			text.println(HRGuideComponent.INSTANCE);
+		}
+
+		if (!specialButtons.isEmpty())
+		{
+			for (SpecialGuideButton button : specialButtons)
+			{
+				TextGuideComponent component = new TextGuideComponent(button.title.getUnformattedText());
+				component.icon = button.icon;
+				component.click = button.click;
+				text.println(component);
+			}
+
+			text.println(HRGuideComponent.INSTANCE);
+		}
+
+		for (String s : txt)
+		{
+			text.printlnMarkdown(s);
+		}
+
+		textLoadingState = GuidePage.STATE_LOADED;
+		FTBGuides.openGuidesGui(getPath());
 	}
 }

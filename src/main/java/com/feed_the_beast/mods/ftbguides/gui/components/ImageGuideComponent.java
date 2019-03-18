@@ -6,6 +6,7 @@ import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -21,8 +22,8 @@ public class ImageGuideComponent extends GuideComponent
 		{
 			super(parent);
 			component = c;
-			setWidth((int) (component.width / (double) getScreen().getScaleFactor()));
-			setHeight((int) (component.height / (double) getScreen().getScaleFactor()));
+			setWidth((int) (component.getWidth() / (double) getScreen().getScaleFactor()));
+			setHeight((int) (component.getHeight() / (double) getScreen().getScaleFactor()));
 
 			if (width > parent.maxWidth)
 			{
@@ -36,11 +37,9 @@ public class ImageGuideComponent extends GuideComponent
 		@Override
 		public void addMouseOverText(List<String> list)
 		{
-			String s = component.getProperty("hover", false);
-
-			if (!s.isEmpty())
+			if (!component.hover.isEmpty())
 			{
-				list.add(s);
+				list.add(component.hover);
 			}
 		}
 
@@ -49,9 +48,7 @@ public class ImageGuideComponent extends GuideComponent
 		{
 			if (isMouseOver())
 			{
-				String s = component.getProperty("click", true);
-
-				if (!s.isEmpty() && handleClick(s))
+				if (!component.click.isEmpty() && handleClick(component.click))
 				{
 					GuiHelper.playClickSound();
 					return true;
@@ -69,7 +66,9 @@ public class ImageGuideComponent extends GuideComponent
 	}
 
 	public final Icon image;
-	public final int width, height;
+	private int width, height;
+	public String click = "";
+	public String hover = "";
 
 	public ImageGuideComponent(Icon i, int w, int h)
 	{
@@ -80,7 +79,9 @@ public class ImageGuideComponent extends GuideComponent
 
 	public ImageGuideComponent(Icon i)
 	{
-		this(i, 16, 16);
+		image = i;
+		width = -1;
+		height = -1;
 	}
 
 	public String toString()
@@ -92,6 +93,51 @@ public class ImageGuideComponent extends GuideComponent
 	public boolean isEmpty()
 	{
 		return image.isEmpty();
+	}
+
+	private void loadSizeFromImage()
+	{
+		if (width == -1 || height == -1)
+		{
+			try
+			{
+				BufferedImage img = image.readImage();
+
+				if (width == -1)
+				{
+					width = img.getWidth();
+				}
+
+				if (height == -1)
+				{
+					height = img.getHeight();
+				}
+			}
+			catch (Exception ex)
+			{
+				if (width == -1)
+				{
+					width = 32;
+				}
+
+				if (height == -1)
+				{
+					height = 32;
+				}
+			}
+		}
+	}
+
+	public int getWidth()
+	{
+		loadSizeFromImage();
+		return width;
+	}
+
+	public int getHeight()
+	{
+		loadSizeFromImage();
+		return height;
 	}
 
 	@Override

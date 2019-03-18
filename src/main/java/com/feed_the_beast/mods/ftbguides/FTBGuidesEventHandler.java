@@ -2,7 +2,6 @@ package com.feed_the_beast.mods.ftbguides;
 
 import com.feed_the_beast.ftblib.events.SidebarButtonCreatedEvent;
 import com.feed_the_beast.ftblib.events.client.CustomClickEvent;
-import com.feed_the_beast.ftblib.events.client.GuideEvent;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.Items;
 import net.minecraft.util.EnumActionResult;
@@ -10,7 +9,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -64,19 +62,6 @@ public class FTBGuidesEventHandler
 			event.setCancellationResult(EnumActionResult.SUCCESS);
 			event.setCanceled(true);
 		}
-	}
-
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public static void checkGuide(GuideEvent.Check event)
-	{
-		event.setCanceled(true);
-	}
-
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public static void openGuide(GuideEvent.Open event)
-	{
-		FTBGuides.openGuidesGui(event.getPath());
-		event.setCanceled(true);
 	}
 
 	@SubscribeEvent

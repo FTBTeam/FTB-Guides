@@ -1,12 +1,12 @@
 package com.feed_the_beast.mods.ftbguides.events;
 
 import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
-import com.feed_the_beast.mods.ftbguides.gui.GuideTitlePage;
-import com.feed_the_beast.mods.ftbguides.gui.GuideType;
+import com.feed_the_beast.mods.ftbguides.gui.components.HRGuideComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,54 +15,39 @@ import java.util.Map;
 public class ClientGuideEvent extends FTBGuidesEvent
 {
 	private final GuidePage root;
-	private final Map<String, GuideTitlePage> map;
+	private final Map<String, GuidePage> cache;
 
-	public ClientGuideEvent(GuidePage r, Map<String, GuideTitlePage> m)
+	public ClientGuideEvent(GuidePage r)
 	{
 		root = r;
-		map = m;
+		cache = new HashMap<>();
 	}
 
-	public GuideTitlePage getModPage(String modid)
+	public GuidePage getPage(String modid)
 	{
-		GuideTitlePage page = map.get(modid);
+		GuidePage page = cache.get(modid);
 
 		if (page == null)
 		{
-			page = new GuideTitlePage(modid, root, GuideType.MOD);
-			page.isPresent = true;
+			page = root.getSub(modid);
 			ModContainer mod = Loader.instance().getIndexedModList().get(modid);
 
 			if (mod != null)
 			{
-				page.authors.addAll(mod.getMetadata().authorList);
-
 				if (!mod.getMetadata().description.isEmpty())
 				{
 					for (String s : mod.getMetadata().description.split("\n"))
 					{
-						page.println(s);
+						page.text.println(s);
 					}
+
+					page.text.println(HRGuideComponent.INSTANCE);
 				}
 
 				page.title = new TextComponentString(mod.getName());
 			}
 
-			map.put(modid, page);
-		}
-
-		return page;
-	}
-
-	public GuideTitlePage getOtherPage(String id)
-	{
-		GuideTitlePage page = map.get(id);
-
-		if (page == null)
-		{
-			page = new GuideTitlePage(id, root, GuideType.OTHER);
-			page.isPresent = true;
-			map.put(id, page);
+			cache.put(modid, page);
 		}
 
 		return page;

@@ -87,7 +87,7 @@ public class GuiGuide extends GuiBase
 
 		public ButtonSelectPage(Panel panel, @Nullable GuidePage p)
 		{
-			super(panel, p == null ? "/" : p.title.getFormattedText(), Icon.EMPTY);
+			super(panel, p == null ? "/" : p.getDisplayName().getFormattedText(), Icon.EMPTY);
 			setSize(getGui().getTheme().getStringWidth(getTitle()), 9);
 			page = p;
 		}
@@ -166,7 +166,7 @@ public class GuiGuide extends GuiBase
 			@Override
 			public List<GuideComponent> getComponents()
 			{
-				return page.components;
+				return page.text.components;
 			}
 
 			@Override
@@ -226,7 +226,7 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void addWidgets()
 			{
-				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides_client.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesLocalConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
+				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesLocalConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
 				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("selectServer.refresh"), GuiIcons.REFRESH, "refresh:" + page.getPath())));
 
 				JsonElement url = page.getProperty("browser_url");
@@ -278,30 +278,46 @@ public class GuiGuide extends GuiBase
 		panelSpecialButtons.alignWidgets();
 		panelSpecialButtons.setPos(width - panelSpecialButtons.width, 0);
 		scrollBarH.setPosAndSize(0, height - SCROLLBAR_SIZE, width - SCROLLBAR_SIZE, SCROLLBAR_SIZE);
-		scrollBarV.setPosAndSize(width - SCROLLBAR_SIZE, panelSpecialButtons.height - 1, SCROLLBAR_SIZE, height - SCROLLBAR_SIZE);
+		scrollBarV.setPosAndSize(width - SCROLLBAR_SIZE, panelSpecialButtons.height - 1, SCROLLBAR_SIZE, height - SCROLLBAR_SIZE - 4);
 		panelText.alignWidgets();
 	}
 
 	@Override
 	public boolean onInit()
 	{
-		if (page == page.getRoot() && !FTBGuidesLocalConfig.general.last_guide_version.equals(FTBGuidesConfig.general.modpack_guide_version) && page.getSubRaw("modpack_guide") != null)
+		if (page == page.getRoot() && !FTBGuidesLocalConfig.general.last_guide_version.equals(FTBGuidesConfig.general.modpack_guide_version))
 		{
 			FTBGuidesLocalConfig.general.last_guide_version = FTBGuidesConfig.general.modpack_guide_version;
 			FTBGuidesConfig.sync();
 			FTBGuides.openGuidesGui("/modpack_guide");
 		}
 
-		return setFullscreen();
+		int w = (int) (FTBGuidesLocalConfig.general.width_percent * getScreen().getScaledWidth_double() * 0.01D);
+		setWidth(w);
+		setX(w / 2);
+		setHeight(getScreen().getScaledHeight() - 20);
+		setY(10);
+		return true;
 	}
 
 	@Override
 	public void drawBackground(Theme theme, int x, int y, int w, int h)
 	{
-		GuiHelper.drawHollowRect(0, 0, w, h, page.lineColor, false);
+		page.background.bindTexture();
+
+		if (page.background instanceof ImageIcon)
+		{
+			GuiHelper.drawTexturedRect(posX, posY, width, height, Color4I.WHITE, 0D, 0D, width / 128D, height / 128D);
+		}
+		else
+		{
+			page.background.draw(posX, posY, width, height);
+		}
+
+		GuiHelper.drawHollowRect(posX, posY, w, h, page.lineColor, false);
 		page.lineColor.draw(scrollBarV.getX(), scrollBarV.getY(), 1, scrollBarV.height);
-		page.lineColor.draw(0, scrollBarH.getY(), scrollBarH.width, 1);
-		page.lineColor.draw(0, panelSpecialButtons.height - 1, w, 1);
+		page.lineColor.draw(posX, scrollBarH.getY(), scrollBarH.width, 1);
+		page.lineColor.draw(posX, posY + panelSpecialButtons.height - 1, w, 1);
 		GlStateManager.color(1F, 1F, 1F, 1F);
 	}
 
@@ -309,23 +325,6 @@ public class GuiGuide extends GuiBase
 	public Theme getTheme()
 	{
 		return guideTheme;
-	}
-
-	@Override
-	public boolean drawDefaultBackground()
-	{
-		page.background.bindTexture();
-
-		if (page.background instanceof ImageIcon)
-		{
-			GuiHelper.drawTexturedRect(0, 0, width, height, Color4I.WHITE.withAlpha(FTBGuidesLocalConfig.general.background_alpha), 0D, 0D, width / 128D, height / 128D);
-		}
-		else
-		{
-			page.background.draw(0, 0, width, height, Color4I.WHITE.withAlpha(FTBGuidesLocalConfig.general.background_alpha));
-		}
-
-		return false;
 	}
 
 	@Override
@@ -399,17 +398,9 @@ public class GuiGuide extends GuiBase
 		}
 		else if (scheme.equals("refresh"))
 		{
-			if (path.equals("/") || page.textURI == null)
-			{
-				FTBGuides.setShouldReload();
-			}
-			else
-			{
-				page.textLoadingState = GuidePage.STATE_NOT_LOADING;
-				new ThreadLoadPage(page).start();
-			}
-
-			FTBGuides.openGuidesGui(path);
+			String p = page.getPath();
+			FTBGuides.setShouldReload();
+			FTBGuides.openGuidesGui(p);
 			return true;
 		}
 		else if (scheme.equals("theme"))
