@@ -314,6 +314,8 @@ class ThreadLoadGuides extends Thread
 							page.title = new TextComponentString(page.getID());
 						}
 
+						page.textURI = uri.resolve("README.md");
+
 						if (pageData.has("icon"))
 						{
 							page.icon = page.getIcon(pageData.get("icon"));
@@ -323,8 +325,6 @@ class ThreadLoadGuides extends Thread
 								page.icon = GuidePage.DEFAULT_ICON;
 							}
 						}
-
-						page.textURI = uri.resolve("README.md");
 
 						if (pageData.has("buttons"))
 						{
