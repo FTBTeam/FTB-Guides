@@ -13,6 +13,7 @@ import com.feed_the_beast.ftblib.lib.gui.WidgetType;
 import com.feed_the_beast.ftblib.lib.icon.Color4I;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
+import com.feed_the_beast.ftblib.lib.util.NetUtils;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.feed_the_beast.mods.ftbguides.FTBGuides;
 import com.feed_the_beast.mods.ftbguides.FTBGuidesConfig;
@@ -385,7 +386,24 @@ public class GuiGuide extends GuiBase
 
 			if (p != null)
 			{
-				FTBGuides.openGuidesGui(p.getPath());
+				if (isShiftKeyDown() && isCtrlKeyDown())
+				{
+					try
+					{
+						NetUtils.openURI(p.textURI.resolve("./"));
+						return true;
+					}
+					catch (Exception ex)
+					{
+						ex.printStackTrace();
+						return false;
+					}
+				}
+				else
+				{
+					FTBGuides.openGuidesGui(p.getPath());
+				}
+
 				return true;
 			}
 
