@@ -1,5 +1,6 @@
 package com.feed_the_beast.mods.ftbguides.gui.components;
 
+import com.feed_the_beast.ftblib.lib.util.text_components.TextComponentParser;
 import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.event.ClickEvent;
@@ -15,6 +16,12 @@ import java.util.regex.Pattern;
  */
 public class ComponentPage
 {
+	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*)\\*\\*|__(.*)__");
+	public static final String BOLD_REPLACE = "&l$1&l";
+	public static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*)\\*|_(.*)_");
+	public static final String ITALIC_REPLACE = "&o$1&o";
+	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("~~(.*)~~");
+	public static final String STRIKETHROUGH_REPLACE = "&m$1&m";
 	public static final Pattern LINK_PATTERN = Pattern.compile("^\\[(.*)\\]\\((.*)\\)$");
 	public static final Pattern IMAGE_PATTERN = Pattern.compile("^!\\[(.*)\\]\\((.*)\\)$");
 	public static final Pattern HR_PATTERN = Pattern.compile("^-{3,}|\\*{3,}|_{3,}$");
@@ -87,6 +94,17 @@ public class ComponentPage
 		{
 			println(HRGuideComponent.INSTANCE);
 			return;
+		}
+
+		boolean b = false;
+
+		b = !s.equals(s = STRIKETHROUGH_PATTERN.matcher(s).replaceAll(STRIKETHROUGH_REPLACE)) | b;
+		b = !s.equals(s = BOLD_PATTERN.matcher(s).replaceAll(BOLD_REPLACE)) | b;
+		b = !s.equals(s = ITALIC_PATTERN.matcher(s).replaceAll(ITALIC_REPLACE)) | b;
+
+		if (b)
+		{
+			s = TextComponentParser.parse(s, null).getFormattedText();
 		}
 
 		double scale = 1D;
