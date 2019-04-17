@@ -16,11 +16,11 @@ import java.util.regex.Pattern;
  */
 public class ComponentPage
 {
-	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*)\\*\\*|__(.*)__");
+	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
 	public static final String BOLD_REPLACE = "&l$1&l";
-	public static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*)\\*|_(.*)_");
+	public static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*?)\\*|_(.*?)_");
 	public static final String ITALIC_REPLACE = "&o$1&o";
-	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("~~(.*)~~");
+	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
 	public static final String STRIKETHROUGH_REPLACE = "&m$1&m";
 	public static final Pattern LINK_PATTERN = Pattern.compile("^\\[(.*)\\]\\((.*)\\)$");
 	public static final Pattern IMAGE_PATTERN = Pattern.compile("^!\\[(.*)\\]\\((.*)\\)$");
