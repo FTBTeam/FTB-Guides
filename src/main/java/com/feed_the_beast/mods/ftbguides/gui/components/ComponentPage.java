@@ -2,6 +2,7 @@ package com.feed_the_beast.mods.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.util.text_components.TextComponentParser;
 import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
  */
 public class ComponentPage
 {
+	public static final Pattern I18N_PATTERN = Pattern.compile("\\{([a-zA-Z0-9\\._\\-]*?)\\}");
 	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
 	public static final String STRIKETHROUGH_REPLACE = "&m$1&m";
 	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
@@ -94,6 +96,23 @@ public class ComponentPage
 		{
 			println(HRGuideComponent.INSTANCE);
 			return;
+		}
+
+		Matcher i18nMatcher = I18N_PATTERN.matcher(s);
+
+		if (i18nMatcher.find())
+		{
+			i18nMatcher.reset();
+
+			StringBuffer sb = new StringBuffer(s.length());
+
+			while (i18nMatcher.find())
+			{
+				i18nMatcher.appendReplacement(sb, I18n.format(i18nMatcher.group(1)));
+			}
+
+			i18nMatcher.appendTail(sb);
+			s = sb.toString();
 		}
 
 		boolean b = false;
