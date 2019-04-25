@@ -22,6 +22,7 @@ import com.feed_the_beast.mods.ftbguides.GuideTheme;
 import com.feed_the_beast.mods.ftbguides.gui.components.ComponentPanel;
 import com.feed_the_beast.mods.ftbguides.gui.components.GuideComponent;
 import com.google.gson.JsonElement;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.input.Keyboard;
@@ -418,6 +419,7 @@ public class GuiGuide extends GuiBase
 		{
 			String p = page.getPath();
 			FTBGuides.setShouldReload();
+			Minecraft.getMinecraft().getTextureManager().onResourceManagerReload(Minecraft.getMinecraft().getResourceManager());
 			FTBGuides.openGuidesGui(p);
 			return true;
 		}
