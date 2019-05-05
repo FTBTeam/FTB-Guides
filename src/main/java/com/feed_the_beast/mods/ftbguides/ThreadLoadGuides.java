@@ -20,12 +20,14 @@ import com.google.gson.JsonPrimitive;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.Proxy;
@@ -92,12 +94,14 @@ class ThreadLoadGuides extends Thread
 
 	public String run1()
 	{
+		Minecraft mc = Minecraft.getMinecraft();
 		GuideTheme.THEMES.clear();
-		Proxy proxy = Minecraft.getMinecraft().getProxy();
+		Proxy proxy = mc.getProxy();
+		IResourceManager resourceManager = mc.getResourceManager();
 
 		try
 		{
-			for (IResource resource : Minecraft.getMinecraft().getResourceManager().getAllResources(new ResourceLocation(FTBGuides.MOD_ID, "themes/index.json")))
+			for (IResource resource : resourceManager.getAllResources(new ResourceLocation(FTBGuides.MOD_ID, "themes/index.json")))
 			{
 				JsonElement json = DataReader.get(resource).json();
 
@@ -107,7 +111,7 @@ class ThreadLoadGuides extends Thread
 					{
 						String id = element.getAsString();
 
-						JsonElement json1 = DataReader.get(Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(FTBGuides.MOD_ID, "themes/" + id + ".json"))).json();
+						JsonElement json1 = DataReader.get(resourceManager.getResource(new ResourceLocation(FTBGuides.MOD_ID, "themes/" + id + ".json"))).json();
 
 						if (json1.isJsonObject())
 						{
@@ -166,16 +170,34 @@ class ThreadLoadGuides extends Thread
 			FTBGuides.LOGGER.info("Loaded Guide Themes: " + GuideTheme.THEMES.values());
 		}
 
-		gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.modpack"));
-		URI modpackGuide = new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide/").toURI();
+		String langCode = mc.getLanguageManager().getCurrentLanguage().getLanguageCode();
+
+		gui.setTitle("Loading Guides\n" + I18n.format(FTBGuides.MOD_ID + ".lang.type.modpack"));
+
+		File modpackGuideFile = new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide/");
+
+		if (!modpackGuideFile.exists())
+		{
+			modpackGuideFile.mkdirs();
+		}
+
+		URI modpackGuide = modpackGuideFile.toURI();
+		URI modpackGuideFallback = null;
+
+		if (!langCode.equals("en_us"))
+		{
+			modpackGuideFallback = modpackGuide;
+			modpackGuide = new File(Loader.instance().getConfigDir(), "ftbguides/modpack_guide_" + langCode + "/").toURI();
+		}
 
 		root = new GuidePage("root", null);
 		root.title = new TextComponentTranslation(FTBGuides.MOD_ID + ".lang.home");
-		root.textURI = modpackGuide.resolve("README.md");
 
 		GuideTitlePage modpackGuidePage = new GuideTitlePage("modpack", root, GuideType.MODPACK);
+		modpackGuidePage.textURI = modpackGuide.resolve("README.md");
+		modpackGuidePage.fallbackTextURI = modpackGuideFallback == null ? null : modpackGuideFallback.resolve("README.md");
 		modpackGuidePage.title = new TextComponentTranslation(GuideType.MODPACK.title);
-		loadChildPages(modpackGuidePage, modpackGuide, proxy, 0);
+		loadChildPages(modpackGuidePage, modpackGuide, modpackGuideFallback, proxy, 0);
 		modpackGuidePage.cleanup();
 
 		if (!modpackGuidePage.isEmpty())
@@ -185,9 +207,9 @@ class ThreadLoadGuides extends Thread
 
 		if (!FTBGuidesConfig.general.disable_non_modpack_guides)
 		{
-			for (String modid : Minecraft.getMinecraft().getResourceManager().getResourceDomains())
+			for (String modid : resourceManager.getResourceDomains())
 			{
-				gui.setTitle("Loading Guides\n" + I18n.format("ftbguides.lang.type.mod") + "\n" + modid);
+				gui.setTitle("Loading Guides\n" + I18n.format(FTBGuides.MOD_ID + ".lang.type.mod") + "\n" + modid);
 				GuideTitlePage page;
 
 				ModContainer mod = Loader.instance().getIndexedModList().get(modid);
@@ -240,7 +262,10 @@ class ThreadLoadGuides extends Thread
 
 				try
 				{
-					loadChildPages(page, new URI("mcresource:/" + modid + ":guide/"), proxy, 0);
+					URI uri = new URI("mcresource:/" + modid + ":guide/");
+					URI fallbackUri = null;
+
+					loadChildPages(page, uri, fallbackUri, proxy, 0);
 				}
 				catch (Exception ex)
 				{
@@ -255,18 +280,26 @@ class ThreadLoadGuides extends Thread
 
 		gui.setTitle("Loading Guides\nFinishing");
 		root.cleanup();
-		List<String> rootText = Collections.emptyList();
+		root.textLoadingState = GuidePage.STATE_LOADING;
+
+		List<String> modpackText = Collections.emptyList();
 
 		try
 		{
-			rootText = DataReader.get(root.textURI, proxy).safeStringList();
+			URI modpackGuideURI = modpackGuidePage.resolveTextURI();
+
+			if (modpackGuideURI != null)
+			{
+				modpackText = DataReader.get(modpackGuideURI, proxy).safeStringList();
+			}
 		}
 		catch (Exception ex)
 		{
 		}
 
+		modpackGuidePage.onPageLoaded(modpackText);
+
 		root.updateCachedProperties(true);
-		root.textLoadingState = GuidePage.STATE_LOADING;
 
 		/*
 		if (FTBGuidesConfig.general.disable_non_modpack_guides && root.pages.size() == 1)
@@ -275,19 +308,26 @@ class ThreadLoadGuides extends Thread
 			root.pages.remove(0);
 		}*/
 
-		root.onPageLoaded(rootText);
+		root.onPageLoaded(Collections.emptyList());
 		return "";
 	}
 
-	private void loadChildPages(GuidePage parent, URI parentURI, Proxy proxy, int depth)
+	private void loadChildPages(GuidePage parent, URI parentURI, @Nullable URI fallbackParentURI, Proxy proxy, int depth)
 	{
-		if (depth > 20)
+		if (depth > 10)
 		{
-			FTBGuides.LOGGER.warn("Depth is > 20, stopping at " + parent.getID());
+			FTBGuides.LOGGER.warn("Depth is > 10, stopping at " + parent.getID());
 			return;
 		}
 
-		JsonElement index = DataReader.get(parentURI.resolve("index.json"), proxy).safeJson();
+		URI indexJson = parent.resolveURI("./index.json");
+
+		if (indexJson == null)
+		{
+			return;
+		}
+
+		JsonElement index = DataReader.get(indexJson, proxy).safeJson();
 
 		if (index.isJsonArray())
 		{
@@ -301,6 +341,7 @@ class ThreadLoadGuides extends Thread
 					{
 						GuidePage page = parent.getSub(pageData.get("id").getAsString());
 						URI uri = parentURI.resolve(page.getID() + "/");
+						URI fallbackUri = fallbackParentURI == null ? null : fallbackParentURI.resolve(page.getID() + "/");
 
 						FTBGuides.LOGGER.info("Loading " + page.getPath() + " from " + uri);
 
@@ -315,6 +356,7 @@ class ThreadLoadGuides extends Thread
 						}
 
 						page.textURI = uri.resolve("README.md");
+						page.fallbackTextURI = fallbackUri == null ? null : fallbackUri.resolve("README.md");
 
 						if (pageData.has("icon"))
 						{
@@ -346,7 +388,7 @@ class ThreadLoadGuides extends Thread
 
 						try
 						{
-							loadChildPages(page, uri, proxy, depth + 1);
+							loadChildPages(page, uri, fallbackUri, proxy, depth + 1);
 						}
 						catch (StackOverflowError error)
 						{

@@ -6,6 +6,7 @@ import com.feed_the_beast.ftblib.lib.io.DataReader;
 import com.feed_the_beast.mods.ftbguides.FTBGuides;
 import net.minecraft.client.Minecraft;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,11 +61,13 @@ public class ThreadLoadPage extends Thread
 	@Override
 	public void run()
 	{
-		if (page.textURI != null)
+		URI uri = page.resolveTextURI();
+
+		if (uri != null)
 		{
 			try
 			{
-				text.addAll(DataReader.get(page.textURI, Minecraft.getMinecraft().getProxy()).safeStringList());
+				text.addAll(DataReader.get(uri, Minecraft.getMinecraft().getProxy()).safeStringList());
 			}
 			catch (Exception ex)
 			{

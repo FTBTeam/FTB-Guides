@@ -21,6 +21,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 	public ITextComponent title;
 	public Icon icon = DEFAULT_ICON;
 	public final List<SpecialGuideButton> specialButtons = new ArrayList<>(0);
-	public URI textURI = null;
+	public URI textURI = null, fallbackTextURI = null;
 	public int textLoadingState = STATE_NOT_LOADING;
 	public final HashMap<String, JsonElement> properties = new HashMap<>();
 
@@ -216,11 +217,63 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 		}
 	}
 
+	@Nullable
+	public URI resolveTextURI()
+	{
+		if (fallbackTextURI != null)
+		{
+			try
+			{
+				if (!new File(textURI).exists())
+				{
+					return fallbackTextURI;
+				}
+			}
+			catch (Exception ex)
+			{
+			}
+		}
+
+		return textURI;
+	}
+
+	@Nullable
+	public URI resolveURI(String path)
+	{
+		if (textURI != null)
+		{
+			URI uri = textURI.resolve("./" + path);
+
+			if (fallbackTextURI != null)
+			{
+				try
+				{
+					if (!new File(uri).exists())
+					{
+						return fallbackTextURI.resolve("./" + path);
+					}
+				}
+				catch (Exception ex)
+				{
+				}
+			}
+
+			return uri;
+		}
+
+		return null;
+	}
+
 	public Icon getIcon(String path)
 	{
-		if (path.indexOf(':') == -1 && textURI != null)
+		if (path.indexOf(':') == -1)
 		{
-			return new URLImageIcon(textURI.resolve("./" + path));
+			URI uri = resolveURI(path);
+
+			if (uri != null)
+			{
+				return new URLImageIcon(uri);
+			}
 		}
 
 		return Icon.getIcon(path);
