@@ -6,6 +6,7 @@ import com.feed_the_beast.ftblib.lib.icon.ItemIcon;
 import com.feed_the_beast.ftblib.lib.icon.URLImageIcon;
 import com.feed_the_beast.ftblib.lib.util.FinalIDObject;
 import com.feed_the_beast.ftblib.lib.util.JsonUtils;
+import com.feed_the_beast.ftblib.lib.util.StringJoiner;
 import com.feed_the_beast.mods.ftbguides.FTBGuides;
 import com.feed_the_beast.mods.ftbguides.FTBGuidesLocalConfig;
 import com.feed_the_beast.mods.ftbguides.GuideTheme;
@@ -283,11 +284,7 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 			text.println(HRGuideComponent.INSTANCE);
 		}
 
-		for (String s : txt)
-		{
-			text.printlnMarkdown(s);
-		}
-
+		text.processAsMarkdown(StringJoiner.with('\n').join(txt));
 		textLoadingState = GuidePage.STATE_LOADED;
 		FTBGuides.openGuidesGui(getPath());
 	}

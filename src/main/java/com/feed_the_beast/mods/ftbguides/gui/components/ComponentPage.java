@@ -2,13 +2,16 @@ package com.feed_the_beast.mods.ftbguides.gui.components;
 
 import com.feed_the_beast.ftblib.lib.util.text_components.TextComponentParser;
 import com.feed_the_beast.mods.ftbguides.gui.GuidePage;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +20,9 @@ import java.util.regex.Pattern;
  */
 public class ComponentPage
 {
+	public static final Pattern COMMENT_PATTERN = Pattern.compile("(?m)\\<\\!--(?:.|\\s)*?--\\>\\s?");
 	public static final Pattern I18N_PATTERN = Pattern.compile("\\{([a-zA-Z0-9\\._\\-]*?)\\}");
+	public static final Pattern REFERENCE_PATTERN = Pattern.compile("^\\[\\s*(.*?)\\s*\\]\\:\\s*(.*)$\\s?");
 	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
 	public static final String STRIKETHROUGH_REPLACE = "&m$1&m";
 	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
@@ -83,7 +88,64 @@ public class ComponentPage
 		components.add(LineBreakGuideComponent.INSTANCE);
 	}
 
-	public void printlnMarkdown(String s)
+	public void processAsMarkdown(String text)
+	{
+		text = COMMENT_PATTERN.matcher(text).replaceAll("");
+
+		Matcher i18nMatcher = I18N_PATTERN.matcher(text);
+
+		if (i18nMatcher.find())
+		{
+			i18nMatcher.reset();
+
+			StringBuffer sb = new StringBuffer(text.length());
+
+			while (i18nMatcher.find())
+			{
+				i18nMatcher.appendReplacement(sb, I18n.format(i18nMatcher.group(1)));
+			}
+
+			i18nMatcher.appendTail(sb);
+			text = sb.toString();
+		}
+
+		Map<String, String> references = new HashMap<>();
+		Matcher refMatcher = REFERENCE_PATTERN.matcher(text);
+
+		if (refMatcher.find())
+		{
+			refMatcher.reset();
+
+			while (refMatcher.find())
+			{
+				String key = refMatcher.group(1);
+				String value = refMatcher.group(2);
+
+				if (key.startsWith("#"))
+				{
+					if (key.length() > 1)
+					{
+						page.properties.put(key, new JsonPrimitive(value));
+					}
+				}
+				else
+				{
+					references.put(key, value);
+				}
+			}
+
+			text = refMatcher.replaceAll("");
+		}
+
+		String[] lines = text.split("\n");
+
+		for (String s : lines)
+		{
+			printlnMarkdown(references, s);
+		}
+	}
+
+	private void printlnMarkdown(Map<String, String> references, String s)
 	{
 		s = s.trim();
 
@@ -96,23 +158,6 @@ public class ComponentPage
 		{
 			println(HRGuideComponent.INSTANCE);
 			return;
-		}
-
-		Matcher i18nMatcher = I18N_PATTERN.matcher(s);
-
-		if (i18nMatcher.find())
-		{
-			i18nMatcher.reset();
-
-			StringBuffer sb = new StringBuffer(s.length());
-
-			while (i18nMatcher.find())
-			{
-				i18nMatcher.appendReplacement(sb, I18n.format(i18nMatcher.group(1)));
-			}
-
-			i18nMatcher.appendTail(sb);
-			s = sb.toString();
 		}
 
 		boolean b = false;
