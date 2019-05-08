@@ -213,11 +213,6 @@ public class GuiGuide extends GuiBase
 					addToList(page.parent, list);
 				}
 			}
-
-			@Override
-			public void drawBackground(Theme theme, int x, int y, int w, int h)
-			{
-			}
 		};
 
 		panelTitle.setPosAndSize(3, 2, 0, 8);
