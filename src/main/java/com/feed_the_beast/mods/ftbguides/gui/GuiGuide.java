@@ -28,6 +28,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.input.Keyboard;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +101,7 @@ public class GuiGuide extends GuiBase
 			if (page != null)
 			{
 				GuiHelper.playClickSound();
-				FTBGuides.openGuidesGui(page.getPath());
+				handleClick("page:" + page.getPath());
 			}
 		}
 
@@ -386,8 +387,13 @@ public class GuiGuide extends GuiBase
 				{
 					try
 					{
-						NetUtils.openURI(p.textURI.resolve("./"));
-						return true;
+						URI uri = p.resolveURI("./");
+
+						if (uri != null)
+						{
+							NetUtils.openURI(uri);
+							return true;
+						}
 					}
 					catch (Exception ex)
 					{
