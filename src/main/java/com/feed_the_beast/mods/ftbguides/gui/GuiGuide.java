@@ -154,12 +154,18 @@ public class GuiGuide extends GuiBase
 
 	public GuiGuide(GuidePage p)
 	{
+		if (p.getRoot() == p && p.pages.size() == 1)
+		{
+			p = p.pages.get(0);
+		}
+
 		page = p;
+
 		guideTheme = new GuideGuiTheme(page);
 
 		if (FTBLibConfig.debugging.print_more_info)
 		{
-			FTBGuides.LOGGER.info("Gui opened for page " + p.getPath());
+			FTBGuides.LOGGER.info("Gui opened for page " + page.getPath());
 		}
 
 		setUnicode(FTBGuidesLocalConfig.general.use_unicode_font);
@@ -196,6 +202,13 @@ public class GuiGuide extends GuiBase
 				list.add(new ButtonSelectPage(this, page));
 				addToList(page, list);
 				Collections.reverse(list);
+
+				if (list.size() > 2 && page.getRoot().pages.size() == 1)
+				{
+					list.remove(0);
+					list.remove(0);
+				}
+
 				addAll(list);
 			}
 
