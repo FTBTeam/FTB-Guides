@@ -4,8 +4,11 @@ import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
 import com.feed_the_beast.ftblib.lib.icon.Icon;
+import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
+import com.google.gson.JsonElement;
 
+import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -22,8 +25,17 @@ public class ImageGuideComponent extends GuideComponent
 		{
 			super(parent);
 			component = c;
-			setWidth((int) (component.getWidth() / (double) getScreen().getScaleFactor()));
-			setHeight((int) (component.getHeight() / (double) getScreen().getScaleFactor()));
+
+			if (component.image instanceof ImageIcon)
+			{
+				setWidth((int) (component.getWidth() / (double) getScreen().getScaleFactor()));
+				setHeight((int) (component.getHeight() / (double) getScreen().getScaleFactor()));
+			}
+			else
+			{
+				setWidth(component.getWidth());
+				setHeight(component.getHeight());
+			}
 
 			if (width > parent.maxWidth)
 			{
@@ -63,25 +75,32 @@ public class ImageGuideComponent extends GuideComponent
 		{
 			component.image.draw(x, y, w, h);
 		}
+
+		@Nullable
+		@Override
+		public Object getIngredientUnderMouse()
+		{
+			return component.image.getJEIFocus();
+		}
 	}
 
+	public final ComponentPage page;
 	public final Icon image;
 	private int width, height;
 	public String click = "";
 	public String hover = "";
 
-	public ImageGuideComponent(Icon i, int w, int h)
+	public ImageGuideComponent(ComponentPage p, Icon i, int w, int h)
 	{
+		page = p;
 		image = i;
 		width = w;
 		height = h;
 	}
 
-	public ImageGuideComponent(Icon i)
+	public ImageGuideComponent(ComponentPage page, Icon i)
 	{
-		image = i;
-		width = -1;
-		height = -1;
+		this(page, i, -1, -1);
 	}
 
 	public String toString()
@@ -115,14 +134,17 @@ public class ImageGuideComponent extends GuideComponent
 			}
 			catch (Exception ex)
 			{
+				JsonElement defJson = page.page.getProperty("default_icon_size");
+				int def = defJson.isJsonPrimitive() ? Math.max(1, defJson.getAsInt()) : 16;
+
 				if (width == -1)
 				{
-					width = 32;
+					width = def;
 				}
 
 				if (height == -1)
 				{
-					height = 32;
+					height = def;
 				}
 			}
 		}

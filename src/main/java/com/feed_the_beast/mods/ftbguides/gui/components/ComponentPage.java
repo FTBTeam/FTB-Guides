@@ -20,26 +20,36 @@ import java.util.regex.Pattern;
  */
 public class ComponentPage
 {
-	public static final Pattern COMMENT_PATTERN = Pattern.compile("(?m)\\<\\!--(?:.|\\s)*?--\\>\\s?");
-	public static final Pattern I18N_PATTERN = Pattern.compile("\\{([a-zA-Z0-9\\._\\-]*?)\\}");
-	public static final Pattern REFERENCE_PATTERN = Pattern.compile("^\\[\\s*(.*?)\\s*\\]\\:\\s*(.*)$\\s?");
-	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("\\~\\~(.*?)\\~\\~");
-	public static final String STRIKETHROUGH_REPLACE = "&m$1&m";
-	public static final Pattern BOLD_PATTERN = Pattern.compile("\\*\\*(.*?)\\*\\*|__(.*?)__");
-	public static final String BOLD_REPLACE = "&l$1$2&l";
-	public static final Pattern ITALIC_PATTERN = Pattern.compile("\\*(.*?)\\*|_(.*?)_");
-	public static final String ITALIC_REPLACE = "&o$1$2&o";
-	public static final Pattern LINK_PATTERN = Pattern.compile("^\\[(.*)\\]\\((.*)\\)$");
-	public static final Pattern IMAGE_PATTERN = Pattern.compile("^!\\[(.*)\\]\\((.*)\\)$");
+	public static final Pattern COMMENT_PATTERN = Pattern.compile("\\<\\!--(?:.|\\s)*?--\\>\\s?", Pattern.MULTILINE);
+	public static final Pattern I18N_PATTERN = Pattern.compile("\\{([a-zA-Z0-9\\._\\-]*?)\\}", Pattern.MULTILINE);
+	public static final Pattern REFERENCE_PATTERN = Pattern.compile("^\\[\\s*(.*?)\\s*\\]\\:\\s*(.*?)\\s*$\\s?", Pattern.MULTILINE);
+	public static final Pattern STRIKETHROUGH_PATTERN = Pattern.compile("(?<!\\\\)(\\~\\~)(.+?)\\1");
+	public static final String STRIKETHROUGH_REPLACE = "&m$2&m";
+	public static final Pattern BOLD_PATTERN = Pattern.compile("(?<!\\\\)(\\*\\*|__)(.+?)\\1");
+	public static final String BOLD_REPLACE = "&l$2&l";
+	public static final Pattern ITALIC_PATTERN = Pattern.compile("(?<!\\\\)(\\*|_)(.+?)\\1");
+	public static final String ITALIC_REPLACE = "&o$2&o";
+	public static final Pattern LINK_PATTERN = Pattern.compile("^(!)?\\[(.*)\\]\\((.*)\\)$");
 	public static final Pattern HR_PATTERN = Pattern.compile("^-{3,}|\\*{3,}|_{3,}$");
+	public static final Pattern HEADING_PATTERN = Pattern.compile("^(#+)\\s*(.*)$");
+	public static final Pattern POST_PROCESSING_PATTERN = Pattern.compile("\\\\(\\\\|\\*|_|\\~)");
+	public static final String POST_PROCESSING_REPLACE = "$1";
 
 	public final GuidePage page;
 	public final List<GuideComponent> components;
+	private final Map<String, String> references;
 
 	public ComponentPage(GuidePage p)
 	{
 		page = p;
 		components = new ArrayList<>();
+		references = new HashMap<>();
+	}
+
+	public String getReference(String key)
+	{
+		String s = references.get(key);
+		return s == null ? "" : s;
 	}
 
 	public void println(GuideComponent component)
@@ -90,6 +100,11 @@ public class ComponentPage
 
 	public void processAsMarkdown(String text)
 	{
+		if (text.isEmpty())
+		{
+			return;
+		}
+
 		text = COMMENT_PATTERN.matcher(text).replaceAll("");
 
 		Matcher i18nMatcher = I18N_PATTERN.matcher(text);
@@ -109,43 +124,37 @@ public class ComponentPage
 			text = sb.toString();
 		}
 
-		Map<String, String> references = new HashMap<>();
 		Matcher refMatcher = REFERENCE_PATTERN.matcher(text);
 
-		if (refMatcher.find())
+		while (refMatcher.find())
 		{
-			refMatcher.reset();
+			String key = refMatcher.group(1);
+			String value = refMatcher.group(2);
 
-			while (refMatcher.find())
+			if (key.startsWith("#"))
 			{
-				String key = refMatcher.group(1);
-				String value = refMatcher.group(2);
-
-				if (key.startsWith("#"))
+				if (key.length() > 1)
 				{
-					if (key.length() > 1)
-					{
-						page.properties.put(key, new JsonPrimitive(value));
-					}
-				}
-				else
-				{
-					references.put(key, value);
+					page.properties.put(key.substring(1), new JsonPrimitive(value));
 				}
 			}
-
-			text = refMatcher.replaceAll("");
+			else
+			{
+				references.put(key, value);
+			}
 		}
+
+		text = refMatcher.replaceAll("");
 
 		String[] lines = text.split("\n");
 
 		for (String s : lines)
 		{
-			printlnMarkdown(references, s);
+			printlnMarkdown(s);
 		}
 	}
 
-	private void printlnMarkdown(Map<String, String> references, String s)
+	private void printlnMarkdown(String s)
 	{
 		s = s.trim();
 
@@ -171,47 +180,56 @@ public class ComponentPage
 			s = TextComponentParser.parse(s, null).getFormattedText();
 		}
 
+		s = POST_PROCESSING_PATTERN.matcher(s).replaceAll(POST_PROCESSING_REPLACE);
+
 		double scale = 1D;
 		boolean bold = false;
 
-		if (s.startsWith("###"))
-		{
-			s = s.substring(3).trim();
-			scale = 1.25D;
-		}
-		else if (s.startsWith("##"))
-		{
-			s = s.substring(2).trim();
-			scale = 1.25D;
-			bold = true;
-		}
-		else if (s.startsWith("#"))
-		{
-			s = s.substring(1).trim();
-			scale = 1.5D;
-			bold = true;
-		}
+		int heading = 0;
 
-		Matcher matcher = IMAGE_PATTERN.matcher(s);
+		Matcher matcher = HEADING_PATTERN.matcher(s);
 
 		if (matcher.find())
 		{
-			ImageGuideComponent component = new ImageGuideComponent(page.getIcon(matcher.group(2)));
-			component.hover = matcher.group(1);
-			println(component);
-			return;
+			heading = matcher.group(1).length();
+			s = matcher.group(2);
+		}
+
+		if (heading >= 3)
+		{
+			scale = 1.25D;
+		}
+		else if (heading == 2)
+		{
+			scale = 1.25D;
+			bold = true;
+		}
+		else if (heading == 1)
+		{
+			scale = 1.5D;
+			bold = true;
 		}
 
 		matcher = LINK_PATTERN.matcher(s);
 
 		if (matcher.find())
 		{
-			TextGuideComponent component = new TextGuideComponent(matcher.group(1));
-			component.textScale = scale;
-			component.bold = bold;
-			component.click = matcher.group(2);
-			println(component);
-			return;
+			if (matcher.group(1) != null && matcher.group(1).equals("!"))
+			{
+				ImageGuideComponent component = new ImageGuideComponent(this, page.getIcon(matcher.group(3)));
+				component.hover = matcher.group(2);
+				println(component);
+				return;
+			}
+			else
+			{
+				TextGuideComponent component = new TextGuideComponent(matcher.group(2));
+				component.textScale = scale;
+				component.bold = bold;
+				component.click = matcher.group(3);
+				println(component);
+				return;
+			}
 		}
 
 		TextGuideComponent component = new TextGuideComponent(s);

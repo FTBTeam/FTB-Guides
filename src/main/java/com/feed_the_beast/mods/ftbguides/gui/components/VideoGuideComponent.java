@@ -26,9 +26,9 @@ public class VideoGuideComponent extends ImageGuideComponent
 		}
 	}
 
-	public VideoGuideComponent(Icon i, int w, int h)
+	public VideoGuideComponent(ComponentPage page, Icon i, int w, int h)
 	{
-		super(i, w, h);
+		super(page, i, w, h);
 	}
 
 	@Override

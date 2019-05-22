@@ -241,7 +241,7 @@ class ThreadLoadGuides extends Thread
 						root.properties.put("browser_url", new JsonPrimitive(mod.getMetadata().url));
 					}
 
-					page.text.println(new ImageGuideComponent(page.icon));
+					page.text.println(new ImageGuideComponent(page.text, page.icon));
 					page.text.println("(Auto-generated)");
 
 					if (!mod.getMetadata().description.isEmpty())

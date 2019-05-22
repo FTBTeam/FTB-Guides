@@ -215,7 +215,19 @@ public class GuiGuide extends GuiBase
 			@Override
 			public void alignWidgets()
 			{
-				setWidth(align(WidgetLayout.HORIZONTAL));
+				int a = align(WidgetLayout.HORIZONTAL);
+				setWidth(Math.min(a, parent.width - 4 - panelSpecialButtons.width));
+
+				if (a > width)
+				{
+					setScrollX(-(width - a));
+				}
+			}
+
+			@Override
+			public boolean isDefaultScrollVertical()
+			{
+				return false;
 			}
 
 			private void addToList(GuidePage page, List<ButtonSelectPage> list)
@@ -229,7 +241,7 @@ public class GuiGuide extends GuiBase
 			}
 		};
 
-		panelTitle.setPosAndSize(3, 2, 0, 8);
+		panelTitle.setPosAndSize(3, 1, 0, 9);
 		panelTitle.setUnicode(FTBGuidesLocalConfig.general.use_unicode_font);
 
 		panelSpecialButtons = new Panel(this)
@@ -291,6 +303,7 @@ public class GuiGuide extends GuiBase
 		scrollBarH.setPosAndSize(0, height - SCROLLBAR_SIZE, width - SCROLLBAR_SIZE, SCROLLBAR_SIZE);
 		scrollBarV.setPosAndSize(width - SCROLLBAR_SIZE, panelSpecialButtons.height - 1, SCROLLBAR_SIZE, height - SCROLLBAR_SIZE - 4);
 		panelText.alignWidgets();
+		panelTitle.alignWidgets();
 	}
 
 	@Override
