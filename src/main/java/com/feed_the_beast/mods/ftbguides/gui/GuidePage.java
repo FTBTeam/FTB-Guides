@@ -339,6 +339,6 @@ public class GuidePage extends FinalIDObject implements Comparable<GuidePage>
 
 		text.processAsMarkdown(StringJoiner.with('\n').join(txt));
 		textLoadingState = GuidePage.STATE_LOADED;
-		FTBGuides.openGuidesGui(getPath());
+		FTBGuides.openGuidesGui("");
 	}
 }

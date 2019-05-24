@@ -80,7 +80,7 @@ public class ImageGuideComponent extends GuideComponent
 		@Override
 		public Object getIngredientUnderMouse()
 		{
-			return component.image.getJEIFocus();
+			return component.image.getIngredient();
 		}
 	}
 

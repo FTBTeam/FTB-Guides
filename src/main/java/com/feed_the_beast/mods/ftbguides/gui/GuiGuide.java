@@ -319,8 +319,8 @@ public class GuiGuide extends GuiBase
 		int w = (int) (FTBGuidesLocalConfig.general.width_percent * getScreen().getScaledWidth_double() * 0.01D);
 		setWidth(w);
 		setX(w / 2);
-		setHeight(getScreen().getScaledHeight() - 20);
-		setY(10);
+		setHeight(getScreen().getScaledHeight() - 6);
+		setY(3);
 		return true;
 	}
 

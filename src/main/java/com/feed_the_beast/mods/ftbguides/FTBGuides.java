@@ -92,37 +92,35 @@ public class FTBGuides
 			reloadingThread.gui.openGui();
 			return false;
 		}
-		else
-		{
-			if (!pageToOpen.isEmpty())
-			{
-				GuidePage page = guidesGui.page.getSubFromPath(pageToOpen);
 
-				if (page != null)
+		if (!pageToOpen.isEmpty())
+		{
+			GuidePage page = guidesGui.page.getSubFromPath(pageToOpen);
+
+			if (page != null)
+			{
+				if (page.textLoadingState == GuidePage.STATE_NOT_LOADING)
 				{
-					if (page.textLoadingState == GuidePage.STATE_NOT_LOADING)
+					if (page.textURI == null)
 					{
-						if (page.textURI == null)
-						{
-							page.onPageLoaded(Collections.emptyList());
-						}
-						else
-						{
-							new ThreadLoadPage(page).start();
-							return false;
-						}
+						page.onPageLoaded(Collections.emptyList());
+						pageToOpen = "";
 					}
 					else
 					{
-						guidesGui = new GuiGuide(page);
+						new ThreadLoadPage(page).start();
+						return false;
 					}
 				}
-
-				pageToOpen = "";
+				else
+				{
+					guidesGui = new GuiGuide(page);
+					pageToOpen = "";
+				}
 			}
-
-			guidesGui.openGui();
-			return true;
 		}
+
+		guidesGui.openGui();
+		return true;
 	}
 }
