@@ -56,9 +56,9 @@ public class FTBGuidesEventHandler
 	@SubscribeEvent
 	public static void onItemRightClick(PlayerInteractEvent.RightClickItem event)
 	{
-		if (event.getWorld().isRemote && event.getItemStack().getItem() == Items.BOOK && event.getItemStack().hasTagCompound() && event.getItemStack().getTagCompound().hasKey("Guide"))
+		if (event.getWorld().isRemote && event.getItemStack().getItem() == Items.BOOK && event.getItemStack().hasTagCompound() && (event.getItemStack().getTagCompound().hasKey("Guide") || event.getItemStack().getTagCompound().hasKey("guide")))
 		{
-			FTBGuides.openGuidesGui(event.getItemStack().getTagCompound().getString("Guide"));
+			FTBGuides.openGuidesGui(event.getItemStack().getTagCompound().hasKey("Guide") ? event.getItemStack().getTagCompound().getString("Guide") : event.getItemStack().getTagCompound().getString("guide"));
 			event.setCancellationResult(EnumActionResult.SUCCESS);
 			event.setCanceled(true);
 		}

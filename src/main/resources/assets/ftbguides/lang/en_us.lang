@@ -1,5 +1,3 @@
-tile.ftbguides.quest_block.name=Quest Block
-
 # Config
 ftbguides=FTB Guides Modpack
 ftbguides.general.modpack_guide_version=Modpack Guide Version
@@ -39,3 +37,5 @@ ftbguides.lang.theme.dark=Dark
 ftbguides.lang.theme.light=Light
 ftbguides.lang.theme.solarized_dark=Solarized Dark
 ftbguides.lang.theme.solarized_light=Solarized Light
+
+item.ftbguides.book.name=Guide Book

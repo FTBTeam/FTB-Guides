@@ -109,7 +109,7 @@ public class ComponentPage
 
 		Matcher i18nMatcher = I18N_PATTERN.matcher(text);
 
-		if (i18nMatcher.find())
+		while (i18nMatcher.find())
 		{
 			i18nMatcher.reset();
 
@@ -122,6 +122,7 @@ public class ComponentPage
 
 			i18nMatcher.appendTail(sb);
 			text = sb.toString();
+			i18nMatcher = I18N_PATTERN.matcher(text);
 		}
 
 		Matcher refMatcher = REFERENCE_PATTERN.matcher(text);
