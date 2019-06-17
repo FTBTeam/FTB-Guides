@@ -7,9 +7,9 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.google.gson.JsonElement;
+import javafx.scene.image.Image;
 
 import javax.annotation.Nullable;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -118,34 +118,35 @@ public class ImageGuideComponent extends GuideComponent
 	{
 		if (width == -1 || height == -1)
 		{
-			try
+			JsonElement defJson = page.page.getProperty("default_icon_size");
+			int def = defJson.isJsonPrimitive() ? Math.max(1, defJson.getAsInt()) : 16;
+
+			if (image.isLoadedJFXImageInstant())
 			{
-				BufferedImage img = image.readImage();
+				Image img = image.loadInstantJFXImage();
 
-				if (width == -1)
+				if (img != null)
 				{
-					width = img.getWidth();
-				}
+					if (width == -1)
+					{
+						width = (int) img.getWidth();
+					}
 
-				if (height == -1)
-				{
-					height = img.getHeight();
+					if (height == -1)
+					{
+						height = (int) img.getHeight();
+					}
 				}
 			}
-			catch (Exception ex)
+
+			if (width == -1)
 			{
-				JsonElement defJson = page.page.getProperty("default_icon_size");
-				int def = defJson.isJsonPrimitive() ? Math.max(1, defJson.getAsInt()) : 16;
+				width = def;
+			}
 
-				if (width == -1)
-				{
-					width = def;
-				}
-
-				if (height == -1)
-				{
-					height = def;
-				}
+			if (height == -1)
+			{
+				height = def;
 			}
 		}
 	}
