@@ -123,7 +123,7 @@ public class ImageGuideComponent extends GuideComponent
 
 			if (image.isLoadedJFXImageInstant())
 			{
-				Image img = image.loadInstantJFXImage();
+				Image img = image.loadInstantJFXImage().orElse(null);
 
 				if (img != null)
 				{
