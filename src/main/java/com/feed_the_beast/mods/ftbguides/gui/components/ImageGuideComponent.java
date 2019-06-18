@@ -1,5 +1,6 @@
 package com.feed_the_beast.mods.ftbguides.gui.components;
 
+import com.feed_the_beast.ftblib.lib.client.IPixelBuffer;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
 import com.feed_the_beast.ftblib.lib.gui.Theme;
 import com.feed_the_beast.ftblib.lib.gui.Widget;
@@ -7,7 +8,6 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
 import com.feed_the_beast.ftblib.lib.icon.ImageIcon;
 import com.feed_the_beast.ftblib.lib.util.misc.MouseButton;
 import com.google.gson.JsonElement;
-import javafx.scene.image.Image;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -121,20 +121,20 @@ public class ImageGuideComponent extends GuideComponent
 			JsonElement defJson = page.page.getProperty("default_icon_size");
 			int def = defJson.isJsonPrimitive() ? Math.max(1, defJson.getAsInt()) : 16;
 
-			if (image.isLoadedJFXImageInstant())
+			if (image.hasPixelBuffer())
 			{
-				Image img = image.loadInstantJFXImage().orElse(null);
+				IPixelBuffer img = image.createPixelBuffer();
 
 				if (img != null)
 				{
 					if (width == -1)
 					{
-						width = (int) img.getWidth();
+						width = img.getWidth();
 					}
 
 					if (height == -1)
 					{
-						height = (int) img.getHeight();
+						height = img.getHeight();
 					}
 				}
 			}
