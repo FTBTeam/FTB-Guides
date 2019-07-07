@@ -1,6 +1,7 @@
 package com.feed_the_beast.mods.ftbguides.gui;
 
 import com.feed_the_beast.ftblib.FTBLibConfig;
+import com.feed_the_beast.ftblib.lib.client.ClientUtils;
 import com.feed_the_beast.ftblib.lib.gui.Button;
 import com.feed_the_beast.ftblib.lib.gui.GuiBase;
 import com.feed_the_beast.ftblib.lib.gui.GuiHelper;
@@ -250,7 +251,11 @@ public class GuiGuide extends GuiBase
 			public void addWidgets()
 			{
 				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("ftbguides.general.theme").appendText(": ").appendSibling(GuideTheme.get(FTBGuidesLocalConfig.general.theme).title), GuiIcons.COLOR_RGB, "theme:/")));
-				add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("selectServer.refresh"), GuiIcons.REFRESH, "refresh:" + page.getPath())));
+
+				if (ClientUtils.IS_CLIENT_OP.getAsBoolean())
+				{
+					add(new ButtonSpecial(this, new SpecialGuideButton(new TextComponentTranslation("selectServer.refresh"), GuiIcons.REFRESH, "refresh:" + page.getPath())));
+				}
 
 				JsonElement url = page.getProperty("browser_url");
 
