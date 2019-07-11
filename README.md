@@ -1,1 +1,1 @@
-# FTB Guides [![](http://cf.way2muchnoise.eu/ftb-guides.svg)](https://minecraft.curseforge.com/projects/ftb-guides) [![](http://cf.way2muchnoise.eu/versions/ftb-guides.svg)](https://minecraft.curseforge.com/projects/ftb-guides)
+# FTB Guides 2 [![](http://cf.way2muchnoise.eu/ftb-guides-2.svg) ![](https://cf.way2muchnoise.eu/packs/ftb-guides-2.svg) ![](http://cf.way2muchnoise.eu/versions/ftb-guides-2.svg)](https://www.curseforge.com/minecraft/mc-mods/ftb-guides-2)
