@@ -457,7 +457,7 @@ public class GuiGuide extends GuiBase
 		}
 		else if (scheme.equals("theme"))
 		{
-			FTBGuidesLocalConfig.general.theme = GuideTheme.get(FTBGuidesLocalConfig.general.theme).next.getID();
+			FTBGuidesLocalConfig.general.theme = GuideTheme.get(FTBGuidesLocalConfig.general.theme).next.getId();
 			FTBGuidesConfig.sync();
 			page.getRoot().updateCachedProperties(true);
 			refreshWidgets();

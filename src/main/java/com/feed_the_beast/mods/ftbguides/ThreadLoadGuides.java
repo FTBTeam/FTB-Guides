@@ -316,7 +316,7 @@ class ThreadLoadGuides extends Thread
 	{
 		if (depth > 10)
 		{
-			FTBGuides.LOGGER.warn("Depth is > 10, stopping at " + parent.getID());
+			FTBGuides.LOGGER.warn("Depth is > 10, stopping at " + parent.getId());
 			return;
 		}
 
@@ -340,8 +340,8 @@ class ThreadLoadGuides extends Thread
 					if (pageData.has("id"))
 					{
 						GuidePage page = parent.getSub(pageData.get("id").getAsString());
-						URI uri = parentURI.resolve(page.getID() + "/");
-						URI fallbackUri = fallbackParentURI == null ? null : fallbackParentURI.resolve(page.getID() + "/");
+						URI uri = parentURI.resolve(page.getId() + "/");
+						URI fallbackUri = fallbackParentURI == null ? null : fallbackParentURI.resolve(page.getId() + "/");
 
 						FTBGuides.LOGGER.info("Loading " + page.getPath() + " from " + uri);
 
@@ -352,7 +352,7 @@ class ThreadLoadGuides extends Thread
 						}
 						else
 						{
-							page.title = new TextComponentString(page.getID());
+							page.title = new TextComponentString(page.getId());
 						}
 
 						page.textURI = uri.resolve("README.md");
