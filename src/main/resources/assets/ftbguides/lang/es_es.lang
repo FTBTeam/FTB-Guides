@@ -1,0 +1,41 @@
+# Config
+ftbguides=FTB Guides Modpack
+ftbguides.general.modpack_guide_version=Version de Guia del Modpack
+ftbguides.general.flash_guides=Iluminar boton de guias
+ftbguides.general.disable_non_modpack_guides=Desactivar guias que no sean del modpack
+
+ftbguides_local=FTB Guides Local
+ftbguides.general.use_unicode_font=Usar fuente unicode
+ftbguides.general.last_guide_version=Ultima version de guia
+ftbguides.general.theme=Tema
+ftbguides.general.width_percent=Porcentaje de anchura
+
+# Sidebar Buttons
+sidebar_button.ftbguides.guides=Guias
+sidebar_button.ftbguides.guides.new_version=Nueva version disponible!
+
+# Keys
+key.ftbguides.guide=Abrir Guia
+
+# Misc
+ftbguides.lang.home=Home
+ftbguides.lang.server_info=Informacion de servidor
+ftbguides.lang.unsupported_format=Formato no soportado! Por favor, actualiza FTB Guides o contacta con el autor!
+ftbguides.lang.commands_failed=Fallo al cargar comandos
+ftbguides.lang.open_in_browser=Abrir en navegador
+
+ftbguides.lang.type.server_info=Informacion de servidor
+ftbguides.lang.type.server_info.plural=Informacion de servidor
+ftbguides.lang.type.mod=Mod
+ftbguides.lang.type.mod.plural=Mods
+ftbguides.lang.type.modpack=Modpack
+ftbguides.lang.type.modpack.plural=Modpacks
+ftbguides.lang.type.other=Otro
+ftbguides.lang.type.other.plural=Otros
+
+ftbguides.lang.theme.dark=Oscuro
+ftbguides.lang.theme.light=Claro
+ftbguides.lang.theme.solarized_dark=Oscuro Solarizado 
+ftbguides.lang.theme.solarized_light=Claro Solarizado
+
+item.ftbguides.book.name=Libro de Guia
