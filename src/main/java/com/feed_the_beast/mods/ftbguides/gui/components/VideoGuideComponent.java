@@ -9,7 +9,7 @@ import com.feed_the_beast.ftblib.lib.icon.Icon;
  */
 public class VideoGuideComponent extends ImageGuideComponent
 {
-	private static final Icon OVERLAY = Icon.getIcon("https://i.imgur.com/s946ApP.png");
+	private static final Icon OVERLAY = Icon.getIcon("https://i.imgur.com/s946ApP.png").withColor(Color4I.WHITE.withAlpha(150));
 
 	public static class VideoWidget extends ImgWidget
 	{
@@ -22,7 +22,7 @@ public class VideoGuideComponent extends ImageGuideComponent
 		public void draw(Theme theme, int x, int y, int w, int h)
 		{
 			super.draw(theme, x, y, w, h);
-			OVERLAY.draw(x, y, w, h, Color4I.WHITE.withAlpha(150));
+			OVERLAY.draw(x, y, w, h);
 		}
 	}
 
