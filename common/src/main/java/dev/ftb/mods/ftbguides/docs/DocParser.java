@@ -125,8 +125,18 @@ public class DocParser {
 
         @Override
         public void visit(Heading heading) {
+            var beforeComponent = component.copy();
+            component = Component.empty();
+
             visitChildren(heading);
-            commitComponent(new TextField(panel).setScale((6 - heading.getLevel()) * 1.5F));
+
+            if (heading.getLevel() > 4) {
+                component = beforeComponent.append(component).setStyle(Style.EMPTY.withBold(true));
+            } else {
+                component = beforeComponent.append(component);
+            }
+
+            commitComponent(new TextField(panel).setScale((4 - heading.getLevel()) * .5F));
         }
 
         @Override
@@ -193,7 +203,7 @@ public class DocParser {
 
         @Override
         public void visit(ListItem listItem) {
-            if (listHolder != null && listHolder instanceof OrderedListHolder orderedListHolder) {
+            if (listHolder instanceof OrderedListHolder orderedListHolder) {
                 String indent = orderedListHolder.getIndent();
 
                 var beforeComponent = component.copy();
@@ -201,15 +211,15 @@ public class DocParser {
                 var before = indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ";
                 visitChildren(listItem);
 
-                component = beforeComponent.append(before).append(component);
+                component = beforeComponent.append(before).append(component).append("\n");
                 orderedListHolder.increaseCounter();
-            } else if (listHolder != null && listHolder instanceof BulletListHolder bulletListHolder) {
+            } else if (listHolder instanceof BulletListHolder bulletListHolder) {
                 var before = bulletListHolder.getIndent() + bulletListHolder.getMarker() + " ";
                 var beforeComponent = component.copy();
                 component = Component.empty();
                 visitChildren(listItem);
 
-                component = Component.empty().append(beforeComponent).append(before).append(component);
+                component = beforeComponent.append(before).append(component).append("\n");
             }
         }
 
