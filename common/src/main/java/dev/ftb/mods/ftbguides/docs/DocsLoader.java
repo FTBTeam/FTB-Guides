@@ -1,4 +1,4 @@
-package dev.ftb.mods.docs;
+package dev.ftb.mods.ftbguides.docs;
 
 import dev.ftb.mods.ftbguides.FTBGuides;
 import net.minecraft.client.Minecraft;

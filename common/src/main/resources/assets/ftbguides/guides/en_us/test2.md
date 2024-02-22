@@ -1,3 +1,4 @@
+---
 {
   category: cat1
   title: "Test 2"

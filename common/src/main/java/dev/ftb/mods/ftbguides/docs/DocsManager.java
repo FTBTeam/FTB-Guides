@@ -1,4 +1,4 @@
-package dev.ftb.mods.docs;
+package dev.ftb.mods.ftbguides.docs;
 
 import net.minecraft.resources.ResourceLocation;
 

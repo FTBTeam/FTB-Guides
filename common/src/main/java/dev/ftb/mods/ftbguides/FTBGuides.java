@@ -1,7 +1,7 @@
 package dev.ftb.mods.ftbguides;
 
 import dev.architectury.registry.ReloadListenerRegistry;
-import dev.ftb.mods.docs.DocsLoader;
+import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import net.minecraft.server.packs.PackType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

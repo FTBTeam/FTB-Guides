@@ -1,4 +1,4 @@
-package dev.ftb.mods.docs;
+package dev.ftb.mods.ftbguides.docs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -24,6 +24,11 @@ public record DocMetadata(String title, String category, Optional<String> icon, 
         List<String> headerLines = new ArrayList<>();
 
         String line = reader.readLine();
+        if (line == null || !line.equals("---")) {
+            throw new IOException("document must start with '---'!");
+        }
+
+        line = reader.readLine();
         while (line != null && !line.equals("---")) {
             headerLines.add(line);
             line = reader.readLine();
