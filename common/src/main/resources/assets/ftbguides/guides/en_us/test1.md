@@ -11,6 +11,11 @@ and a
 * list
 And some _more_ text
 
+hello, [I'm a link](https://www.google.com) within the text
+
 ## Part 2
 A bit more text: `how is this`
 
+<html>
+Hello, I'm html
+</html>
