@@ -15,8 +15,7 @@ dependencies {
 
     modApi("dev.ftb.mods:ftb-library:${rootProject.ftb_library_version}") { transitive false }
 
-    implementation("org.commonmark:commonmark:0.21.0")
-    include("org.commonmark:commonmark:0.21.0")
+    api("org.commonmark:commonmark:0.21.0")
 }
 
 publishing {
