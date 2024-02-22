@@ -1,5 +1,7 @@
-package dev.ftb.mods.ftbguides;
+package dev.ftb.mods.docs;
 
+import dev.ftb.mods.ftbguides.FTBGuides;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -8,34 +10,37 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DocsLoader extends SimplePreparableReloadListener<Map<ResourceLocation, Node>> {
+public class DocsLoader extends SimplePreparableReloadListener<Map<ResourceLocation, DocsLoader.NodeWithMeta>> {
     private static final String PATH_SUFFIX = ".md";
     private static final int PATH_SUFFIX_LENGTH = PATH_SUFFIX.length();
+    private static final String DIR = "guides";
 
     @Override
-    protected Map<ResourceLocation, Node> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-        Map<ResourceLocation,Node> map = new HashMap<>();
+    protected Map<ResourceLocation, NodeWithMeta> prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        Map<ResourceLocation,NodeWithMeta> map = new HashMap<>();
 
-        int len = FTBGuides.MOD_ID.length() + 1;
+        String lang = Minecraft.getInstance().getLanguageManager().getSelected().getCode();
+        String subDir = DIR + "/" + lang;
+        int len = subDir.length() + 1;
 
         Parser parser = Parser.builder().build();
 
-        for (Map.Entry<ResourceLocation, Resource> entry : resourceManager.listResources(FTBGuides.MOD_ID, e -> e.getPath().endsWith(PATH_SUFFIX)).entrySet()) {
+        for (Map.Entry<ResourceLocation, Resource> entry : resourceManager.listResources(subDir, e -> e.getPath().endsWith(PATH_SUFFIX)).entrySet()) {
             ResourceLocation entryLoc = entry.getKey();
             String path = entryLoc.getPath();
             ResourceLocation resLoc = new ResourceLocation(entryLoc.getNamespace(), path.substring(len, path.length() - PATH_SUFFIX_LENGTH));
 
             try {
-                Reader reader = entry.getValue().openAsReader();
-                // TODO slurp in metadata header here
+                BufferedReader reader = entry.getValue().openAsReader();
                 try {
+                    DocMetadata meta = DocMetadata.fromReader(reader);
                     Node node = parser.parseReader(reader);
-                    Node prev = map.put(resLoc, node);
+                    NodeWithMeta prev = map.put(resLoc, new NodeWithMeta(node, meta));
                     if (prev != null) {
                         throw new IllegalStateException("Duplicate data file ignored with ID " + resLoc);
                     }
@@ -52,7 +57,10 @@ public class DocsLoader extends SimplePreparableReloadListener<Map<ResourceLocat
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, Node> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+    protected void apply(Map<ResourceLocation, NodeWithMeta> object, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
+        DocsManager.INSTANCE.rebuildDocs(object);
+    }
 
+    public record NodeWithMeta(Node node, DocMetadata metadata) {
     }
 }
