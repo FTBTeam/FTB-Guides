@@ -1,7 +1,7 @@
 ---
 {
   category: "cat1"
-  title: "Test 1"
+  title: "Test 1A"
   order: 1
   icon: "item:minecraft:book"
 }

@@ -66,6 +66,12 @@ public class DocParser {
         }
 
         @Override
+        public void visit(Paragraph paragraph) {
+            visitChildren(paragraph);
+//            commitComponent();
+        }
+
+        @Override
         public void visit(HardLineBreak hardLineBreak) {
             widgets.add(new VerticalSpaceWidget(panel, 4));
             commitComponent();
@@ -136,7 +142,7 @@ public class DocParser {
                 component = beforeComponent.append(component);
             }
 
-            commitComponent(new TextField(panel).setScale((4 - heading.getLevel()) * .5F));
+            commitComponent(new TextField(panel).setScale((4 - heading.getLevel()) * .5F).setText(component));
         }
 
         @Override
@@ -167,6 +173,9 @@ public class DocParser {
 //            if (listHolder != null) {
 //                writeEndOfLine();
 //            }
+            commitComponent();
+            commitComponent(new VerticalSpaceWidget(panel, 2));
+
             var beforeComponent = component.copy();
             component = Component.empty();
 
@@ -187,6 +196,9 @@ public class DocParser {
 //            if (listHolder != null) {
 //                writeEndOfLine();
 //            }
+            commitComponent();
+            commitComponent(new VerticalSpaceWidget(panel, 2));
+
             var beforeComponent = component.copy();
             component = Component.empty();
 
@@ -259,7 +271,7 @@ public class DocParser {
         }
 
         private void commitComponent(TextField field) {
-            widgets.add(field.setText(component));
+            widgets.add(field/*.setText(component)*/);
             component = Component.empty();
         }
 

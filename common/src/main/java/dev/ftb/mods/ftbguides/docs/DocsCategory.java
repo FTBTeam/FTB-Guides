@@ -18,6 +18,8 @@ public class DocsCategory {
     }
 
     public void visit(Visitor visitor) {
+        visitor.visit(name, null);
+
         nodes.forEach(node -> visitor.visit(name, node));
 
         subCategories.forEach((name, cat) -> cat.visit(visitor));

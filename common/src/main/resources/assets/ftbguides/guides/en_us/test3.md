@@ -5,9 +5,9 @@
 }
 ---
 # Test 3
-This is some **text**
+_This is some **text**
 and a
-1. ordered
+1_. ordered
 1. list
 1. with three items
 And some _more_ text!!
