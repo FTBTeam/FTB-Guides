@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbguides.docs;
 
-import dev.ftb.mods.ftbguides.client.gui.widgets.BlockQuoteWidget;
+import dev.ftb.mods.ftbguides.client.gui.panel.BlockQuotePanel;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CodeBlockWidget;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.ui.*;
@@ -11,6 +11,7 @@ import org.commonmark.internal.renderer.text.ListHolder;
 import org.commonmark.internal.renderer.text.OrderedListHolder;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,15 +38,16 @@ public class DocParser {
     private static class ComponentConverterVisitor extends AbstractVisitor implements NodeRenderer {
         private static final Logger LOGGER = LoggerFactory.getLogger(ComponentConverterVisitor.class);
 
-        private final List<Widget> widgets = new ArrayList<>();
+        private List<Widget> widgets = new ArrayList<>();
 
         private ListHolder listHolder = null;
 
         private MutableComponent component = Component.empty();
-        private final Panel panel;
+        private PanelHolder panel;
+
 
         public ComponentConverterVisitor(Panel panel) {
-            this.panel = panel;
+            this.panel = new PanelHolder(panel);
         }
 
         public List<Widget> finish() {
@@ -64,7 +66,7 @@ public class DocParser {
 
         @Override
         public void visit(HardLineBreak hardLineBreak) {
-            commitComponent(new VerticalSpaceWidget(panel, 4));
+            commitComponent(new VerticalSpaceWidget(getPanel(), 4));
         }
 
         @Override
@@ -120,9 +122,9 @@ public class DocParser {
         @Override
         public void visit(ThematicBreak thematicBreak) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(panel, 12));
+            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
             // TODO: Move to a horizontal line widget
-            commitComponent(new TextField(panel)
+            commitComponent(new TextField(getPanel())
                     .setText(Component.literal("-----")
                     .withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)))
             );
@@ -131,9 +133,12 @@ public class DocParser {
         @Override
         public void visit(Heading heading) {
             // Commit anything we have so far
+            // TODO: Spacing should be relative to the heading level
             commitComponent();
-            if (heading.getLevel() != 1) {
-                commitComponent(new VerticalSpaceWidget(panel, 12));
+
+            // Don't add space if the previous component was a heading
+            if (!(heading.getPrevious() instanceof Heading)) {
+                commitComponent(new VerticalSpaceWidget(getPanel(), 12));
             }
 
             visitChildren(heading);
@@ -152,61 +157,72 @@ public class DocParser {
                 headingScale = 1.2f;
             }
 
-            commitComponent(new TextField(panel).setScale(headingScale).setText(component));
-            commitComponent(new VerticalSpaceWidget(panel, 12));
+            commitComponent(new TextField(getPanel()).setScale(headingScale).setText(component));
+            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
         }
 
         @Override
         public void visit(BlockQuote blockQuote) {
             // Commit anything we have so far
             commitComponent();
+            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
+
+            // This needs to be a panel or something like that as it needs to group the children and render them in a different way
+            this.panel = new PanelHolder(this.panel, new BlockQuotePanel(this.panel.panel));
+
+            // Copy the widget list and reset it
+            var previousWidgets = new ArrayList<>(this.widgets);
+            this.widgets.clear();
 
             // Visit the children and store the component
             visitChildren(blockQuote);
 
+            ((BlockQuotePanel) this.panel.panel).setWidgets(new ArrayList<>(this.widgets));
+
+            // Restore the previous widget list
+            this.widgets = previousWidgets;
+
             // Commit the component with the children's context
-            commitComponent(new BlockQuoteWidget(panel, component));
+            commitComponent(this.panel.panel);
+            this.panel = this.panel.parent;
         }
 
         @Override
         public void visit(FencedCodeBlock fencedCodeBlock) {
-            commitComponent(new CodeBlockWidget(panel, Arrays.stream(fencedCodeBlock.getLiteral().split("\n")).map(e -> (Component) Component.literal(e)).toList()));
+            commitComponent(new CodeBlockWidget(getPanel(), Arrays.stream(fencedCodeBlock.getLiteral().split("\n")).map(e -> (Component) Component.literal(e)).toList()));
         }
 
         @Override
         public void visit(IndentedCodeBlock indentedCodeBlock) {
-            commitComponent(new CodeBlockWidget(panel, Arrays.stream(indentedCodeBlock.getLiteral().split("\n")).map(e -> (Component) Component.literal(e)).toList()));
+            commitComponent(new CodeBlockWidget(getPanel(), Arrays.stream(indentedCodeBlock.getLiteral().split("\n")).map(e -> (Component) Component.literal(e)).toList()));
         }
 
-        /**
-         * Lists are special little snowflakes
-         */
         @Override
         public void visit(OrderedList orderedList) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(panel, 20));
-//
-//            listHolder = new OrderedListHolder(listHolder, orderedList);
-//            visitChildren(orderedList);
-//
-//            commitComponent(new TextField(panel).setText(component));
-//            if (listHolder.getParent() != null) {
-//                listHolder = listHolder.getParent();
-//            } else {
-//                listHolder = null;
-//            }
+            commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+
+            listHolder = new OrderedListHolder(listHolder, orderedList);
+            visitChildren(orderedList);
+
+            commitComponent(new TextField(getPanel()).setText(component));
+            if (listHolder.getParent() != null) {
+                listHolder = listHolder.getParent();
+            } else {
+                listHolder = null;
+            }
         }
 
         @Override
         public void visit(BulletList bulletList) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(panel, 8));
-//
+            commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+
             listHolder = new BulletListHolder(listHolder, bulletList);
             visitChildren(bulletList);
 
-            commitComponent(new TextField(panel).setText(component));
-//
+            commitComponent(new TextField(getPanel()).setText(component));
+
             if (listHolder.getParent() != null) {
                 listHolder = listHolder.getParent();
             } else {
@@ -219,16 +235,12 @@ public class DocParser {
          */
         @Override
         public void visit(ListItem listItem) {
-//            commitComponent(); // push any dangling components
-
-//            var beforeComponent = component.copy();
-//            component = Component.empty();
-
-            String before = "";
+            String before;
             if (listHolder instanceof OrderedListHolder orderedListHolder) {
                 String indent = orderedListHolder.getIndent();
 
                 before = indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ";
+                component.append(Component.literal(before));
                 visitChildren(listItem);
 
                 orderedListHolder.increaseCounter();
@@ -239,14 +251,17 @@ public class DocParser {
             }
 
             commitComponent();
-//            component = beforeComponent.append(before).append(component);
         }
         //#endregion
+
+        private Panel getPanel() {
+            return this.panel.panel();
+        }
 
         // TODO: An image can be inline or block, we should support both
         @Override
         public void visit(Image image) {
-            commitComponent(new SimpleButton(panel, Component.empty(), Icon.getIcon(image.getDestination()), (simpleButton, mouseButton) -> {}));
+            commitComponent(new SimpleButton(getPanel(), Component.empty(), Icon.getIcon(image.getDestination()), (simpleButton, mouseButton) -> {}));
         }
 
         @Override
@@ -264,6 +279,9 @@ public class DocParser {
         @Override
         public void visit(Paragraph paragraph) {
 //            commitComponent(new VerticalSpaceWidget(panel, 12));
+            if (paragraph.getPrevious() instanceof Paragraph) {
+                component.append(Component.literal("\n"));
+            }
             visitChildren(paragraph);
             commitComponent();
         }
@@ -273,19 +291,19 @@ public class DocParser {
                 return;
             }
 
-            System.out.println("Committing component (text): " + component.getString());
-            widgets.add(new TextField(panel).setText(component));
+//            System.out.println("Committing component (text): " + component.getString());
+            widgets.add(new TextField(getPanel()).setText(component));
             component = Component.empty();
         }
 
         private void commitComponent(TextField field) {
-            System.out.println("Committing component (fiel): " + component.getString());
+//            System.out.println("Committing component (fiel): " + component.getString());
             widgets.add(field);
             component = Component.empty();
         }
 
         private void commitComponent(Widget widget) {
-            System.out.println("Committing widget");
+//            System.out.println("Committing widget");
             widgets.add(widget);
             component = Component.empty();
         }
@@ -329,6 +347,12 @@ public class DocParser {
         @Override
         public void render(Node node) {
             node.accept(this);
+        }
+    }
+
+    record PanelHolder(@Nullable PanelHolder parent, Panel panel) {
+        public PanelHolder(Panel parent) {
+            this(null, parent);
         }
     }
 }
