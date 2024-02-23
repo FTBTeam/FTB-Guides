@@ -9,6 +9,7 @@ import dev.ftb.mods.ftbguides.net.FTBGuidesNet;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +25,10 @@ public class FTBGuides {
         CommandRegistrationEvent.EVENT.register(FTBGuides::registerCommands);
 
         FTBGuidesNet.init();
+    }
+
+    public static ResourceLocation rl(String path) {
+        return new ResourceLocation(FTBGuides.MOD_ID, path);
     }
 
     private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext, Commands.CommandSelection selection) {

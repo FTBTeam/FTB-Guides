@@ -2,6 +2,8 @@ package dev.ftb.mods.ftbguides.docs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.ftb.mods.ftblibrary.icon.Color4I;
+import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.snbt.SNBT;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -15,7 +17,7 @@ import java.util.Optional;
 public record DocMetadata(String title, String category, Optional<String> icon, int order) {
     public static final Codec<DocMetadata> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             Codec.STRING.fieldOf("title").forGetter(DocMetadata::title),
-            Codec.STRING.fieldOf("category").forGetter(DocMetadata::category),
+            Codec.STRING.optionalFieldOf("category", "").forGetter(DocMetadata::category),
             Codec.STRING.optionalFieldOf("icon").forGetter(DocMetadata::icon),
             Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(DocMetadata::order)
     ).apply(inst, DocMetadata::new));
@@ -45,5 +47,9 @@ public record DocMetadata(String title, String category, Optional<String> icon, 
 
         return CODEC.parse(NbtOps.INSTANCE, tag).result()
                 .orElseThrow(() -> new IOException("can't parse header data"));
+    }
+
+    public Icon makeIcon() {
+        return icon().map(Icon::getIcon).orElse(Color4I.BLACK.withAlpha(0));
     }
 }

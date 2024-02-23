@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbguides.client.gui;
 
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.docs.DocParser;
@@ -10,29 +11,40 @@ import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftblibrary.ui.*;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
+import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 import net.minecraft.network.chat.Component;
 
-import javax.print.Doc;
 import java.util.HashSet;
 import java.util.Set;
 
+import static dev.ftb.mods.ftbguides.FTBGuides.rl;
+
 public class GuideScreen extends BaseScreen {
+    public static final Icon PIN_ICON_IN = Icon.getIcon(rl("textures/gui/pin.png"));
+    public static final Icon PIN_ICON_OUT = Icon.getIcon(rl("textures/gui/pin_out.png"));
+
+    private final ToolbarPanel toolbarPanel;
     private final IndexPanel indexPanel;
     private final DocsPanel docsPanel;
+    private final Set<String> collapsedCategories;
     private final ExpandIndexButton expandIndexButton;
-    private final Set<String> expandedCategories;
-    private DocsLoader.NodeWithMeta activeNode = null;
+
+    // TODO persist these across client invocations?
+    private static DocsLoader.NodeWithMeta activeNode = null;
+    private static boolean indexPinned;
 
     public GuideScreen() {
+        toolbarPanel = new ToolbarPanel();
         indexPanel = new IndexPanel();
         docsPanel = new DocsPanel();
-        expandIndexButton = new ExpandIndexButton();
 
-        expandedCategories = new HashSet<>();
+        expandIndexButton = new ExpandIndexButton();
+        collapsedCategories = new HashSet<>();
     }
 
     @Override
     public void addWidgets() {
+        add(toolbarPanel);
         add(indexPanel);
         add(docsPanel);
         add(expandIndexButton);
@@ -40,13 +52,23 @@ public class GuideScreen extends BaseScreen {
 
     @Override
     public void alignWidgets() {
-        docsPanel.setPosAndSize(0, 0, width, height);
-        expandIndexButton.setPosAndSize(0, 0, 20, height);
+        toolbarPanel.setPosAndSize(0, 0, width - 1, 20);
+        docsPanel.setPosAndSize(20, 25, width - 20, height - 25);
+        expandIndexButton.setPosAndSize(0, 20, 20, height - 20);
+
+        toolbarPanel.alignWidgets();
     }
 
     @Override
     public boolean onInit() {
         return setFullscreen();
+    }
+
+    @Override
+    public void tick() {
+        if (activeNode == null) {
+            DocsManager.INSTANCE.get(rl("index")).ifPresent(this::setActivePage);
+        }
     }
 
     private void setActivePage(DocsLoader.NodeWithMeta node) {
@@ -55,26 +77,26 @@ public class GuideScreen extends BaseScreen {
     }
 
     private void toggleExpanded(String catName) {
-        if (expandedCategories.contains(catName)) {
-            expandedCategories.remove(catName);
+        if (collapsedCategories.contains(catName)) {
+            collapsedCategories.remove(catName);
         } else {
-            expandedCategories.add(catName);
+            collapsedCategories.add(catName);
         }
         indexPanel.refreshWidgets();
     }
 
     @Override
     public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-//        Color4I.BLACK.withAlpha(192).draw(matrixStack, x, y, w, h);
+        Color4I.BLACK.withAlpha(128).draw(matrixStack, x, y, w, h);
     }
 
-    private static Icon getIcon(DocsLoader.NodeWithMeta node) {
-        return node.metadata().icon().map(Icon::getIcon).orElse(Color4I.EMPTY);
+    @Override
+    public Theme getTheme() {
+        return GuideTheme.THEME;
     }
 
     private class IndexPanel extends Panel {
-        private static boolean pinned; // TODO persist across client invocations?
-        private boolean expanded = pinned;
+        private boolean expanded = indexPinned;
 
         public IndexPanel() {
             super(GuideScreen.this);
@@ -82,11 +104,13 @@ public class GuideScreen extends BaseScreen {
 
         @Override
         public void addWidgets() {
-            DocsManager.INSTANCE.visit((name, node) -> {
+            Multimap<String, DocsLoader.NodeWithMeta> categories = DocsManager.INSTANCE.getCategories();
+
+            DocsManager.INSTANCE.visit((catName, node) -> {
                 if (node == null) {
                     // starting a new category
-                    add(new SubcategoryButton(name, Color4I.EMPTY));
-                } else if (expandedCategories.contains(node.metadata().category())) {
+                    add(new SubcategoryButton(catName, Color4I.EMPTY));
+                } else if (!collapsedCategories.contains(catName)) {
                     add(new DocsNodeButton(node));
                 }
             });
@@ -96,14 +120,16 @@ public class GuideScreen extends BaseScreen {
         public void alignWidgets() {
             int maxW = 100;
 
+            int hardMax = getScreen().getGuiScaledWidth() / 4;
             for (Widget w : widgets) {
-                maxW = Math.min(Math.max(maxW, ((ListButton) w).getActualWidth(getGui())), 800);
+                maxW = Math.min(Math.max(maxW, w.width), hardMax);
             }
 
-            setPosAndSize(expanded || pinned ? 0 : -maxW, 0, maxW, getGui().height);
+            setPosAndSize(expanded || indexPinned ? 0 : -maxW, 20, maxW, getGui().height - 21);
 
             for (Widget w : widgets) {
-                w.setWidth(maxW);
+                w.setX(2);
+                w.setWidth(maxW - 4);
             }
 
             align(WidgetLayout.VERTICAL);
@@ -117,7 +143,7 @@ public class GuideScreen extends BaseScreen {
         public void updateMouseOver(int mouseX, int mouseY) {
             super.updateMouseOver(mouseX, mouseY);
 
-            if (expanded && !pinned && !isMouseOver()) {
+            if (expanded && !indexPinned && !isMouseOver()) {
                 setExpanded(false);
             }
         }
@@ -128,7 +154,7 @@ public class GuideScreen extends BaseScreen {
 
         @Override
         public int getX() {
-            return expanded || pinned ? 0 : -width;
+            return expanded || indexPinned ? 0 : -width;
         }
 
         @Override
@@ -148,10 +174,15 @@ public class GuideScreen extends BaseScreen {
         private abstract class ListButton extends SimpleTextButton {
             public ListButton(Component title, Icon icon) {
                 super(IndexPanel.this, title, icon);
+                setHeight(16);
             }
 
             public int getActualWidth(BaseScreen screen) {
                 return screen.getTheme().getStringWidth(title) + 20;
+            }
+
+            @Override
+            public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
             }
         }
 
@@ -159,7 +190,7 @@ public class GuideScreen extends BaseScreen {
             private final DocsLoader.NodeWithMeta node;
 
             public DocsNodeButton(DocsLoader.NodeWithMeta node) {
-                super(Component.literal(node.metadata().title()), getIcon(node));
+                super(Component.literal(node.metadata().title()), node.metadata().makeIcon());
                 this.node = node;
             }
 
@@ -170,6 +201,9 @@ public class GuideScreen extends BaseScreen {
 
             @Override
             public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+                if (node == activeNode) {
+                    NordColors.POLAR_NIGHT_2.draw(matrixStack, x, y, w, h);
+                }
                 super.draw(matrixStack, theme, x, y, w, h);
             }
         }
@@ -178,7 +212,7 @@ public class GuideScreen extends BaseScreen {
             private final String catName;
 
             public SubcategoryButton(String catName, Icon icon) {
-                super(makeTitle(expandedCategories, catName), icon);
+                super(makeTitle(collapsedCategories, catName), icon);
                 this.catName = catName;
             }
 
@@ -189,7 +223,7 @@ public class GuideScreen extends BaseScreen {
             }
 
             private static Component makeTitle(Set<String> e, String catName) {
-                return Component.literal(e.contains(catName) ? "v " : "> ").append(catName);
+                return Component.literal(e.contains(catName) ? "▼ " : "▶ ").append(catName);
             }
 
             @Override
@@ -216,6 +250,43 @@ public class GuideScreen extends BaseScreen {
         public void alignWidgets() {
             align(WidgetLayout.VERTICAL);
         }
+
+        @Override
+        public int getX() {
+            return indexPanel.expanded || indexPinned ? indexPanel.getX() + indexPanel.width + 5 : 25;
+        }
+    }
+
+    private class ToolbarPanel extends Panel {
+        private final Button pinButton;
+        private final SimpleButton closeButton;
+
+        public ToolbarPanel() {
+            super(GuideScreen.this);
+
+            pinButton = new SimpleButton(this, Component.empty(), indexPinned ? PIN_ICON_IN : PIN_ICON_OUT, (btn, mb) -> {
+                indexPinned = !indexPinned;
+                btn.setIcon(indexPinned ? PIN_ICON_IN : PIN_ICON_OUT);
+            });
+            closeButton = new SimpleButton(this, Component.empty(), Icons.CLOSE, (b, mb) -> closeGui());
+        }
+
+        @Override
+        public void addWidgets() {
+            add(pinButton);
+            add(closeButton);
+        }
+
+        @Override
+        public void alignWidgets() {
+            pinButton.setPosAndSize(2, 2, 16, 16);
+            closeButton.setPosAndSize(width - 18, 3, 15, 15);
+        }
+
+        @Override
+        public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+            theme.drawContextMenuBackground(matrixStack, x, y, w, h);
+        }
     }
 
     private class ExpandIndexButton extends Widget {
@@ -226,6 +297,7 @@ public class GuideScreen extends BaseScreen {
         @Override
         public void draw(PoseStack poseStack, Theme theme, int x, int y, int w, int h) {
             if (!indexPanel.expanded) {
+                GuiHelper.drawHollowRect(poseStack, x, y, w, h, Color4I.rgb(0x202020), false);
                 Icons.RIGHT.draw(poseStack, x + (w - 12) / 2, y + (h - 12) / 2, 12, 12);
             }
         }
