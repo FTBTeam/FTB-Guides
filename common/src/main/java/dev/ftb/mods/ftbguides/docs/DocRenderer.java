@@ -2,7 +2,11 @@ package dev.ftb.mods.ftbguides.docs;
 
 import dev.ftb.mods.ftbguides.client.gui.panel.BlockQuotePanel;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CodeBlockWidget;
+import dev.ftb.mods.ftbguides.client.gui.widgets.CustomTextField;
+import dev.ftb.mods.ftbguides.client.gui.widgets.IconButton;
+import dev.ftb.mods.ftbguides.client.gui.widgets.LineBreakWidget;
 import dev.ftb.mods.ftblibrary.icon.Icon;
+import dev.ftb.mods.ftblibrary.math.PixelBuffer;
 import dev.ftb.mods.ftblibrary.ui.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
@@ -20,12 +24,12 @@ import java.util.*;
 /**
  * Parses a markdown file into a list of components. Contains support for parsing frontmatter like headers
  */
-public class DocParser {
-    private DocParser() {
+public class DocRenderer {
+    private DocRenderer() {
     }
 
-    public static DocParser create() {
-        return new DocParser();
+    public static DocRenderer create() {
+        return new DocRenderer();
     }
 
     public List<Widget> parse(Node node, Panel panel) {
@@ -43,11 +47,11 @@ public class DocParser {
         private ListHolder listHolder = null;
 
         private MutableComponent component = Component.empty();
-        private PanelHolder panel;
+        private PanelHolder panelHolder;
 
 
         public ComponentConverterVisitor(Panel panel) {
-            this.panel = new PanelHolder(panel);
+            this.panelHolder = new PanelHolder(panel);
         }
 
         public List<Widget> finish() {
@@ -71,8 +75,8 @@ public class DocParser {
 
         @Override
         public void visit(SoftLineBreak softLineBreak) {
-            component.append("\n");
-            // TODO: this is wrong but the text widget isn't wrapping properly atm
+            // here we just join lines with a space, and let the TextField do the wrapping
+            component.append(" ");
         }
 
         //#region inline
@@ -122,12 +126,8 @@ public class DocParser {
         @Override
         public void visit(ThematicBreak thematicBreak) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
-            // TODO: Move to a horizontal line widget
-            commitComponent(new TextField(getPanel())
-                    .setText(Component.literal("-----")
-                    .withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)))
-            );
+
+            commitComponent(new LineBreakWidget(getPanel()));
         }
 
         @Override
@@ -138,7 +138,7 @@ public class DocParser {
 
             // Don't add space if the previous component was a heading
             if (!(heading.getPrevious() instanceof Heading)) {
-                commitComponent(new VerticalSpaceWidget(getPanel(), 12));
+                commitComponent(new VerticalSpaceWidget(getPanel(), 8));
             }
 
             visitChildren(heading);
@@ -157,18 +157,21 @@ public class DocParser {
                 headingScale = 1.2f;
             }
 
-            commitComponent(new TextField(getPanel()).setScale(headingScale).setText(component));
-            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
+            CustomTextField field = (CustomTextField) new CustomTextField(getPanel(), component).setScale(headingScale);
+            field.setAnchorName(component.getString().toLowerCase(Locale.ROOT).replace(' ', '-'));
+            field.setHeight((int) (field.height * headingScale) + 2);
+            commitComponent(field);
         }
 
         @Override
         public void visit(BlockQuote blockQuote) {
             // Commit anything we have so far
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(getPanel(), 12));
 
             // This needs to be a panel or something like that as it needs to group the children and render them in a different way
-            this.panel = new PanelHolder(this.panel, new BlockQuotePanel(this.panel.panel));
+            int w = getPanel().width;
+            this.panelHolder = new PanelHolder(this.panelHolder, new BlockQuotePanel(getPanel()));
+            getPanel().setWidth(w);
 
             // Copy the widget list and reset it
             var previousWidgets = new ArrayList<>(this.widgets);
@@ -177,14 +180,17 @@ public class DocParser {
             // Visit the children and store the component
             visitChildren(blockQuote);
 
-            ((BlockQuotePanel) this.panel.panel).setWidgets(new ArrayList<>(this.widgets));
+            if (getPanel() instanceof BlockQuotePanel bqp) {
+                bqp.setWidgets(List.copyOf(widgets));
+            }
 
             // Restore the previous widget list
             this.widgets = previousWidgets;
 
             // Commit the component with the children's context
-            commitComponent(this.panel.panel);
-            this.panel = this.panel.parent;
+            commitComponent(getPanel());
+
+            this.panelHolder = this.panelHolder.parent;
         }
 
         @Override
@@ -200,34 +206,43 @@ public class DocParser {
         @Override
         public void visit(OrderedList orderedList) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+
+            if (!(orderedList.getParent() instanceof ListItem)) {
+                commitComponent(new VerticalSpaceWidget(getPanel(), 4));
+            }
 
             listHolder = new OrderedListHolder(listHolder, orderedList);
             visitChildren(orderedList);
 
-            commitComponent(new TextField(getPanel()).setText(component));
             if (listHolder.getParent() != null) {
                 listHolder = listHolder.getParent();
             } else {
                 listHolder = null;
+            }
+
+            if (!(orderedList.getParent() instanceof ListItem)) {
+                commitComponent(new VerticalSpaceWidget(getPanel(), 4));
             }
         }
 
         @Override
         public void visit(BulletList bulletList) {
             commitComponent();
-            commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+
+            if (!(bulletList.getParent() instanceof ListItem)) {
+                commitComponent(new VerticalSpaceWidget(getPanel(), 4));
+            }
 
             listHolder = new BulletListHolder(listHolder, bulletList);
             visitChildren(bulletList);
-
-            commitComponent(new TextField(getPanel()).setText(component));
 
             if (listHolder.getParent() != null) {
                 listHolder = listHolder.getParent();
             } else {
                 listHolder = null;
             }
+            if (!(bulletList.getParent() instanceof ListItem))
+                commitComponent(new VerticalSpaceWidget(getPanel(), 4));
         }
 
         /**
@@ -245,7 +260,7 @@ public class DocParser {
 
                 orderedListHolder.increaseCounter();
             } else if (listHolder instanceof BulletListHolder bulletListHolder) {
-                before = bulletListHolder.getIndent() + bulletListHolder.getMarker() + " ";
+                before = bulletListHolder.getIndent() + "• ";
                 component.append(Component.literal(before));
                 visitChildren(listItem);
             }
@@ -255,13 +270,24 @@ public class DocParser {
         //#endregion
 
         private Panel getPanel() {
-            return this.panel.panel();
+            return this.panelHolder.panel();
         }
 
         // TODO: An image can be inline or block, we should support both
         @Override
         public void visit(Image image) {
-            commitComponent(new SimpleButton(getPanel(), Component.empty(), Icon.getIcon(image.getDestination()), (simpleButton, mouseButton) -> {}));
+            Icon icon = Icon.getIcon(image.getDestination());
+            int w = 16, h = 16;
+            if (icon.hasPixelBuffer()) {
+                PixelBuffer buf = icon.createPixelBuffer();
+                if (buf != null) {
+                    w = buf.getWidth();
+                    h = buf.getHeight();
+                }
+            }
+            SimpleButton b = new IconButton(getPanel(), Component.empty(), icon, (simpleButton, mouseButton) -> {});
+            b.setSize(w, h);
+            commitComponent(b);
         }
 
         @Override
@@ -278,7 +304,6 @@ public class DocParser {
 
         @Override
         public void visit(Paragraph paragraph) {
-//            commitComponent(new VerticalSpaceWidget(panel, 12));
             if (paragraph.getPrevious() instanceof Paragraph) {
                 component.append(Component.literal("\n"));
             }
@@ -292,7 +317,7 @@ public class DocParser {
             }
 
 //            System.out.println("Committing component (text): " + component.getString());
-            widgets.add(new TextField(getPanel()).setText(component));
+            widgets.add(new CustomTextField(getPanel(), component));
             component = Component.empty();
         }
 

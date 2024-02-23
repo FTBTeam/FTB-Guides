@@ -13,3 +13,7 @@ Now for a list of stuff
 ---
 
 > OK!
+
+![Test Image](minecraft:textures/gui/presets/isles.png)
+
+![Test Item](item:minecraft:diamond)
