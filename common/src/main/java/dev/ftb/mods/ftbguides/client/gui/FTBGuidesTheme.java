@@ -5,10 +5,9 @@ import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftblibrary.ui.Theme;
 import dev.ftb.mods.ftblibrary.ui.WidgetType;
-import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 
-public class GuideTheme extends Theme {
-    public static GuideTheme THEME = new GuideTheme();
+public class FTBGuidesTheme extends Theme {
+    public static FTBGuidesTheme THEME = new FTBGuidesTheme();
 
     @Override
     public void drawContextMenuBackground(PoseStack matrixStack, int x, int y, int w, int h) {

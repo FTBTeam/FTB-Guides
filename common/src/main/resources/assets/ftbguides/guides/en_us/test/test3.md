@@ -1,8 +1,6 @@
 ---
-{
-  category: cat2
-  title: "Test 3"
-}
+category: cat2
+title: "Test 3"
 ---
 # Test 3
 _This is some **text**

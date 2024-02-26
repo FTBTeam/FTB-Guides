@@ -8,6 +8,7 @@ import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
 import dev.ftb.mods.ftbguides.docs.DocRenderer;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import dev.ftb.mods.ftbguides.docs.DocsManager;
+import dev.ftb.mods.ftbguides.docs.GuideIndex;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
@@ -17,6 +18,7 @@ import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 
 import java.net.URI;
@@ -38,6 +40,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
     private double lastScrollPos;
     private final Deque<String> history = new ArrayDeque<>();
+    private GuideIndex guideIndex;
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
@@ -92,6 +95,13 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
                 closeGui();
             }
         }
+        if (guideIndex == null) {
+            guideIndex = DocsManager.INSTANCE.getIndex(activeNode.pageId().getNamespace());
+            indexPanel.refreshWidgets();
+            if (guideIndex == null) {
+                closeGui();
+            }
+        }
         lastScrollPos = docsPanel.getScrollY();
     }
 
@@ -129,18 +139,24 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
     }
 
     private void setActivePage(DocsLoader.NodeWithMeta node) {
+        GuideIndex prevIndex = guideIndex;
         activeNode = node;
+        guideIndex = DocsManager.INSTANCE.getIndex(node.pageId().getNamespace());
         lastScrollPos = 0d;
+
+        if (guideIndex != prevIndex) {
+            indexPanel.refreshWidgets();
+        }
         docsPanel.refreshWidgets();
         docsScrollbar.setValue(0);
         docsScrollbar.onMoved();
     }
 
-    private void toggleExpanded(String catName) {
-        if (collapsedCategories.contains(catName)) {
-            collapsedCategories.remove(catName);
+    private void toggleExpanded(String catId) {
+        if (collapsedCategories.contains(catId)) {
+            collapsedCategories.remove(catId);
         } else {
-            collapsedCategories.add(catName);
+            collapsedCategories.add(catId);
         }
         indexPanel.refreshWidgets();
     }
@@ -152,7 +168,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
     @Override
     public Theme getTheme() {
-        return GuideTheme.THEME;
+        return FTBGuidesTheme.THEME;
     }
 
     @Override
@@ -183,16 +199,14 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
             if (scrollToAnchor(anchor)) {
                 if (addToHistory) addToHistory(anchor);
             }
-        } else {
-            if (ResourceLocation.isValidResourceLocation(pageId)) {
-                ResourceLocation newPage = pageId.contains(":") ?
-                        new ResourceLocation(pageId) :
-                        activeNode != null ? new ResourceLocation(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
-                if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
-                    if (addToHistory) addToHistory(anchor);
-                } else {
-                    FTBGuides.LOGGER.warn("can't navigate to {}", target);
-                }
+        } else if (ResourceLocation.isValidResourceLocation(pageId)) {
+            ResourceLocation newPage = pageId.contains(":") ?
+                    new ResourceLocation(pageId) :
+                    activeNode != null ? new ResourceLocation(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
+            if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
+                if (addToHistory) addToHistory(anchor);
+            } else {
+                FTBGuides.LOGGER.warn("can't navigate to {}", target);
             }
         }
 
@@ -245,29 +259,30 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
         @Override
         public void addWidgets() {
-            DocsManager.INSTANCE.visit((catName, node) -> {
-                if (node == null) {
-                    // starting a new category
-                    add(new SubcategoryButton(catName, Color4I.EMPTY));
-                } else if (!collapsedCategories.contains(catName)) {
-                    add(new DocsNodeButton(node));
-                }
-            });
+            if (guideIndex != null) {
+                guideIndex.categories().forEach(category -> {
+                    Icon catIcon = category.icon().map(Icon::getIcon).orElse(Color4I.BLACK.withAlpha(0));
+                    add(new SubcategoryButton(category, catIcon));
+                    if (!collapsedCategories.contains(category.id())) {
+                        DocsManager.INSTANCE.getByCategory(category.id()).forEach(node -> add(new DocsNodeButton(node)));
+                    }
+                });
+            }
         }
 
         @Override
         public void alignWidgets() {
             int maxW = 100;
 
-            int hardMax = getScreen().getGuiScaledWidth() / 4;
+            int hardMax = getScreen().getGuiScaledWidth() / 3;
             for (Widget w : widgets) {
-                maxW = Math.min(Math.max(maxW, w.width), hardMax);
+                maxW = Math.min(Math.max(maxW, w.width + w.getX() + 5), hardMax);
             }
 
             setPosAndSize(expanded || indexPinned ? 0 : -maxW, 20, maxW, getGui().height - 21);
 
             for (Widget w : widgets) {
-                w.setX(2);
+                w.setX(2 + (w instanceof ListButton lb ? lb.getIndent() : 0));
                 w.setWidth(maxW - 4);
             }
 
@@ -313,11 +328,15 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         private abstract class ListButton extends SimpleTextButton {
             public ListButton(Component title, Icon icon) {
                 super(IndexPanel.this, title, icon);
-                setHeight(16);
+                setHeight(getTheme().getFontHeight() + 4);
             }
 
             @Override
             public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+            }
+
+            protected int getIndent() {
+                return 0;
             }
         }
 
@@ -342,24 +361,30 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
                 }
                 super.draw(matrixStack, theme, x, y, w, h);
             }
+
+            @Override
+            protected int getIndent() {
+                return 12;
+            }
         }
 
         public class SubcategoryButton extends ListButton {
-            private final String catName;
+            private final GuideIndex.GuideCategory category;
 
-            public SubcategoryButton(String catName, Icon icon) {
-                super(makeTitle(collapsedCategories, catName), icon);
-                this.catName = catName;
+            public SubcategoryButton(GuideIndex.GuideCategory category, Icon icon) {
+                super(makeTitle(collapsedCategories, category), icon);
+                this.category = category;
             }
 
             @Override
             public void onClicked(MouseButton button) {
-                toggleExpanded(catName);
+                toggleExpanded(category.id());
                 indexPanel.refreshWidgets();
             }
 
-            private static Component makeTitle(Set<String> e, String catName) {
-                return Component.literal(e.contains(catName) ? "▼ " : "▶ ").append(catName);
+            private static Component makeTitle(Set<String> e, GuideIndex.GuideCategory category) {
+                Style style = Style.EMPTY.withColor(NordColors.YELLOW.rgba()).withBold(category.id().isEmpty());
+                return Component.literal(e.contains(category.id()) ? "▶ " : "▼ ").append(category.name()).withStyle(style);
             }
 
             @Override

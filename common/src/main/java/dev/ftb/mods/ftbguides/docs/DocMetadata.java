@@ -33,11 +33,16 @@ public record DocMetadata(String title, String category, Optional<String> icon, 
         line = reader.readLine();
         while (line != null && !line.equals("---")) {
             headerLines.add(line);
-            line = reader.readLine();
+            line = reader.readLine().stripIndent();
         }
 
         if (headerLines.isEmpty()) {
             throw new IOException("no header found!");
+        }
+
+        if (!headerLines.get(0).startsWith("{")) {
+            headerLines.add(0, "{");
+            headerLines.add("}");
         }
 
         CompoundTag tag = SNBT.readLines(headerLines);

@@ -1,0 +1,16 @@
+{
+  "categories": [
+    { "id":  "", "name":  "Sample Guide", "icon": "item:minecraft:stone" },
+    { "id":  "cat1", "name":  "Category One", "icon": "ftblibrary:icons/heart" },
+    { "id":  "cat2", "name":  "Category Two" },
+    { "id":  "impl-test", "name":  "Implementation Test", "icon": "item:minecraft:gold_block" }
+  ],
+  "theme": {
+    "background_color": "#000000",
+    "index_background_color": "#212121",
+    "gui_line_color": "#606060",
+    "text_color": "#FFFFFF",
+    "links_color": "#98D9FF",
+    "code_color": "#EBCB8B"
+  }
+}

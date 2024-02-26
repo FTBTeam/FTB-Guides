@@ -1,8 +1,6 @@
 ---
-{
-  category: "cat1"
-  title: "Test 1"
-}
+category: "cat1"
+title: "Test 1"
 ---
 # Test 1
 This is some **text**

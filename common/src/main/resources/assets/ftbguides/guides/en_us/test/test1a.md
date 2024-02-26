@@ -1,10 +1,8 @@
 ---
-{
-  category: "cat1"
-  title: "Test 1A"
-  order: 1
-  icon: "item:minecraft:book"
-}
+category: "cat1"
+title: "Test 1A"
+order: 1
+icon: "item:minecraft:book"
 ---
 # Test 1A
 This is some **text**

@@ -1,8 +1,7 @@
 ---
-{
-  category: "impl-test"
-  title: "Amazing Test"
-}
+category: "impl-test"
+title: "Amazing Test"
+icon: "ftblibrary:icons/info"
 ---
 # Markdown: Syntax
 

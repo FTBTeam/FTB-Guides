@@ -1,8 +1,6 @@
 ---
-{
-  category: cat2
-  title: "Blockquotes"
-}
+category: cat2
+title: "Blockquotes"
 ---
 > blockquote!
 > 

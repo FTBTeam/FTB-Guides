@@ -1,7 +1,5 @@
 ---
-{
-  title: Index
-}
+title: Index
 ---
 # Index Page
 
