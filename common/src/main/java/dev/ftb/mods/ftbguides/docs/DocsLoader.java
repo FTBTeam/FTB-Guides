@@ -40,7 +40,7 @@ public class DocsLoader extends SimplePreparableReloadListener<Map<ResourceLocat
                 try {
                     DocMetadata meta = DocMetadata.fromReader(reader);
                     Node node = parser.parseReader(reader);
-                    NodeWithMeta prev = map.put(resLoc, new NodeWithMeta(node, meta));
+                    NodeWithMeta prev = map.put(resLoc, new NodeWithMeta(resLoc, node, meta));
                     if (prev != null) {
                         throw new IllegalStateException("Duplicate data file ignored with ID " + resLoc);
                     }
@@ -61,6 +61,6 @@ public class DocsLoader extends SimplePreparableReloadListener<Map<ResourceLocat
         DocsManager.INSTANCE.rebuildDocs(object);
     }
 
-    public record NodeWithMeta(Node node, DocMetadata metadata) {
+    public record NodeWithMeta(ResourceLocation pageId, Node node, DocMetadata metadata) {
     }
 }

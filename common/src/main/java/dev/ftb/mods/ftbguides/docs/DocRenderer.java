@@ -8,6 +8,7 @@ import dev.ftb.mods.ftbguides.client.gui.widgets.LineBreakWidget;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.math.PixelBuffer;
 import dev.ftb.mods.ftblibrary.ui.*;
+import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import org.commonmark.internal.renderer.text.BulletListHolder;
@@ -89,7 +90,7 @@ public class DocRenderer {
 
             visitChildren(link);
 
-            Style linkStyle = Style.EMPTY.withUnderlined(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+            Style linkStyle = Style.EMPTY.withUnderlined(true).withColor(TextColor.fromRgb(0x98D9FF)).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
             if (title != null) {
                 linkStyle = linkStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(title)));
             }

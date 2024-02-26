@@ -8,10 +8,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class FTBGuidesClient {
     public static void openGui(ResourceLocation id) {
-        // TODO set active page
         GuideScreen guideScreen = new GuideScreen();
         guideScreen.openGui();
-        guideScreen.setActivePage(id);
+        guideScreen.navigateTo(id.toString());
     }
 
     public static void displayError(Component error) {

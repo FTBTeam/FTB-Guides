@@ -5,6 +5,7 @@ import dev.ftb.mods.ftbguides.client.gui.ClickEventHandler;
 import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.TextField;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
+import dev.ftb.mods.ftblibrary.util.TooltipList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -33,6 +34,14 @@ public class CustomTextField extends TextField implements Anchorable {
         }
 
         return super.mousePressed(button);
+    }
+
+    @Override
+    public void addMouseOverText(TooltipList list) {
+        Style style = getComponentStyleAt(getGui().getTheme(), getMouseX(), getMouseY());
+        if (style != null && style.getClickEvent() != null) {
+            list.add(Component.literal(style.getClickEvent().getValue()).withStyle(ChatFormatting.GRAY));
+        }
     }
 
     private boolean handleCustomClickEvent(Style style) {

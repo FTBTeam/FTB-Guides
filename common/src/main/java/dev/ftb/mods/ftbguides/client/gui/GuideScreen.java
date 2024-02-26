@@ -1,10 +1,10 @@
 package dev.ftb.mods.ftbguides.client.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
-import dev.ftb.mods.ftbguides.client.gui.widgets.CustomTextField;
 import dev.ftb.mods.ftbguides.docs.DocRenderer;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import dev.ftb.mods.ftbguides.docs.DocsManager;
@@ -12,17 +12,16 @@ import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftblibrary.ui.*;
+import dev.ftb.mods.ftblibrary.ui.input.Key;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.commonmark.node.AbstractVisitor;
-import org.commonmark.node.Heading;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 import static dev.ftb.mods.ftbguides.FTBGuides.rl;
 
@@ -34,9 +33,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
     private final IndexPanel indexPanel;
     private final DocsPanel docsPanel;
     private final Set<String> collapsedCategories;
+    private final PanelScrollBar docsScrollbar;
     private final ExpandIndexButton expandIndexButton;
 
     private double lastScrollPos;
+    private final Deque<String> history = new ArrayDeque<>();
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
@@ -46,6 +47,12 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         toolbarPanel = new ToolbarPanel();
         indexPanel = new IndexPanel();
         docsPanel = new DocsPanel();
+        docsScrollbar = new PanelScrollBar(this, ScrollBar.Plane.VERTICAL, docsPanel) {
+            @Override
+            public boolean shouldDraw() {
+                return getScrollBarSize() > 0;
+            }
+        };
 
         expandIndexButton = new ExpandIndexButton();
         collapsedCategories = new HashSet<>();
@@ -56,6 +63,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         add(toolbarPanel);
         add(indexPanel);
         add(docsPanel);
+        add(docsScrollbar);
         add(expandIndexButton);
     }
 
@@ -63,6 +71,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
     public void alignWidgets() {
         toolbarPanel.setPosAndSize(0, 0, width - 1, 20);
         docsPanel.setPosAndSize(20, 25, width - 20, height - 25);
+        docsScrollbar.setPosAndSize(width - 12, docsPanel.getY(), 12, docsPanel.height);
         expandIndexButton.setPosAndSize(0, 20, 20, height - 20);
 
         toolbarPanel.alignWidgets();
@@ -78,15 +87,53 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         super.tick();
 
         if (activeNode == null) {
-            DocsManager.INSTANCE.get(rl("index")).ifPresent(this::setActivePage);
+            if (!navigateTo(FTBGuides.MOD_ID + ":index")) {
+                FTBGuides.LOGGER.error("missing index page!");
+                closeGui();
+            }
         }
         lastScrollPos = docsPanel.getScrollY();
+    }
+
+    @Override
+    public boolean keyPressed(Key key) {
+        int lineHeight = getTheme().getFontHeight() + 2;
+        switch (key.keyCode) {
+            case InputConstants.KEY_DOWN ->
+                    adjustScroll(lineHeight);
+            case InputConstants.KEY_UP ->
+                    adjustScroll( -lineHeight);
+            case InputConstants.KEY_PAGEDOWN ->
+                // scroll a bit less than a full page; provides a bit of continuity for the reader
+                    adjustScroll(docsPanel.height - lineHeight * 2);
+            case InputConstants.KEY_PAGEUP ->
+                    adjustScroll(-(docsPanel.height - lineHeight * 2));
+            case InputConstants.KEY_HOME ->
+                    adjustScroll(-docsPanel.getContentHeight());
+            case InputConstants.KEY_END ->
+                    adjustScroll(docsPanel.getContentHeight());
+        }
+        return super.keyPressed(key);
+    }
+
+    @Override
+    public void onBack() {
+        if (history.size() >= 2) {
+            history.pop();
+            navigateTo(Objects.requireNonNull(history.peekFirst()), false);
+        }
+    }
+
+    private void adjustScroll(int amount) {
+        docsScrollbar.setValue(docsScrollbar.getValue() + amount);
     }
 
     private void setActivePage(DocsLoader.NodeWithMeta node) {
         activeNode = node;
         lastScrollPos = 0d;
         docsPanel.refreshWidgets();
+        docsScrollbar.setValue(0);
+        docsScrollbar.onMoved();
     }
 
     private void toggleExpanded(String catName) {
@@ -110,20 +157,83 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
     @Override
     public boolean handleClickEvent(ClickEvent event) {
-        if (activeNode != null && event.getValue().startsWith("#")) {
-            String anchorName = event.getValue().substring(1).toLowerCase(Locale.ROOT);
-            for (Widget w : docsPanel.widgets) {
-                if (w instanceof Anchorable a && a.getAnchorName().equals(anchorName)) {
-                    docsPanel.setScrollY(w.posY);
-                    return true;
-                }
+        try {
+            URI uri = new URI(event.getValue());
+            if (uri.getScheme() == null) {
+                return navigateTo(event.getValue());
             }
+        } catch (URISyntaxException ignored) {
         }
         return false;
     }
 
-    public void setActivePage(ResourceLocation id) {
-        DocsManager.INSTANCE.get(id).ifPresent(this::setActivePage);
+    public boolean navigateTo(String target) {
+        return navigateTo(target, true);
+    }
+
+    public boolean navigateTo(String target, boolean addToHistory) {
+        String[] parts = target.split("#");
+        String pageId = parts[0];
+        String anchor = parts.length >= 2 ? parts[1] : "";
+
+        pageId = pageId.replaceAll("\\.md$", "");
+
+        if (pageId.isEmpty() && !anchor.isEmpty()) {
+            // just jumping to an anchor in the current doc
+            if (scrollToAnchor(anchor)) {
+                if (addToHistory) addToHistory(anchor);
+            }
+        } else {
+            if (ResourceLocation.isValidResourceLocation(pageId)) {
+                ResourceLocation newPage = pageId.contains(":") ?
+                        new ResourceLocation(pageId) :
+                        activeNode != null ? new ResourceLocation(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
+                if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
+                    if (addToHistory) addToHistory(anchor);
+                } else {
+                    FTBGuides.LOGGER.warn("can't navigate to {}", target);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void addToHistory(String anchor) {
+        if (activeNode != null) {
+            String entry = activeNode.pageId().toString();
+            if (!anchor.isEmpty()) {
+                entry = entry + "#" + anchor;
+            }
+            if (!entry.equals(history.peekFirst())) {
+                history.push(entry);
+                if (history.size() > 100) {
+                    history.removeLast();
+                }
+            }
+        }
+    }
+
+    public boolean setActivePage(ResourceLocation id) {
+        return DocsManager.INSTANCE.get(id).map(node -> {
+            setActivePage(node);
+            return true;
+        }).orElse(false);
+    }
+
+    public boolean scrollToAnchor(String anchorName) {
+        if (anchorName.isEmpty()) {
+            return false;
+        }
+        for (Widget w : docsPanel.widgets) {
+            if (w instanceof Anchorable a && a.getAnchorName().equals(anchorName)) {
+                docsScrollbar.setValue(w.posY);
+                return true;
+            }
+        }
+
+        FTBGuides.LOGGER.warn("unknown anchor #{} in doc {}", anchorName, activeNode.pageId());
+        return false;
     }
 
     private class IndexPanel extends Panel {
@@ -222,6 +332,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
             @Override
             public void onClicked(MouseButton button) {
                 setActivePage(node);
+                addToHistory("");
             }
 
             @Override
@@ -274,25 +385,22 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         public void alignWidgets() {
             align(new WidgetLayout.Vertical(0, 4, 0));
 
-            if (lastScrollPos < docsPanel.getContentHeight()) {
-                setScrollY(lastScrollPos);
-            } else {
-                lastScrollPos = 0;
-                setScrollY(0);
-            }
+            docsScrollbar.setMaxValue(getContentHeight());
+            docsScrollbar.setValue(lastScrollPos);
         }
 
         @Override
         public void tick() {
             super.tick();
 
-            int x0 = getX();
-            int w = width;
+            int prevX = getX();
+            int prevW = width;
 
+            int sbWidth = docsScrollbar.shouldDraw() ? docsScrollbar.width : 0;
             setX(indexPanel.expanded || indexPinned ? indexPanel.getX() + indexPanel.width + 5 : 25);
-            setWidth(getScreen().getGuiScaledWidth() - docsPanel.getX() - 5);
+            setWidth(getScreen().getGuiScaledWidth() - docsPanel.getX() - 5 - sbWidth);
 
-            if (x0 != getX() || w != width) {
+            if (prevX != getX() || prevW != width) {
                 refreshWidgets();
             }
         }
@@ -321,7 +429,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         @Override
         public void alignWidgets() {
             pinButton.setPosAndSize(2, 2, 16, 16);
-            closeButton.setPosAndSize(width - 18, 3, 15, 15);
+            closeButton.setPosAndSize(width - 16, 3, 15, 15);
         }
 
         @Override

@@ -32,6 +32,9 @@ public enum DocsManager {
     }
 
     public Optional<NodeWithMeta> get(ResourceLocation id) {
+        if (id.getPath().startsWith("/")) {
+            id = new ResourceLocation(id.getNamespace(), id.getPath().substring(1));
+        }
         return byId == null ? Optional.empty() : Optional.ofNullable(byId.get(id));
     }
 
