@@ -35,8 +35,11 @@ dependencies {
     modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive false }
 
     implementation("org.commonmark:commonmark:0.21.0")
+    implementation("org.commonmark:commonmark-ext-image-attributes:0.21.0")
     forgeRuntimeLibrary("org.commonmark:commonmark:0.21.0")
+    forgeRuntimeLibrary("org.commonmark:commonmark-ext-image-attributes:0.21.0")
     include("org.commonmark:commonmark:0.21.0")
+    include("org.commonmark:commonmark-ext-image-attributes:0.21.0")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }

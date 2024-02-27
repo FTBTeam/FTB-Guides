@@ -1,0 +1,14 @@
+{
+  "categories": [
+    { "id":  "default", "name":  "Sample Guide 2", "icon": "item:minecraft:iron_ingot" },
+    { "id":  "cat1", "name":  "Fun Stuff", "icon": "ftblibrary:icons/shield" }
+  ],
+  "theme": {
+    "background_color": "#c02e3440",
+    "index_background_color": "#434c5e",
+    "gui_line_color": "#88c0d0",
+    "text_color": "#eceff4",
+    "links_color": "#b48ead",
+    "code_color": "#EBCB8B"
+  }
+}

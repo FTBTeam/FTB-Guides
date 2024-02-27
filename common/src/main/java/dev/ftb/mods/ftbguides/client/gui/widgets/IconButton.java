@@ -2,10 +2,8 @@ package dev.ftb.mods.ftbguides.client.gui.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftblibrary.icon.Icon;
-import dev.ftb.mods.ftblibrary.ui.GuiHelper;
-import dev.ftb.mods.ftblibrary.ui.Panel;
-import dev.ftb.mods.ftblibrary.ui.SimpleButton;
-import dev.ftb.mods.ftblibrary.ui.Theme;
+import dev.ftb.mods.ftblibrary.ui.*;
+import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import net.minecraft.network.chat.Component;
 
 public class IconButton extends SimpleButton {
@@ -18,5 +16,15 @@ public class IconButton extends SimpleButton {
         GuiHelper.setupDrawing();
         drawBackground(matrixStack, theme, x, y, w, h);
         drawIcon(matrixStack, theme, x, y, w, h);
+    }
+
+    @Override
+    public void onClicked(MouseButton button) {
+        // nothing; suppress the click sound
+    }
+
+    @Override
+    public CursorType getCursor() {
+        return null;
     }
 }

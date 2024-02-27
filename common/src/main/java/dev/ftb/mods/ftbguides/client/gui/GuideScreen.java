@@ -15,21 +15,22 @@ import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftblibrary.ui.*;
 import dev.ftb.mods.ftblibrary.ui.input.Key;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
-import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
 import static dev.ftb.mods.ftbguides.FTBGuides.rl;
 
-public class GuideScreen extends BaseScreen implements ClickEventHandler {
+public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideThemeProvider {
     public static final Icon PIN_ICON_IN = Icon.getIcon(rl("textures/gui/pin.png"));
     public static final Icon PIN_ICON_OUT = Icon.getIcon(rl("textures/gui/pin_out.png"));
+    public static final Icon BLANK_ICON = Color4I.BLACK.withAlpha(0);
+
+    // these protocols get handled by vanilla when links are clicked
+    private static final Set<String> VANILLA_PROTOCOLS = Set.of("http", "https", "file");
 
     private final ToolbarPanel toolbarPanel;
     private final IndexPanel indexPanel;
@@ -37,14 +38,15 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
     private final Set<String> collapsedCategories;
     private final PanelScrollBar docsScrollbar;
     private final ExpandIndexButton expandIndexButton;
+    private final Deque<String> history = new ArrayDeque<>();
+    private final FTBGuidesTheme theme;
 
     private double lastScrollPos;
-    private final Deque<String> history = new ArrayDeque<>();
     private GuideIndex guideIndex;
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
-    private static boolean indexPinned;
+    private static boolean indexPinned = true;
 
     public GuideScreen() {
         toolbarPanel = new ToolbarPanel();
@@ -56,9 +58,9 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
                 return getScrollBarSize() > 0;
             }
         };
-
         expandIndexButton = new ExpandIndexButton();
         collapsedCategories = new HashSet<>();
+        theme = new FTBGuidesTheme(this);
     }
 
     @Override
@@ -90,7 +92,9 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         super.tick();
 
         if (activeNode == null) {
-            if (!navigateTo(FTBGuides.MOD_ID + ":index")) {
+            // FIXME need a proper solution here
+            navigateTo("ftbguides_dev:index");
+            if (activeNode == null) {
                 FTBGuides.LOGGER.error("missing index page!");
                 closeGui();
             }
@@ -163,24 +167,28 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
     @Override
     public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-        Color4I.BLACK.withAlpha(128).draw(matrixStack, x, y, w, h);
+        getGuideTheme().bgColor().draw(matrixStack, x, y, w, h);
     }
 
     @Override
     public Theme getTheme() {
-        return FTBGuidesTheme.THEME;
+        return theme;
+    }
+
+    @Override
+    public GuideIndex.GuideTheme getGuideTheme() {
+        return guideIndex == null ? GuideIndex.GuideTheme.FALLBACK : guideIndex.theme();
     }
 
     @Override
     public boolean handleClickEvent(ClickEvent event) {
-        try {
-            URI uri = new URI(event.getValue());
-            if (uri.getScheme() == null) {
-                return navigateTo(event.getValue());
+        String[] parts = event.getValue().split(":");
+        if (parts.length > 1) {
+            if (VANILLA_PROTOCOLS.contains(parts[0])) {
+                return false; // let vanilla screen handle it
             }
-        } catch (URISyntaxException ignored) {
         }
-        return false;
+        return navigateTo(event.getValue());
     }
 
     public boolean navigateTo(String target) {
@@ -229,7 +237,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
     }
 
     public boolean setActivePage(ResourceLocation id) {
-        return DocsManager.INSTANCE.get(id).map(node -> {
+        return DocsManager.INSTANCE.getNodeById(id).map(node -> {
             setActivePage(node);
             return true;
         }).orElse(false);
@@ -259,12 +267,13 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
         @Override
         public void addWidgets() {
-            if (guideIndex != null) {
+            if (activeNode != null && guideIndex != null) {
                 guideIndex.categories().forEach(category -> {
-                    Icon catIcon = category.icon().map(Icon::getIcon).orElse(Color4I.BLACK.withAlpha(0));
-                    add(new SubcategoryButton(category, catIcon));
+                    add(new SubcategoryButton(category));
                     if (!collapsedCategories.contains(category.id())) {
-                        DocsManager.INSTANCE.getByCategory(category.id()).forEach(node -> add(new DocsNodeButton(node)));
+                        DocsManager.INSTANCE.getNodesByCategory(activeNode.pageId().getNamespace(), category.id()).stream()
+                                .sorted()
+                                .forEach(node -> add(new DocsNodeButton(node)));
                     }
                 });
             }
@@ -276,7 +285,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
             int hardMax = getScreen().getGuiScaledWidth() / 3;
             for (Widget w : widgets) {
-                maxW = Math.min(Math.max(maxW, w.width + w.getX() + 5), hardMax);
+                maxW = Math.min(Math.max(maxW, w.width + w.posX + 5), hardMax);
             }
 
             setPosAndSize(expanded || indexPinned ? 0 : -maxW, 20, maxW, getGui().height - 21);
@@ -313,7 +322,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
         @Override
         public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-            theme.drawContextMenuBackground(matrixStack, x, y, w, h);
+            getGuideTheme().indexBgColor().draw(matrixStack, x, y, w, h);
+            getGuideTheme().guiColor().draw(matrixStack, x + w - 1, y, 1, h);
         }
 
         @Override
@@ -344,7 +354,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
             private final DocsLoader.NodeWithMeta node;
 
             public DocsNodeButton(DocsLoader.NodeWithMeta node) {
-                super(Component.literal(node.metadata().title()), node.metadata().makeIcon());
+                super(Component.literal(node.metadata().title()), node.metadata().icon());
                 this.node = node;
             }
 
@@ -357,7 +367,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
             @Override
             public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
                 if (node == activeNode) {
-                    NordColors.POLAR_NIGHT_2.draw(matrixStack, x, y, w, h);
+                    getGuideTheme().linkColor().withAlpha(128).draw(matrixStack, x, y, parent.width - posX - 3, h);
                 }
                 super.draw(matrixStack, theme, x, y, w, h);
             }
@@ -371,8 +381,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         public class SubcategoryButton extends ListButton {
             private final GuideIndex.GuideCategory category;
 
-            public SubcategoryButton(GuideIndex.GuideCategory category, Icon icon) {
-                super(makeTitle(collapsedCategories, category), icon);
+            public SubcategoryButton(GuideIndex.GuideCategory category) {
+                super(makeTitle(collapsedCategories, category, getGuideTheme().codeColor()), category.icon());
                 this.category = category;
             }
 
@@ -382,14 +392,9 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
                 indexPanel.refreshWidgets();
             }
 
-            private static Component makeTitle(Set<String> e, GuideIndex.GuideCategory category) {
-                Style style = Style.EMPTY.withColor(NordColors.YELLOW.rgba()).withBold(category.id().isEmpty());
+            private static Component makeTitle(Set<String> e, GuideIndex.GuideCategory category, Color4I color) {
+                Style style = Style.EMPTY.withColor(color.rgba()).withBold(category.isDefault());
                 return Component.literal(e.contains(category.id()) ? "▶ " : "▼ ").append(category.name()).withStyle(style);
-            }
-
-            @Override
-            public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-                super.draw(matrixStack, theme, x, y, w, h);
             }
         }
     }
@@ -459,7 +464,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
 
         @Override
         public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-            Color4I.rgb(60, 60, 60).draw(matrixStack, x, y + h - 1, w, 1);
+            getGuideTheme().guiColor().draw(matrixStack, x, y + h - 1, w, 1);
         }
     }
 
@@ -471,7 +476,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler {
         @Override
         public void draw(PoseStack poseStack, Theme theme, int x, int y, int w, int h) {
             if (!indexPanel.expanded) {
-                GuiHelper.drawHollowRect(poseStack, x, y, w, h, Color4I.rgb(0x202020), false);
+                getGuideTheme().indexBgColor().draw(poseStack, x, y, w, h);
+                getGuideTheme().guiColor().draw(poseStack, x + w, y, 1, h);
                 Icons.RIGHT.draw(poseStack, x + (w - 12) / 2, y + (h - 12) / 2, 12, 12);
             }
         }

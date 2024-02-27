@@ -19,24 +19,50 @@ To get started using FTB Guides, you'll want to have it installed and have a res
 
 Once you've got this sorted, you'll need the following:
 
-- A folder in your resource pack called `assets/ftb_guides/guides/{language}` by default we recommend using `en_us` as this is what our system will fallback to if the users language is not available.
-- Inside of this folder, you'll want to have `//TODO: Add info about how to setup the index structure`
+- A folder in your resource pack called `assets/{namespace}/guides/{language}`. By default, we recommend using `en_us` as this is what our system will fall back to if the user's language is not available.
+- Inside of this folder, you'll want to have a guide index file: `guide.json`. See below for an example.
 - Once you've got your index setup, you can start adding guides! It's as simple as create a new markdown file (`my-guide.md`)
 
-### Markdown metadata
+This is a sample `guide.json` file. It has a mandatory `categories` section, and an optional `theme` section, which can be used to provide colour for your guide pages.
 
-Each markdown file is required to have a metadata block at the top of the file. This is an SNBT object that must at the very least contain a `title` and a `category` key.
+```json
+{
+  "categories": [
+    { "id":  "default", "name":  "Sample Guide", "icon": "item:minecraft:stone" },
+    { "id":  "category1", "name":  "Category One", "icon": "ftblibrary:icons/heart" },
+    { "id":  "category2", "name":  "Category Two" }
+  ],
+  "theme": {
+    "background_color": "#80000000",
+    "index_background_color": "#212121",
+    "gui_line_color": "#606060",
+    "text_color": "#FFFFFF",
+    "links_color": "#98D9FF",
+    "code_color": "#EBCB8B"
+  }
+}
+```
+
+The colours provided above are the defaults, and can be omitted if you're happy to use those.
+
+The `categories` section must be provided, and lists each category in your guide, in the order you want it to appear in the GUI index. Each entry has a mandatory `id` and `name` field, and an optional `icon` field.
+
+### Markdown Files
+
+You can add markdown files anywhere within your namespace. They will most commonly go at the same folder level as the `guide.json` file, but they can be placed into subfolders if you want. This has no effect on in-game rendering (categories are used for that); it's just a way of organising files.
+
+Each markdown file is required to have a metadata (aka "front matter") block at the top of the file. This is an SNBT compound tag that must at the very least contain a `title` key. The optional `category` key corresponds to the category `id` fields in the `guide.json` file described above.
+
+Note that although SNBT normally requires the compound tag to be enclosed in curly braces, they're optional here, for convenience.
 
 #### Example metadata block
 
 ```markdown
 ---
-{
-  category: "cat1",
-  title: "Test 1",
-  "order": 1, // Optional
-  "icon": "item:minecraft:book" // Optional
-}
+category: "cat1",  // Optional - defaults to "default"
+title: "Test 1",  // Required
+order: 1, // Optional - if omitted page is added at end of list
+icon: "item:minecraft:book" // Optional
 ---
 
 # Welcome to my guide book!
@@ -53,13 +79,13 @@ Each markdown file is required to have a metadata block at the top of the file. 
 
 ### Markdown content
 
-Under the hood FTB Guides uses [CommonMark](https://spec.commonmark.org/0.31.2/#introduction) for markdown parsing. This means you can use all the features that CommonMark provides. With a couple of exceptions:
+Under the hood FTB Guides uses [CommonMark](https://spec.commonmark.org/0.31.2/#introduction) for markdown parsing. This means you can use all the features that CommonMark provides, with a couple of exceptions:
 
 #### Images
 
-- Images can not be remote URLs, they must be local to the games resources
+- Images can not be remote URLs; they must be local to the game's resources
   - This means you can't use `![My Image](https://example.com/image.png)`
-  - You can use `![My Image](item:minecraft:diamond)`
+  - You can use `![My Image](item:minecraft:diamond)` or `![My Image](minecraft:gui/painting/burning_skull)`
 
 Please see the [FTB Library icon path](#ftb-library-icon-path) section for more information on how to use icons.
 

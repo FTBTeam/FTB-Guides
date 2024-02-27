@@ -16,6 +16,7 @@ dependencies {
     modApi("dev.ftb.mods:ftb-library:${rootProject.ftb_library_version}") { transitive false }
 
     api("org.commonmark:commonmark:0.21.0")
+    api("org.commonmark:commonmark-ext-image-attributes:0.21.0")
 }
 
 publishing {

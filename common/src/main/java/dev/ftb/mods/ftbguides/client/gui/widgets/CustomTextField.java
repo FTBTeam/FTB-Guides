@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbguides.client.gui.widgets;
 
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.ClickEventHandler;
+import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.TextField;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
@@ -20,6 +21,7 @@ public class CustomTextField extends TextField implements Anchorable {
 
         setMaxWidth(panel.width);
         setText(text.copy());
+        setColor(GuideThemeProvider.getGuideThemeFor(this).textColor());
     }
 
     @Override

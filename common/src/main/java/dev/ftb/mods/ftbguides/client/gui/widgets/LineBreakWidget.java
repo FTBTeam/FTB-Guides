@@ -1,6 +1,7 @@
 package dev.ftb.mods.ftbguides.client.gui.widgets;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.Theme;
@@ -15,6 +16,6 @@ public class LineBreakWidget extends Widget {
 
     @Override
     public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-        Color4I.GRAY.draw(matrixStack, x + 20, y + (height - 2) / 2, w - 40, 1);
+        GuideThemeProvider.getGuideThemeFor(this).guiColor().draw(matrixStack, x + 20, y + (height - 2) / 2, w - 40, 1);
     }
 }

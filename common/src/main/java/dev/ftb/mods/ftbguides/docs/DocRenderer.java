@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbguides.docs;
 
+import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftbguides.client.gui.panel.BlockQuotePanel;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CodeBlockWidget;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CustomTextField;
@@ -8,9 +9,10 @@ import dev.ftb.mods.ftbguides.client.gui.widgets.LineBreakWidget;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.math.PixelBuffer;
 import dev.ftb.mods.ftblibrary.ui.*;
-import dev.ftb.mods.ftblibrary.ui.misc.NordColors;
-import net.minecraft.ChatFormatting;
+import it.unimi.dsi.fastutil.ints.IntIntPair;
 import net.minecraft.network.chat.*;
+import org.apache.commons.lang3.StringUtils;
+import org.commonmark.ext.image.attributes.ImageAttributes;
 import org.commonmark.internal.renderer.text.BulletListHolder;
 import org.commonmark.internal.renderer.text.ListHolder;
 import org.commonmark.internal.renderer.text.OrderedListHolder;
@@ -50,7 +52,6 @@ public class DocRenderer {
         private MutableComponent component = Component.empty();
         private PanelHolder panelHolder;
 
-
         public ComponentConverterVisitor(Panel panel) {
             this.panelHolder = new PanelHolder(panel);
         }
@@ -62,6 +63,12 @@ public class DocRenderer {
             }
 
             return widgets;
+        }
+
+        private GuideIndex.GuideTheme getGuideTheme() {
+            return getPanel().getGui() instanceof GuideThemeProvider prov ?
+                    prov.getGuideTheme() :
+                    GuideIndex.GuideTheme.FALLBACK;
         }
 
         @Override
@@ -90,7 +97,9 @@ public class DocRenderer {
 
             visitChildren(link);
 
-            Style linkStyle = Style.EMPTY.withUnderlined(true).withColor(TextColor.fromRgb(0x98D9FF)).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+            Style linkStyle = Style.EMPTY.withUnderlined(true)
+                    .withColor(TextColor.fromRgb(getGuideTheme().linkColor().rgb()))
+                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
             if (title != null) {
                 linkStyle = linkStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(title)));
             }
@@ -119,7 +128,9 @@ public class DocRenderer {
 
         @Override
         public void visit(Code code) {
-            component.append(Component.literal(code.getLiteral()).withStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+            component.append(Component.literal(code.getLiteral())
+                    .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(getGuideTheme().codeColor().rgb())))
+            );
         }
         //#endregion
 
@@ -134,12 +145,11 @@ public class DocRenderer {
         @Override
         public void visit(Heading heading) {
             // Commit anything we have so far
-            // TODO: Spacing should be relative to the heading level
             commitComponent();
 
-            // Don't add space if the previous component was a heading
-            if (!(heading.getPrevious() instanceof Heading)) {
-                commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+            // Don't add space if the previous component was a heading, or this is the first component
+            if (heading.getPrevious() != null && !(heading.getPrevious() instanceof Heading)) {
+                commitComponent(new VerticalSpaceWidget(getPanel(), 4));
             }
 
             visitChildren(heading);
@@ -161,6 +171,7 @@ public class DocRenderer {
             CustomTextField field = (CustomTextField) new CustomTextField(getPanel(), component).setScale(headingScale);
             field.setAnchorName(component.getString().toLowerCase(Locale.ROOT).replace(' ', '-'));
             field.setHeight((int) (field.height * headingScale) + 2);
+            field.setWidth((int) (field.width * headingScale) + 2);
             commitComponent(field);
         }
 
@@ -279,6 +290,9 @@ public class DocRenderer {
         public void visit(Image image) {
             Icon icon = Icon.getIcon(image.getDestination());
             int w = 16, h = 16;
+            // TODO find a way of specifying alignment (image attributes only allows width & height)
+            ImageAlign align = ImageAlign.LEFT;
+
             if (icon.hasPixelBuffer()) {
                 PixelBuffer buf = icon.createPixelBuffer();
                 if (buf != null) {
@@ -286,9 +300,39 @@ public class DocRenderer {
                     h = buf.getHeight();
                 }
             }
-            SimpleButton b = new IconButton(getPanel(), Component.empty(), icon, (simpleButton, mouseButton) -> {});
+            if (image.getFirstChild().getNext() instanceof ImageAttributes attr) {
+                IntIntPair pair = getImageDimensions(attr, w, h);
+                w = pair.leftInt();
+                h = pair.rightInt();
+            }
+
+            Component title = image.getTitle() == null ? Component.empty() : Component.literal(image.getTitle());
+            SimpleButton b = new IconButton(getPanel(), title, icon, (simpleButton, mouseButton) -> {});
             b.setSize(w, h);
+            b.setX(align.getAlignX(getPanel().width, w));
+
             commitComponent(b);
+        }
+
+        private IntIntPair getImageDimensions(ImageAttributes attr, int curWidth, int curHeight) {
+            // preserve aspect ratio here, if possible
+            OptionalInt w = getIntAttr(attr, "width");
+            OptionalInt h = getIntAttr(attr, "height");
+            if (w.isPresent() && h.isPresent()) {
+                return IntIntPair.of(w.getAsInt(), h.getAsInt());
+            } else if (w.isPresent()) {
+                return IntIntPair.of(w.getAsInt(), (curHeight * w.getAsInt()) / curWidth);
+            } else if (h.isPresent()) {
+                return IntIntPair.of((curWidth * h.getAsInt()) / curHeight, h.getAsInt());
+            } else {
+                //noinspection SuspiciousNameCombination
+                return IntIntPair.of(curWidth, curHeight);
+            }
+        }
+
+        private OptionalInt getIntAttr(ImageAttributes attr, String field) {
+            String s = attr.getAttributes().getOrDefault(field, "");
+            return StringUtils.isNumeric(s) ? OptionalInt.of(Integer.parseInt(s)) : OptionalInt.empty();
         }
 
         @Override
@@ -379,6 +423,26 @@ public class DocRenderer {
     record PanelHolder(@Nullable PanelHolder parent, Panel panel) {
         public PanelHolder(Panel parent) {
             this(null, parent);
+        }
+    }
+
+    enum ImageAlign {
+        LEFT,
+        CENTER,
+        RIGHT;
+
+        private static final Map<String,ImageAlign> MAP = Map.of("left", LEFT, "center", CENTER, "right", RIGHT);
+
+        public static ImageAlign create(String what) {
+            return MAP.getOrDefault(what.toLowerCase(Locale.ROOT), LEFT);
+        }
+
+        public int getAlignX(int panelWidth, int imgWidth) {
+            return switch (this) {
+                case LEFT -> 0;
+                case CENTER -> (panelWidth - imgWidth) / 2;
+                case RIGHT -> panelWidth - imgWidth;
+            };
         }
     }
 }
