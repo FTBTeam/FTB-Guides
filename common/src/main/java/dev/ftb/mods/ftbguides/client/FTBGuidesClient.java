@@ -1,16 +1,23 @@
 package dev.ftb.mods.ftbguides.client;
 
 import dev.ftb.mods.ftbguides.client.gui.GuideScreen;
+import dev.ftb.mods.ftbguides.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 public class FTBGuidesClient {
-    public static void openGui(ResourceLocation id) {
+    public static void init() {
+        ClientConfig.init();
+    }
+
+    public static void openGui(@Nullable String path) {
         GuideScreen guideScreen = new GuideScreen();
         guideScreen.openGui();
-        guideScreen.navigateTo(id.toString());
+        if (path != null) {
+            guideScreen.navigateTo(path);
+        }
     }
 
     public static void displayError(Component error) {

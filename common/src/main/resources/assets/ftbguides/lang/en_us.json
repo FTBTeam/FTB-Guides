@@ -1,3 +1,6 @@
 {
-  "ftbguides.gui.error": "Error"
+  "ftbguides.gui.error": "Error",
+  "ftbguides.gui.cant_navigate": "Can't navigate to: %s",
+  "item.ftbguides.book": "Guide Book",
+  "itemGroup.ftbguides.ftbguides": "FTB Guides"
 }

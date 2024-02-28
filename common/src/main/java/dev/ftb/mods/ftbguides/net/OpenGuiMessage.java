@@ -6,16 +6,17 @@ import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 public class OpenGuiMessage extends BaseS2CMessage {
-    private final ResourceLocation id;
+    private final String id;
 
-    public OpenGuiMessage(ResourceLocation id) {
+    public OpenGuiMessage(@Nullable String id) {
         this.id = id;
     }
 
     public OpenGuiMessage(FriendlyByteBuf buf) {
-        id = buf.readResourceLocation();
+        id = buf.readNullable(FriendlyByteBuf::readUtf);
     }
 
     @Override
@@ -25,7 +26,7 @@ public class OpenGuiMessage extends BaseS2CMessage {
 
     @Override
     public void write(FriendlyByteBuf buf) {
-        buf.writeResourceLocation(id);
+        buf.writeNullable(id, FriendlyByteBuf::writeUtf);
     }
 
     @Override

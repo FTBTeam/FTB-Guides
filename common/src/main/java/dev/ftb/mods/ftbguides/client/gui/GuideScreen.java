@@ -4,7 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.FTBGuides;
+import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
+import dev.ftb.mods.ftbguides.config.ClientConfig;
 import dev.ftb.mods.ftbguides.docs.DocRenderer;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import dev.ftb.mods.ftbguides.docs.DocsManager;
@@ -92,8 +94,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         super.tick();
 
         if (activeNode == null) {
-            // FIXME need a proper solution here
-            navigateTo("ftbguides_dev:index");
+            navigateTo(ClientConfig.HOME.get());
             if (activeNode == null) {
                 FTBGuides.LOGGER.error("missing index page!");
                 closeGui();
@@ -122,8 +123,13 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
                     adjustScroll(docsPanel.height - lineHeight * 2);
             case InputConstants.KEY_PAGEUP ->
                     adjustScroll(-(docsPanel.height - lineHeight * 2));
-            case InputConstants.KEY_HOME ->
+            case InputConstants.KEY_HOME -> {
+                if (ScreenWrapper.hasAltDown()) {
+                    navigateTo(ClientConfig.HOME.get());
+                } else {
                     adjustScroll(-docsPanel.getContentHeight());
+                }
+            }
             case InputConstants.KEY_END ->
                     adjustScroll(docsPanel.getContentHeight());
         }
@@ -214,6 +220,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
                 if (addToHistory) addToHistory(anchor);
             } else {
+                FTBGuidesClient.displayError(Component.translatable("ftbguides.gui.cant_navigate", target));
                 FTBGuides.LOGGER.warn("can't navigate to {}", target);
             }
         }
