@@ -1,6 +1,7 @@
 {
   "categories": [
-    { "id":  "default", "name": "Manual", "icon": "item:minecraft:book" }
+    { "id":  "default", "name": "FTB Guides", "icon": "item:minecraft:book" },
+    { "id":  "manual", "name": "Manual", "icon": "item:minecraft:written_book" }
   ],
   "theme": {
     "background_color": "#80000000",

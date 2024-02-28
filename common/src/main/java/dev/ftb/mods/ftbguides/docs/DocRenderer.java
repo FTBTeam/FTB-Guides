@@ -62,6 +62,9 @@ public class DocRenderer {
                 commitComponent();
             }
 
+            // a little spacing right at the end looks better
+            commitComponent(new VerticalSpaceWidget(getPanel(), 8));
+
             return widgets;
         }
 
@@ -288,7 +291,13 @@ public class DocRenderer {
         // TODO: An image can be inline or block, we should support both
         @Override
         public void visit(Image image) {
-            Icon icon = Icon.getIcon(image.getDestination());
+            // kludge here: FTB Library requires space after ";" property separators
+            // but markdown will not accept spaces in image links
+            String s = image.getDestination()
+                    .replaceAll(";(\\w)", "; $1")
+                    .replaceAll("\\+", " + ");
+            Icon icon = Icon.getIcon(s);
+
             int w = 16, h = 16;
             // TODO find a way of specifying alignment (image attributes only allows width & height)
             ImageAlign align = ImageAlign.LEFT;

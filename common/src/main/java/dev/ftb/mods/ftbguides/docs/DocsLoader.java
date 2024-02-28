@@ -33,6 +33,8 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
     private static final String INDEX = "guide.json";
     private static final Gson gson = new GsonBuilder().create();
 
+    private static final List<Extension> EXTENSIONS = List.of(ImageAttributesExtension.create());
+
     @Override
     protected RawGuideData prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         RawGuideData rawGuideData = new RawGuideData(new HashMap<>(), new HashMap<>());
@@ -40,60 +42,78 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
         String lang = Minecraft.getInstance().getLanguageManager().getSelected().getCode();
         String subDir = DIR + "/" + lang;
 
-        for (Map.Entry<ResourceLocation, Resource> entry : resourceManager.listResources(subDir, e -> e.getPath().endsWith(INDEX)).entrySet()) {
-            ResourceLocation entryLoc = entry.getKey();
-            if (shouldIgnore(entryLoc)) continue;
-            try {
-                Reader reader = entry.getValue().openAsReader();
-                try {
-                    JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
-                    rawGuideData.indexes().put(entryLoc.getNamespace(),
-                            GuideIndex.CODEC.parse(JsonOps.INSTANCE, jsonElement).getOrThrow(false, err -> {}));
-                } catch (Throwable e) {
-                    try {
-                        reader.close();
-                    } catch (Throwable e2) {
-                        e.addSuppressed(e2);
-                    }
-                    throw e;
-                }
-            } catch (RuntimeException | IOException e) {
-                FTBGuides.LOGGER.error("Couldn't parse guide.json file {}: {}", entryLoc, e);
+        Map<ResourceLocation, Resource> indexMap = resourceManager.listResources(subDir, e -> e.getPath().endsWith(INDEX));
+        if (indexMap.isEmpty()) {
+            if (!lang.equals("en_us")) {
+                // try fallback language
+                subDir = DIR + "/en_us";
+                indexMap = resourceManager.listResources(subDir, e -> e.getPath().endsWith(INDEX));
+            }
+            if (indexMap.isEmpty()) {
+                FTBGuides.LOGGER.error("no guide data found!");
+                return rawGuideData;
             }
         }
+
+        indexMap.forEach((entryLoc, value) -> loadGuideJsonFile(entryLoc, value, rawGuideData));
 
         int len = subDir.length() + 1;
 
-        List<Extension> extensions = List.of(ImageAttributesExtension.create());
-        Parser parser = Parser.builder().extensions(extensions).build();
-        for (Map.Entry<ResourceLocation, Resource> entry : resourceManager.listResources(subDir, e -> e.getPath().endsWith(PATH_SUFFIX)).entrySet()) {
-            ResourceLocation entryLoc = entry.getKey();
-            if (shouldIgnore(entryLoc)) continue;
-            String path = entryLoc.getPath();
-            ResourceLocation resLoc = new ResourceLocation(entryLoc.getNamespace(), path.substring(len, path.length() - PATH_SUFFIX_LENGTH));
+        Parser parser = Parser.builder().extensions(EXTENSIONS).build();
 
-            try {
-                BufferedReader reader = entry.getValue().openAsReader();
-                try {
-                    DocMetadata meta = DocMetadata.fromReader(reader);
-                    Node node = parser.parseReader(reader);
-                    NodeWithMeta prev = rawGuideData.pages().put(resLoc, new NodeWithMeta(resLoc, node, meta));
-                    if (prev != null) {
-                        throw new IllegalStateException("Duplicate data file ignored with ID " + resLoc);
-                    }
-                } catch (IOException e) {
-                    FTBGuides.LOGGER.error("Couldn't parse data file {} from {}: {}", resLoc, entryLoc, e.getMessage());
-                }
-                reader.close();
-            } catch (IOException e) {
-                FTBGuides.LOGGER.error("Couldn't get reader for data file {} from {}: {}", resLoc, entryLoc, e.getMessage());
-            }
-        }
+        resourceManager.listResources(subDir, e -> e.getPath().endsWith(PATH_SUFFIX))
+                .forEach((entryLoc, resource) ->
+                        loadMarkdownFile(entryLoc, resource, len, parser, rawGuideData));
 
         return rawGuideData;
     }
 
-    private boolean shouldIgnore(ResourceLocation entryLoc) {
+    private static void loadMarkdownFile(ResourceLocation entryLoc, Resource value, int len, Parser parser, RawGuideData rawGuideData) {
+        if (shouldIgnore(entryLoc)) return;
+
+        String path = entryLoc.getPath();
+        ResourceLocation resLoc = new ResourceLocation(entryLoc.getNamespace(), path.substring(len, path.length() - PATH_SUFFIX_LENGTH));
+        try {
+            BufferedReader reader = value.openAsReader();
+            try {
+                DocMetadata meta = DocMetadata.fromReader(reader);
+                Node node = parser.parseReader(reader);
+                NodeWithMeta prev = rawGuideData.pages().put(resLoc, new NodeWithMeta(resLoc, node, meta));
+                if (prev != null) {
+                    throw new IllegalStateException("Duplicate data file ignored with ID " + resLoc);
+                }
+            } catch (IOException e) {
+                FTBGuides.LOGGER.error("Couldn't parse data file {} from {}: {}", resLoc, entryLoc, e.getMessage());
+            }
+            reader.close();
+        } catch (IOException e) {
+            FTBGuides.LOGGER.error("Couldn't get reader for data file {} from {}: {}", resLoc, entryLoc, e.getMessage());
+        }
+    }
+
+    private static void loadGuideJsonFile(ResourceLocation entryLoc, Resource value, RawGuideData rawGuideData) {
+        if (shouldIgnore(entryLoc)) return;
+        try {
+            Reader reader = value.openAsReader();
+            try {
+                JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
+                rawGuideData.indexes().put(entryLoc.getNamespace(),
+                        GuideIndex.CODEC.parse(JsonOps.INSTANCE, jsonElement).getOrThrow(false, err -> {
+                        }));
+            } catch (Throwable e) {
+                try {
+                    reader.close();
+                } catch (Throwable e2) {
+                    e.addSuppressed(e2);
+                }
+                throw e;
+            }
+        } catch (RuntimeException | IOException e) {
+            FTBGuides.LOGGER.error("Couldn't parse guide.json file {}: {}", entryLoc, e);
+        }
+    }
+
+    private static boolean shouldIgnore(ResourceLocation entryLoc) {
         return entryLoc.getNamespace().startsWith("ftbguides_dev") && !Platform.isDevelopmentEnvironment();
     }
 
