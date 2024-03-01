@@ -2,6 +2,7 @@
 category: "cat1"
 title: "Markdown Sample"
 icon: "item:minecraft:beacon"
+tags: [ "long" ]
 ---
 An h1 header
 ============

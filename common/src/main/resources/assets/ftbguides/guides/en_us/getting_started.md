@@ -43,7 +43,3 @@ The colours provided above are the defaults, and can be omitted if you're happy 
 The `categories` section must be provided, and must list every category in your guide, in the order you want them to appear in the GUI index. Each entry has a mandatory `id` and `name` field, and an optional `icon` field. The `id` field is used internally to connect page files to a category, and the `name` and `icon` fields are used for display purposes.
 
 It's important to understand that each `guide.json` is specific to the namespace it's in, and is used to display the index when viewing a Markdown file in the same namespace. This also means that each namespace has its own index, and potentially its own colour scheme.
-
----
-
-Next: [Adding Markdown Files](adding_markdown.md)

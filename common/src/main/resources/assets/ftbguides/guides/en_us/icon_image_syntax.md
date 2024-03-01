@@ -1,7 +1,7 @@
 ---
 title: "Icon Syntax"
 category: manual
-order: 3
+order: 4
 ---
 # Icon and Image Syntax
 
@@ -56,7 +56,3 @@ Here there are actually _two_ images, separated by the `+` character. The first 
 * `padding=<int>` - padding in pixels around the image
 * `border=<color>` - a color spec; typically you would use a hex color like `#FFFF00` (RRGGBB)
 * `tint=<color>` - a hex color spec to tint the image
-
----
-
-Previous: [Adding Markdown Files](adding_markdown.md)

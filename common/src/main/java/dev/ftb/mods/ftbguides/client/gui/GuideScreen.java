@@ -1,26 +1,28 @@
 package dev.ftb.mods.ftbguides.client.gui;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
 import dev.ftb.mods.ftbguides.config.ClientConfig;
-import dev.ftb.mods.ftbguides.docs.DocRenderer;
-import dev.ftb.mods.ftbguides.docs.DocsLoader;
-import dev.ftb.mods.ftbguides.docs.DocsManager;
-import dev.ftb.mods.ftbguides.docs.GuideIndex;
+import dev.ftb.mods.ftbguides.docs.*;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftblibrary.ui.*;
 import dev.ftb.mods.ftblibrary.ui.input.Key;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
+import dev.ftb.mods.ftblibrary.util.TooltipList;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 
 import java.util.*;
 
@@ -29,6 +31,7 @@ import static dev.ftb.mods.ftbguides.FTBGuides.rl;
 public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideThemeProvider {
     public static final Icon PIN_ICON_IN = Icon.getIcon(rl("textures/gui/pin.png"));
     public static final Icon PIN_ICON_OUT = Icon.getIcon(rl("textures/gui/pin_out.png"));
+    public static final Icon SEARCH_ICON = Icon.getIcon(rl("textures/gui/search.png"));
     public static final Icon BLANK_ICON = Color4I.BLACK.withAlpha(0);
 
     // these protocols get handled by vanilla when links are clicked
@@ -48,7 +51,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
-    private static boolean indexPinned = true;
+//    private static boolean indexPinned = true;
 
     public GuideScreen() {
         toolbarPanel = new ToolbarPanel();
@@ -132,6 +135,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             }
             case InputConstants.KEY_END ->
                     adjustScroll(docsPanel.getContentHeight());
+            case InputConstants.KEY_F -> {
+                if (ScreenWrapper.hasControlDown()) {
+                    new SearchScreen(this).openGuiLater();
+                }
+            }
         }
         return super.keyPressed(key);
     }
@@ -142,6 +150,65 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             history.pop();
             navigateTo(Objects.requireNonNull(history.peekFirst()), false);
         }
+    }
+
+    public void showSearchResults(String searchTerm) {
+        final String searchL = searchTerm.toLowerCase(Locale.ROOT);
+
+        String searchResults = Component.translatable("ftbguides.gui.search_results").getString();
+
+        StringBuilder markdown = new StringBuilder();
+        markdown.append("# ").append(searchResults).append("\n\n---\n\n");
+
+        Multimap<String, DocsLoader.NodeWithMeta> matches = ArrayListMultimap.create();
+        DocsManager mgr = DocsManager.INSTANCE;
+
+        boolean thisGuideOnly = ClientConfig.searchThisGuideOnly();
+
+        // find all matches by tag
+        mgr.getNodesByTag(searchL).forEach(nodeWithMeta -> {
+            if (!thisGuideOnly || nodeWithMeta.pageId().getNamespace().equals(activeNode.pageId().getNamespace())) {
+                addSearchTarget(nodeWithMeta, mgr, matches);
+            }
+        });
+        // find all matches by title
+        mgr.allNodes().forEach(nodeWithMeta -> {
+            if ((!thisGuideOnly || nodeWithMeta.pageId().getNamespace().equals(activeNode.pageId().getNamespace()))
+                    && nodeWithMeta.metadata().title().toLowerCase(Locale.ROOT).contains(searchL)) {
+                addSearchTarget(nodeWithMeta, mgr, matches);
+            }
+        });
+
+        if (matches.isEmpty()) {
+            markdown.append(Component.translatable("ftbguides.gui.no_matches", searchTerm).getString()).append("\n\n");
+        } else {
+            markdown.append(Component.translatable("ftbguides.gui.matches", matches.size(), searchTerm).getString()).append("\n");
+            for (String title : matches.keySet().stream().sorted().toList()) {
+                markdown.append("### ").append(title).append("\n");
+                matches.get(title).forEach(nodeWithMeta ->
+                        markdown.append(String.format("* [%s](%s)\n", nodeWithMeta.metadata().title(), nodeWithMeta.pageId()))
+                );
+                markdown.append("\n");
+            }
+        }
+        markdown.append("---\n");
+        if (history.peekFirst() != null) {
+            markdown.append("[Go Back](").append(history.peekFirst()).append(")\n");
+        }
+
+        addToHistory("");
+
+        Parser parser = Parser.builder().build();
+        Node node = parser.parse(markdown.toString());
+        ResourceLocation id = new ResourceLocation(activeNode.pageId().getNamespace(), "_search");
+
+        setActivePage(new DocsLoader.NodeWithMeta(id, node, DocMetadata.searchResult(searchResults)));
+    }
+
+    private static void addSearchTarget(DocsLoader.NodeWithMeta nodeWithMeta, DocsManager mgr, Multimap<String, DocsLoader.NodeWithMeta> matches) {
+        GuideIndex index = mgr.getIndex(nodeWithMeta.pageId().getNamespace());
+        String guideName = index.categories().get(0).name();
+        matches.put(guideName, nodeWithMeta);
     }
 
     private void adjustScroll(int amount) {
@@ -190,7 +257,10 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
     public boolean handleClickEvent(ClickEvent event) {
         String[] parts = event.getValue().split(":");
         if (parts.length > 1) {
-            if (VANILLA_PROTOCOLS.contains(parts[0])) {
+            if (parts[0].equals("search")) {
+                showSearchResults(parts[1]);
+                return true;
+            } else if (VANILLA_PROTOCOLS.contains(parts[0])) {
                 return false; // let vanilla screen handle it
             }
         }
@@ -229,7 +299,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
     }
 
     private void addToHistory(String anchor) {
-        if (activeNode != null) {
+        if (activeNode != null && !activeNode.pageId().getPath().startsWith("_")) {
             String entry = activeNode.pageId().toString();
             if (!anchor.isEmpty()) {
                 entry = entry + "#" + anchor;
@@ -265,8 +335,12 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         return false;
     }
 
+    private boolean isIndexPinned() {
+        return ClientConfig.PINNED.get();
+    }
+
     private class IndexPanel extends Panel {
-        private boolean expanded = indexPinned;
+        private boolean expanded = isIndexPinned();
 
         public IndexPanel() {
             super(GuideScreen.this);
@@ -295,7 +369,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
                 maxW = Math.min(Math.max(maxW, w.width + w.posX + 5), hardMax);
             }
 
-            setPosAndSize(expanded || indexPinned ? 0 : -maxW, 20, maxW, getGui().height - 21);
+            setPosAndSize(expanded || isIndexPinned() ? 0 : -maxW, 20, maxW, getGui().height - 21);
 
             for (Widget w : widgets) {
                 w.setX(2 + (w instanceof ListButton lb ? lb.getIndent() : 0));
@@ -313,7 +387,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         public void updateMouseOver(int mouseX, int mouseY) {
             super.updateMouseOver(mouseX, mouseY);
 
-            if (expanded && !indexPinned && !isMouseOver()) {
+            if (expanded && !isIndexPinned() && !isMouseOver()) {
                 setExpanded(false);
             }
         }
@@ -324,22 +398,13 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
         @Override
         public int getX() {
-            return expanded || indexPinned ? 0 : -width;
+            return expanded || isIndexPinned() ? 0 : -width;
         }
 
         @Override
         public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
             getGuideTheme().indexBgColor().draw(matrixStack, x, y, w, h);
             getGuideTheme().guiColor().draw(matrixStack, x + w - 1, y, 1, h);
-        }
-
-        @Override
-        public void draw(PoseStack poseStack, Theme theme, int x, int y, int w, int h) {
-            poseStack.pushPose();
-            poseStack.translate(0, 0, 600);
-            RenderSystem.enableDepthTest();
-            super.draw(poseStack, theme, x, y, w, h);
-            poseStack.popPose();
         }
 
         private abstract class ListButton extends SimpleTextButton {
@@ -414,7 +479,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         @Override
         public void addWidgets() {
             if (activeNode != null) {
-                addAll(DocRenderer.create().parse(activeNode.node(), this));
+                addAll(DocRenderer.create().parse(activeNode, this));
             }
         }
 
@@ -434,7 +499,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             int prevW = width;
 
             int sbWidth = docsScrollbar.shouldDraw() ? docsScrollbar.width : 0;
-            setX(indexPanel.expanded || indexPinned ? indexPanel.getX() + indexPanel.width + 5 : 25);
+            setX(indexPanel.expanded || isIndexPinned() ? indexPanel.getX() + indexPanel.width + 5 : 25);
             setWidth(getScreen().getGuiScaledWidth() - docsPanel.getX() - 5 - sbWidth);
 
             if (prevX != getX() || prevW != width) {
@@ -445,27 +510,40 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     private class ToolbarPanel extends Panel {
         private final Button pinButton;
+        private final Button searchButton;
         private final SimpleButton closeButton;
 
         public ToolbarPanel() {
             super(GuideScreen.this);
 
-            pinButton = new SimpleButton(this, Component.empty(), indexPinned ? PIN_ICON_IN : PIN_ICON_OUT, (btn, mb) -> {
-                indexPinned = !indexPinned;
-                btn.setIcon(indexPinned ? PIN_ICON_IN : PIN_ICON_OUT);
+            pinButton = new SimpleButton(this, Component.empty(), isIndexPinned() ? PIN_ICON_IN : PIN_ICON_OUT, (btn, mb) -> {
+                ClientConfig.toggleIndexPinned();
+                btn.setIcon(isIndexPinned() ? PIN_ICON_IN : PIN_ICON_OUT);
+                if (isIndexPinned()) indexPanel.setExpanded(true);
             });
-            closeButton = new SimpleButton(this, Component.empty(), Icons.CLOSE, (b, mb) -> closeGui());
+            searchButton = new SimpleButton(this, Component.empty(), SEARCH_ICON,
+                    (btn, mb) -> new SearchScreen(GuideScreen.this).openGui()) {
+                @Override
+                public void addMouseOverText(TooltipList list) {
+                    list.add(Component.translatable("gui.search_box"));
+                    list.add(Component.literal("[Ctrl+F]").withStyle(ChatFormatting.DARK_GRAY));
+                }
+            };
+            closeButton = new SimpleButton(this, Component.empty(), Icons.CLOSE,
+                    (btn, mb) -> closeGui());
         }
 
         @Override
         public void addWidgets() {
             add(pinButton);
+            add(searchButton);
             add(closeButton);
         }
 
         @Override
         public void alignWidgets() {
             pinButton.setPosAndSize(2, 2, 16, 16);
+            searchButton.setPosAndSize(20, 2, 16, 16);
             closeButton.setPosAndSize(width - 16, 3, 15, 15);
         }
 

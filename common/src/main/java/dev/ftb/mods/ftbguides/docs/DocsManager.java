@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.docs.DocsLoader.NodeWithMeta;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
@@ -14,11 +15,13 @@ public enum DocsManager {
     private Map<ResourceLocation, NodeWithMeta> byId;
     private Multimap<ResourceLocation, NodeWithMeta> byCategory;
     private Map<String, GuideIndex> indexMap;
+    private Multimap<String, NodeWithMeta> tagsMap;
 
     public void rebuildDocs(DocsLoader.RawGuideData rawGuideData) {
         byId = new HashMap<>();
         byCategory = ArrayListMultimap.create();
         indexMap = Map.copyOf(rawGuideData.indexes());
+        tagsMap = ArrayListMultimap.create();
 
         Set<ResourceLocation> knownCats = new HashSet<>();
         indexMap.forEach((namespace, guideIndex) ->
@@ -39,7 +42,13 @@ public enum DocsManager {
 
             byId.put(pageId, nodeWithMeta);
             byCategory.put(new ResourceLocation(pageId.getNamespace(), catId), nodeWithMeta);
+            nodeWithMeta.metadata().tags().forEach(t -> tagsMap.put(t, nodeWithMeta));
+            nodeWithMeta.metadata().hiddenTags().forEach(t -> tagsMap.put(t, nodeWithMeta));
         }
+    }
+
+    public Collection<NodeWithMeta> allNodes() {
+        return Collections.unmodifiableCollection(byId.values());
     }
 
     public Optional<NodeWithMeta> getNodeById(ResourceLocation id) {
@@ -55,5 +64,9 @@ public enum DocsManager {
 
     public GuideIndex getIndex(String namespace) {
         return indexMap.get(namespace);
+    }
+
+    public Collection<NodeWithMeta> getNodesByTag(String searchTerm) {
+        return tagsMap.get(searchTerm);
     }
 }

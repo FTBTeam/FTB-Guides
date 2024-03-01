@@ -1,11 +1,13 @@
 package dev.ftb.mods.ftbguides.docs;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftbguides.client.gui.panel.BlockQuotePanel;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CodeBlockWidget;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CustomTextField;
 import dev.ftb.mods.ftbguides.client.gui.widgets.IconButton;
 import dev.ftb.mods.ftbguides.client.gui.widgets.LineBreakWidget;
+import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.math.PixelBuffer;
 import dev.ftb.mods.ftblibrary.ui.*;
@@ -35,11 +37,37 @@ public class DocRenderer {
         return new DocRenderer();
     }
 
-    public List<Widget> parse(Node node, Panel panel) {
+    public List<Widget> parse(DocsLoader.NodeWithMeta node, Panel panel) {
         var visitor = new ComponentConverterVisitor(panel);
-        node.accept(visitor);
 
+        if (!node.metadata().tags().isEmpty()) {
+            addTagInfo(node, panel, visitor);
+        }
+        node.node().accept(visitor);
         return visitor.finish();
+    }
+
+    private static void addTagInfo(DocsLoader.NodeWithMeta node, Panel panel, ComponentConverterVisitor visitor) {
+        GuideIndex.GuideTheme guideTheme = visitor.getGuideTheme();
+        MutableComponent tagText = Component.literal("Tags: ");
+        node.metadata().tags().forEach(tag ->
+                tagText.append(Component.literal(tag).withStyle(Style.EMPTY
+                        .withColor(guideTheme.linkColor().rgb())
+//                        .withUnderlined(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "search:" + tag))
+                )).append(" "));
+        CustomTextField tagField = new CustomTextField(panel, tagText) {
+            @Override
+            public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+                guideTheme.guiColor().addBrightness(-0.1f).draw(matrixStack, x - 1, y - 1, w + 2, h + 2);
+                GuiHelper.drawHollowRect(matrixStack, x - 2, y - 2, w + 4, h + 4, Color4I.GRAY, true);
+            }
+        };
+        tagField.setX(2);
+
+        visitor.widgets.add(new VerticalSpaceWidget(panel, 2));
+        visitor.widgets.add(tagField);
+        visitor.widgets.add(new LineBreakWidget(panel));
     }
 
     private static class ComponentConverterVisitor extends AbstractVisitor implements NodeRenderer {

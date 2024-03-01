@@ -53,28 +53,10 @@ public class CustomTextField extends TextField implements Anchorable {
         if (clickEvent == null) return false;
 
         if (clickEvent.getAction() == ClickEvent.Action.OPEN_URL) {
-            if (getGui() instanceof ClickEventHandler h && h.handleClickEvent(clickEvent)) {
-                return true;
-            }
-//            try {
-//
-//                URI uri = new URI(clickEvent.getValue());
-//                String scheme = uri.getScheme();
-//                if (scheme == null) {
-//                    throw new URISyntaxException(clickEvent.getValue(), "Missing protocol");
-//                }
-////                if (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")) {
-////                    throw new URISyntaxException(clickEvent.getValue(), "Unsupported protocol: " + scheme.toLowerCase(Locale.ROOT));
-////                }
-//            } catch (URISyntaxException e) {
-//                errorToPlayer("Can't open url for %s (%s)", clickEvent.getValue(), e.getMessage());
-//            }
+            return getGui() instanceof ClickEventHandler h && h.handleClickEvent(clickEvent);
         }
-        return false;
-    }
 
-    private void errorToPlayer(String msg, Object... args) {
-        FTBGuidesClient.displayError(Component.literal(String.format(msg, args)).withStyle(ChatFormatting.RED));
+        return false;
     }
 
     @Override

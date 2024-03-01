@@ -1,5 +1,6 @@
 ---
 title: Index
+tags: [ "short" ]
 ---
 # Index Page
 

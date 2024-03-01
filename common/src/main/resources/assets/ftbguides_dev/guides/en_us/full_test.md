@@ -2,6 +2,7 @@
 category: "impl-test"
 title: "Amazing Test"
 icon: "ftblibrary:icons/info"
+tags: [ "big", "clever", "long" ]
 ---
 # Markdown: Syntax
 
