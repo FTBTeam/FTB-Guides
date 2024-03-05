@@ -6,9 +6,7 @@ Much more information is available in the in-game guide, which can be also [brow
 
 ## License
 
-FTB Guides is licensed under All Rights Reserved. You are not allowed to use FTB Guides in any modpack, public or private, without explicit permission from the author. You are not allowed to use FTB Guides in any other way without explicit permission from the author.
-
-You **CAN** use FTB Guides in any modpack without explicit permission from FTB.
+Please see our license [here](https://go.ftb.team/mod-license)
 
 ## Reporting bugs / requesting features
 
