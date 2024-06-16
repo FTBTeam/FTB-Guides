@@ -12,6 +12,7 @@ import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.math.PixelBuffer;
 import dev.ftb.mods.ftblibrary.ui.*;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.*;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.ext.image.attributes.ImageAttributes;
@@ -58,9 +59,9 @@ public class DocRenderer {
                 )).append(" "));
         CustomTextField tagField = new CustomTextField(panel, tagText) {
             @Override
-            public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-                guideTheme.guiColor().addBrightness(-0.1f).draw(matrixStack, x - 1, y - 1, w + 2, h + 2);
-                GuiHelper.drawHollowRect(matrixStack, x - 2, y - 2, w + 4, h + 4, Color4I.GRAY, true);
+            public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+                guideTheme.guiColor().addBrightness(-0.1f).draw(guiGraphics, x - 1, y - 1, w + 2, h + 2);
+                GuiHelper.drawHollowRect(guiGraphics, x - 2, y - 2, w + 4, h + 4, Color4I.GRAY, true);
             }
         };
         tagField.setX(2);

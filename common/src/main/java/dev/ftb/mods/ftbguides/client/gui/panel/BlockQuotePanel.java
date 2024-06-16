@@ -6,6 +6,7 @@ import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.Theme;
 import dev.ftb.mods.ftblibrary.ui.Widget;
 import dev.ftb.mods.ftblibrary.ui.WidgetLayout;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.util.ArrayList;
@@ -29,9 +30,9 @@ public class BlockQuotePanel extends Panel {
     }
 
     @Override
-    public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+    public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
         // Draw a line to the left of the panel
-        Color4I.GRAY.draw(matrixStack, x, y, 2, h);
+        Color4I.GRAY.draw(guiGraphics, x, y, 2, h);
     }
 
     @Override

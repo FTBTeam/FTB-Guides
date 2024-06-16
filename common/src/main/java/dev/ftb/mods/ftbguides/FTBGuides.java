@@ -12,11 +12,13 @@ import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.commands.OpenGuiCommand;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import dev.ftb.mods.ftbguides.net.FTBGuidesNet;
+import dev.ftb.mods.ftbguides.registry.GuideBookData;
 import dev.ftb.mods.ftbguides.registry.ModItems;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionHand;
@@ -27,14 +29,12 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
+
 public class FTBGuides {
     public static final String MOD_ID = "ftbguides";
     public static final String MOD_NAME = "FTB Guides";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
-
-    public static final CreativeModeTab ITEM_GROUP = CreativeTabRegistry.create(
-            new ResourceLocation(MOD_ID, MOD_ID), () -> new ItemStack(ModItems.BOOK.get())
-    );
 
     public static void init() {
         ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new DocsLoader());
@@ -50,18 +50,21 @@ public class FTBGuides {
     }
 
     public static ResourceLocation rl(String path) {
-        return new ResourceLocation(FTBGuides.MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(FTBGuides.MOD_ID, path);
     }
 
     private static CompoundEventResult<ItemStack> rightClickItem(Player player, InteractionHand interactionHand) {
-        if (player.level.isClientSide) {
+        if (player.level().isClientSide) {
             ItemStack stack = player.getItemInHand(interactionHand);
-            if (stack.hasTag()) {
-                String target = stack.getTag().getString(MOD_ID + ":page");
-                if (!target.isEmpty()) {
-                    FTBGuidesClient.openGui(target);
-                    return CompoundEventResult.interruptTrue(stack);
+            GuideBookData data = stack.get(ModItems.GUIDE_DATA.get());
+            if (data != null) {
+                String target = data.guide();
+                if (target.isEmpty()) {
+                    return CompoundEventResult.pass();
                 }
+
+                FTBGuidesClient.openGui(target);
+                return CompoundEventResult.interruptTrue(stack);
             }
         }
         return CompoundEventResult.pass();
@@ -78,9 +81,7 @@ public class FTBGuides {
     }
 
     public static ItemStack makeGuideBook(ItemStack stack, String page) {
-        CompoundTag tag = stack.hasTag() ? stack.getTag() : new CompoundTag();
-        tag.putString(MOD_ID + ":page", page);
-        stack.setTag(tag);
+        stack.set(ModItems.GUIDE_DATA.get(), new GuideBookData(page));
         return stack;
     }
 }

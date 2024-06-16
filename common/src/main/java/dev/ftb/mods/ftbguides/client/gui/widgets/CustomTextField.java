@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbguides.client.gui.widgets;
 
-import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.ClickEventHandler;
 import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftblibrary.ui.Panel;
@@ -12,6 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+
+import java.util.Optional;
 
 public class CustomTextField extends TextField implements Anchorable {
     private String anchorName = "";
@@ -28,9 +29,9 @@ public class CustomTextField extends TextField implements Anchorable {
     public boolean mousePressed(MouseButton button) {
         if (isMouseOver()) {
             if (button.isLeft() && Minecraft.getInstance().screen != null) {
-                Style style = getComponentStyleAt(getGui().getTheme(), getMouseX(), getMouseY());
-                if (style != null) {
-                    return handleCustomClickEvent(style) || Minecraft.getInstance().screen.handleComponentClicked(style);
+                Optional<Style> style = getComponentStyleAt(getGui().getTheme(), getMouseX(), getMouseY());
+                if (style.isPresent()) {
+                    return handleCustomClickEvent(style.orElse(null)) || Minecraft.getInstance().screen.handleComponentClicked(style.orElse(null));
                 }
             }
         }
@@ -40,9 +41,9 @@ public class CustomTextField extends TextField implements Anchorable {
 
     @Override
     public void addMouseOverText(TooltipList list) {
-        Style style = getComponentStyleAt(getGui().getTheme(), getMouseX(), getMouseY());
-        if (style != null && style.getClickEvent() != null) {
-            list.add(Component.literal(style.getClickEvent().getValue()).withStyle(ChatFormatting.GRAY));
+        Optional<Style> style = getComponentStyleAt(getGui().getTheme(), getMouseX(), getMouseY());
+        if (style.isPresent() && style.get().getClickEvent() != null) {
+            list.add(Component.literal(style.get().getClickEvent().getValue()).withStyle(ChatFormatting.GRAY));
         }
     }
 

@@ -1,6 +1,8 @@
 package dev.ftb.mods.ftbguides.client;
 
 import dev.ftb.mods.ftbguides.FTBGuides;
+import dev.ftb.mods.ftbguides.registry.GuideBookData;
+import dev.ftb.mods.ftbguides.registry.ModItems;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import net.minecraft.Util;
 import net.minecraft.client.color.item.ItemColor;
@@ -26,8 +28,11 @@ public enum GuideBookColor implements ItemColor {
     }
 
     private static String getBookNamespace(ItemStack itemStack) {
-        //noinspection DataFlowIssue
-        String s = itemStack.hasTag() ? itemStack.getTag().getString(FTBGuides.MOD_ID + ":page") : "";
-        return s.split(":")[0];
+        GuideBookData guideBookData = itemStack.get(ModItems.GUIDE_DATA.get());
+        if (guideBookData == null || guideBookData.guide().isEmpty()) {
+            return "";
+        }
+
+        return guideBookData.guide().split(":")[0];
     }
 }
