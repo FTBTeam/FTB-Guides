@@ -3,7 +3,6 @@ package dev.ftb.mods.ftbguides.client.gui;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
@@ -52,18 +51,12 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
-//    private static boolean indexPinned = true;
 
     public GuideScreen() {
         toolbarPanel = new ToolbarPanel();
         indexPanel = new IndexPanel();
         docsPanel = new DocsPanel();
-        docsScrollbar = new PanelScrollBar(this, ScrollBar.Plane.VERTICAL, docsPanel) {
-            @Override
-            public boolean shouldDraw() {
-                return getScrollBarSize() > 0;
-            }
-        };
+        docsScrollbar = new PanelScrollBar(this, ScrollBar.Plane.VERTICAL, docsPanel);
         expandIndexButton = new ExpandIndexButton();
         collapsedCategories = new HashSet<>();
         theme = new FTBGuidesTheme(this);

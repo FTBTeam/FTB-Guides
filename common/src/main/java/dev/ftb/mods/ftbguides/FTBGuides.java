@@ -10,6 +10,7 @@ import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.commands.OpenGuiCommand;
+import dev.ftb.mods.ftbguides.commands.SetGuideCommand;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
 import dev.ftb.mods.ftbguides.net.FTBGuidesNet;
 import dev.ftb.mods.ftbguides.registry.GuideBookData;
@@ -73,6 +74,7 @@ public class FTBGuides {
     private static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext, Commands.CommandSelection selection) {
         dispatcher.register(Commands.literal(MOD_ID)
                 .then(OpenGuiCommand.register())
+                .then(SetGuideCommand.register())
         );
     }
 

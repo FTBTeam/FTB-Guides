@@ -37,13 +37,20 @@ For example, to open the viewer to the **Viewing Markdown Files** heading in thi
 
 ## Items
 
-Any item with the top-level NBT string tag `ftbguides:page` will open the viewer to the value of that tag when right-clicked.
+For convenience, FTB Guides provides a book item, item ID `ftbguides:book`. This is intended to be used as a trigger for opening a guide.
+
+You can set the guide ID on any item (doesn't need to be the FTB Guides book item) by holding the item, and using the `/ftbguides setguide <id>` command. This set the data component `ftbguides:guidebook` to the given ID.
+
+Right-clicking any item (again, doesn't need to be the FTB Guides book item) which has the `ftbguides:guidebook` component will open the viewer to the page ID of that component, as if the `/ftbguides open ...` command were run with that argument.
 
 ### Mod Developers
 
-You are completely free to create your own guide book items, setting up the appropriate NBT when constructing your itemstack for your creative tab.
+You are completely free to create your own guidebook items, setting up the appropriate data component when constructing your itemstack for your creative tab. The data component can be accessed in Java via `ModItems.GUIDE_BOOK`, and is of type `GuideBookData` (note that this is a record rather than a simple string to make future extensibility easier). E.g.
+
+    ItemStack stack = new ItemStack(ModItems.BOOK.get());  // or some other item
+    stack.set(ModItems.GUIDE_DATA.get(), new GuideBookData("mymod:index_page"));
 
 ### Modpack Developers
 
-As a convenience, FTB Guides also provides a guidebook item (with no NBT by default), which pack developers can use (e.g. by adding recipes for, or using mods like KubeJS to create instances). This guidebook item dynamically colors itself based on the value of the `ftbguides:page` NBT tag (specifically, the _namespace_ of the page ID referred to).
+As a convenience, FTB Guides also provides a guidebook item (with no data component by default), which pack developers can use (e.g. by adding recipes for, or using mods like KubeJS to create instances). This guidebook item dynamically colors itself based on the value of the `ftbguides:guidebook` component (specifically, the _namespace_ of the page ID referred to). You are also welcome to use any other item, although something resembling a book is recommended...
 
