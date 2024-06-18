@@ -38,8 +38,6 @@ public class FTBGuides {
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
     public static void init() {
-        ReloadListenerRegistry.register(PackType.CLIENT_RESOURCES, new DocsLoader());
-
         CommandRegistrationEvent.EVENT.register(FTBGuides::registerCommands);
         InteractionEvent.RIGHT_CLICK_ITEM.register(FTBGuides::rightClickItem);
 
