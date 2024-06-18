@@ -21,6 +21,6 @@ public class FTBGuidesClient {
     }
 
     public static void displayError(Component error) {
-        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastIds.TUTORIAL_HINT, Component.translatable("ftbguides.gui.error"), error));
+        Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, Component.translatable("ftbguides.gui.error"), error));
     }
 }

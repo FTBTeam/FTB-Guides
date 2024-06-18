@@ -26,7 +26,7 @@ public enum DocsManager {
         Set<ResourceLocation> knownCats = new HashSet<>();
         indexMap.forEach((namespace, guideIndex) ->
                 guideIndex.knownCategoryIds().stream()
-                        .map(c -> new ResourceLocation(namespace, c))
+                        .map(c -> ResourceLocation.fromNamespaceAndPath(namespace, c))
                         .forEach(knownCats::add)
         );
 
@@ -35,13 +35,13 @@ public enum DocsManager {
             NodeWithMeta nodeWithMeta = entry.getValue();
             String catId = nodeWithMeta.metadata().categoryId();
 
-            if (!knownCats.contains(new ResourceLocation(pageId.getNamespace(), catId))) {
+            if (!knownCats.contains(ResourceLocation.fromNamespaceAndPath(pageId.getNamespace(), catId))) {
                 FTBGuides.LOGGER.error("category {} not defined in guide.json for doc {}, skipping page", catId, pageId);
                 continue;
             }
 
             byId.put(pageId, nodeWithMeta);
-            byCategory.put(new ResourceLocation(pageId.getNamespace(), catId), nodeWithMeta);
+            byCategory.put(ResourceLocation.fromNamespaceAndPath(pageId.getNamespace(), catId), nodeWithMeta);
             nodeWithMeta.metadata().tags().forEach(t -> tagsMap.put(t, nodeWithMeta));
             nodeWithMeta.metadata().hiddenTags().forEach(t -> tagsMap.put(t, nodeWithMeta));
         }
@@ -53,13 +53,13 @@ public enum DocsManager {
 
     public Optional<NodeWithMeta> getNodeById(ResourceLocation id) {
         if (id.getPath().startsWith("/")) {
-            id = new ResourceLocation(id.getNamespace(), id.getPath().substring(1));
+            id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath().substring(1));
         }
         return byId == null ? Optional.empty() : Optional.ofNullable(byId.get(id));
     }
 
     public Collection<NodeWithMeta> getNodesByCategory(String namespace, String categoryId) {
-        return byCategory.get(new ResourceLocation(namespace, categoryId));
+        return byCategory.get(ResourceLocation.fromNamespaceAndPath(namespace, categoryId));
     }
 
     public GuideIndex getIndex(String namespace) {

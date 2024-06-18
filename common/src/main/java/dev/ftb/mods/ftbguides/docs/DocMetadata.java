@@ -31,7 +31,7 @@ public record DocMetadata(String title, String categoryId, Icon icon, int order,
     public static Codec<String> tagCodec() {
         Function<String,DataResult<String>> checker = s -> TAG_PAT.matcher(s).matches() ?
                 DataResult.success(s) :
-                DataResult.error("Value " + s + " is not alphanumeric!");
+                DataResult.error(() -> "Value " + s + " is not alphanumeric!");
         return Codec.STRING.flatXmap(checker, checker);
     }
 
@@ -45,7 +45,7 @@ public record DocMetadata(String title, String categoryId, Icon icon, int order,
     ).apply(inst, DocMetadata::new));
 
     public static DocMetadata searchResult(String res) {
-        return new DocMetadata(res, "_search", Color4I.EMPTY, 0, List.of(), List.of());
+        return new DocMetadata(res, "_search", Icon.empty(), 0, List.of(), List.of());
     }
 
     public static DocMetadata fromReader(BufferedReader reader) throws IOException {

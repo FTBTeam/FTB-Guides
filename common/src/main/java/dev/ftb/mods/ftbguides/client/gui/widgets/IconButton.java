@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.ui.*;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 public class IconButton extends SimpleButton {
@@ -12,10 +13,10 @@ public class IconButton extends SimpleButton {
     }
 
     @Override
-    public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+    public void draw(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
         GuiHelper.setupDrawing();
-        drawBackground(matrixStack, theme, x, y, w, h);
-        drawIcon(matrixStack, theme, x, y, w, h);
+        drawBackground(guiGraphics, theme, x, y, w, h);
+        drawIcon(guiGraphics, theme, x, y, w, h);
     }
 
     @Override

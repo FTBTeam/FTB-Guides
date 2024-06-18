@@ -3,8 +3,10 @@ package dev.ftb.mods.ftbguides.client.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.config.ClientConfig;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
+import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.ui.*;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 public class SearchScreen extends BaseScreen {
@@ -25,7 +27,7 @@ public class SearchScreen extends BaseScreen {
         textBox.setFocused(true);
 
         searchButton = new SimpleButton(this, Component.empty(), GuideScreen.SEARCH_ICON, (btn, mb) -> doSearch());
-        scopeButton = new SimpleTextButton(this, Component.empty(), Color4I.EMPTY) {
+        scopeButton = new SimpleTextButton(this, Component.empty(), Icon.empty()) {
             @Override
             public void onClicked(MouseButton button) {
                 ClientConfig.toggleSearchThisOnly();
@@ -53,19 +55,20 @@ public class SearchScreen extends BaseScreen {
     }
 
     @Override
-    public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+    public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+        var matrixStack = guiGraphics.pose();
         matrixStack.translate(0, 0, -800);
-        guideScreen.draw(matrixStack, theme, x, y, w, h);
+        guideScreen.draw(guiGraphics, theme, x, y, w, h);
         matrixStack.translate(0, 0, 800);
-        Color4I.DARK_GRAY.withAlpha(192).draw(matrixStack, guideScreen.getX(), guideScreen.getY(), guideScreen.width, guideScreen.height);
+        Color4I.DARK_GRAY.withAlpha(192).draw(guiGraphics, guideScreen.getX(), guideScreen.getY(), guideScreen.width, guideScreen.height);
 
-        guideScreen.getGuideTheme().indexBgColor().draw(matrixStack, x, y, w, h);
-        GuiHelper.drawRectWithShade(matrixStack, x, y, w, h, guideScreen.getGuideTheme().guiColor(), 16);
+        guideScreen.getGuideTheme().indexBgColor().draw(guiGraphics, x, y, w, h);
+        GuiHelper.drawRectWithShade(guiGraphics, x, y, w, h, guideScreen.getGuideTheme().guiColor(), 16);
     }
 
     @Override
-    public void drawForeground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-        getTheme().drawString(matrixStack, Component.translatable("gui.recipebook.search_hint"), posX + 5, posY + 9,
+    public void drawForeground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+        getTheme().drawString(guiGraphics, Component.translatable("gui.recipebook.search_hint"), posX + 5, posY + 9,
                 guideScreen.getGuideTheme().textColor(), 0);
     }
 

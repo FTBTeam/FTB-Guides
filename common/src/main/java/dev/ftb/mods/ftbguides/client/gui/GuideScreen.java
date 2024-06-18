@@ -3,7 +3,6 @@ package dev.ftb.mods.ftbguides.client.gui;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
@@ -17,6 +16,7 @@ import dev.ftb.mods.ftblibrary.ui.input.Key;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import dev.ftb.mods.ftblibrary.util.TooltipList;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -51,18 +51,12 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     // TODO persist these across client invocations?
     private static DocsLoader.NodeWithMeta activeNode = null;
-//    private static boolean indexPinned = true;
 
     public GuideScreen() {
         toolbarPanel = new ToolbarPanel();
         indexPanel = new IndexPanel();
         docsPanel = new DocsPanel();
-        docsScrollbar = new PanelScrollBar(this, ScrollBar.Plane.VERTICAL, docsPanel) {
-            @Override
-            public boolean shouldDraw() {
-                return getScrollBarSize() > 0;
-            }
-        };
+        docsScrollbar = new PanelScrollBar(this, ScrollBar.Plane.VERTICAL, docsPanel);
         expandIndexButton = new ExpandIndexButton();
         collapsedCategories = new HashSet<>();
         theme = new FTBGuidesTheme(this);
@@ -200,7 +194,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
         Parser parser = Parser.builder().build();
         Node node = parser.parse(markdown.toString());
-        ResourceLocation id = new ResourceLocation(activeNode.pageId().getNamespace(), "_search");
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(activeNode.pageId().getNamespace(), "_search");
 
         setActivePage(new DocsLoader.NodeWithMeta(id, node, DocMetadata.searchResult(searchResults)));
     }
@@ -239,8 +233,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
     }
 
     @Override
-    public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-        getGuideTheme().bgColor().draw(matrixStack, x, y, w, h);
+    public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+        getGuideTheme().bgColor().draw(guiGraphics, x, y, w, h);
     }
 
     @Override
@@ -278,15 +272,17 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
         pageId = pageId.replaceAll("\\.md$", "");
 
+        ResourceLocation location;
         if (pageId.isEmpty() && !anchor.isEmpty()) {
             // just jumping to an anchor in the current doc
             if (scrollToAnchor(anchor)) {
                 if (addToHistory) addToHistory(anchor);
             }
-        } else if (ResourceLocation.isValidResourceLocation(pageId)) {
+        // TODO: I think I ported the parse logic wrong here
+        } else if ((location = ResourceLocation.tryParse(pageId)) != null) {
             ResourceLocation newPage = pageId.contains(":") ?
-                    new ResourceLocation(pageId) :
-                    activeNode != null ? new ResourceLocation(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
+                    location :
+                    activeNode != null ? ResourceLocation.fromNamespaceAndPath(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
             if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
                 if (addToHistory) addToHistory(anchor);
             } else {
@@ -324,7 +320,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         if (anchorName.isEmpty()) {
             return false;
         }
-        for (Widget w : docsPanel.widgets) {
+        for (Widget w : docsPanel.getWidgets()) {
             if (w instanceof Anchorable a && a.getAnchorName().equals(anchorName)) {
                 docsScrollbar.setValue(w.posY);
                 return true;
@@ -402,9 +398,9 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         }
 
         @Override
-        public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-            getGuideTheme().indexBgColor().draw(matrixStack, x, y, w, h);
-            getGuideTheme().guiColor().draw(matrixStack, x + w - 1, y, 1, h);
+        public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+            getGuideTheme().indexBgColor().draw(guiGraphics, x, y, w, h);
+            getGuideTheme().guiColor().draw(guiGraphics, x + w - 1, y, 1, h);
         }
 
         private abstract class ListButton extends SimpleTextButton {
@@ -414,7 +410,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             }
 
             @Override
-            public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+            public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
             }
 
             protected int getIndent() {
@@ -437,11 +433,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             }
 
             @Override
-            public void draw(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
+            public void draw(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
                 if (node == activeNode) {
-                    getGuideTheme().linkColor().withAlpha(128).draw(matrixStack, x, y, parent.width - posX - 3, h);
+                    getGuideTheme().linkColor().withAlpha(128).draw(guiGraphics, x, y, parent.width - posX - 3, h);
                 }
-                super.draw(matrixStack, theme, x, y, w, h);
+                super.draw(guiGraphics, theme, x, y, w, h);
             }
 
             @Override
@@ -487,7 +483,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         public void alignWidgets() {
             align(new WidgetLayout.Vertical(0, 4, 0));
 
-            docsScrollbar.setMaxValue(getContentHeight());
+//            docsScrollbar.setMaxValue(getContentHeight());
             docsScrollbar.setValue(lastScrollPos);
         }
 
@@ -548,8 +544,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         }
 
         @Override
-        public void drawBackground(PoseStack matrixStack, Theme theme, int x, int y, int w, int h) {
-            getGuideTheme().guiColor().draw(matrixStack, x, y + h - 1, w, 1);
+        public void drawBackground(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
+            getGuideTheme().guiColor().draw(guiGraphics, x, y + h - 1, w, 1);
         }
     }
 
@@ -559,11 +555,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         }
 
         @Override
-        public void draw(PoseStack poseStack, Theme theme, int x, int y, int w, int h) {
+        public void draw(GuiGraphics guiGraphics, Theme theme, int x, int y, int w, int h) {
             if (!indexPanel.expanded) {
-                getGuideTheme().indexBgColor().draw(poseStack, x, y, w, h);
-                getGuideTheme().guiColor().draw(poseStack, x + w, y, 1, h);
-                Icons.RIGHT.draw(poseStack, x + (w - 12) / 2, y + (h - 12) / 2, 12, 12);
+                getGuideTheme().indexBgColor().draw(guiGraphics, x, y, w, h);
+                getGuideTheme().guiColor().draw(guiGraphics, x + w, y, 1, h);
+                Icons.RIGHT.draw(guiGraphics, x + (w - 12) / 2, y + (h - 12) / 2, 12, 12);
             }
         }
 

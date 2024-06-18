@@ -39,7 +39,7 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
     protected RawGuideData prepare(ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         RawGuideData rawGuideData = new RawGuideData(new HashMap<>(), new HashMap<>());
 
-        String lang = Minecraft.getInstance().getLanguageManager().getSelected().getCode();
+        String lang = Minecraft.getInstance().getLanguageManager().getSelected();
         String subDir = DIR + "/" + lang;
 
         Map<ResourceLocation, Resource> indexMap = resourceManager.listResources(subDir, e -> e.getPath().endsWith(INDEX));
@@ -72,7 +72,7 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
         if (shouldIgnore(entryLoc)) return;
 
         String path = entryLoc.getPath();
-        ResourceLocation resLoc = new ResourceLocation(entryLoc.getNamespace(), path.substring(len, path.length() - PATH_SUFFIX_LENGTH));
+        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(entryLoc.getNamespace(), path.substring(len, path.length() - PATH_SUFFIX_LENGTH));
         try {
             BufferedReader reader = value.openAsReader();
             try {
@@ -98,7 +98,8 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
             try {
                 JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
                 rawGuideData.indexes().put(entryLoc.getNamespace(),
-                        GuideIndex.CODEC.parse(JsonOps.INSTANCE, jsonElement).getOrThrow(false, err -> {
+                        GuideIndex.CODEC.parse(JsonOps.INSTANCE, jsonElement).getOrThrow(err -> {
+                            throw new IllegalStateException("Failed to parse guide.json file " + entryLoc + ": " + err);
                         }));
             } catch (Throwable e) {
                 try {

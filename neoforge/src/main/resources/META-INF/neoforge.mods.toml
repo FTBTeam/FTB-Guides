@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[43,)"
+loaderVersion = "[${neoforge_loader_version},)"
 #issueTrackerURL = ""
 license = "All Rights Reserved"
 
@@ -14,29 +14,29 @@ Guide book mod providing in-game documentation
 #logoFile = ""
 
 [[dependencies.ftbguides]]
-modId = "forge"
+modId = "neoforge"
 mandatory = true
-versionRange = "[43,)"
+versionRange = "[${neoforgeversion},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbguides]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.19.2,)"
+versionRange = "[${mcversion},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbguides]]
 modId = "architectury"
 mandatory = true
-versionRange = "[6.5.77,)"
+versionRange = "[${archversion},)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.ftbguides]]
 modId = "ftblibrary"
 mandatory = true
-versionRange = "[1902.4.1,)"
+versionRange = "[${ftblibraryversion},)"
 ordering = "AFTER"
 side = "BOTH"

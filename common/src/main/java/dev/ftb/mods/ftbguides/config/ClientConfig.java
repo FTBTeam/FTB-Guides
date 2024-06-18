@@ -11,12 +11,12 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 public interface ClientConfig {
     SNBTConfig CONFIG = SNBTConfig.create(FTBGuides.MOD_ID + "-client");
 
-    SNBTConfig GENERAL = CONFIG.getGroup("general");
-    StringValue HOME = GENERAL.getString("home", "ftbguides:index")
+    SNBTConfig GENERAL = CONFIG.addGroup("general");
+    StringValue HOME = GENERAL.addString("home", "ftbguides:index")
             .comment("Default home page (navigate here with the Home button, pressing Alt+Home, or when opening an invalid page with /ftbguides open ...)");
-    BooleanValue PINNED = GENERAL.getBoolean("pinned", true)
+    BooleanValue PINNED = GENERAL.addBoolean("pinned", true)
             .comment("Is the index panel pinned to stay open?");
-    BooleanValue SEARCH_THIS_ONLY = GENERAL.getBoolean("search_this_guide_only", true)
+    BooleanValue SEARCH_THIS_ONLY = GENERAL.addBoolean("search_this_guide_only", true)
             .comment("If true, search result will only include pages in the same guide namespace as the current page. If false, results will include pages from *all* known guide namespaces");
 
     static void init() {

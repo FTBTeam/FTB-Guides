@@ -41,7 +41,7 @@ public record GuideIndex(List<GuideCategory> categories, GuideTheme theme) {
         try {
             return DataResult.success(Color4I.fromString(input));
         } catch (NumberFormatException e) {
-            return DataResult.error("Invalid hexcolor string: " + input);
+            return DataResult.error(() -> "Invalid hexcolor string: " + input);
         }
     }
 

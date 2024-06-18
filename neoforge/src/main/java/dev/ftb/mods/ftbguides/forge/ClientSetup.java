@@ -2,8 +2,8 @@ package dev.ftb.mods.ftbguides.forge;
 
 import dev.ftb.mods.ftbguides.client.GuideBookColor;
 import dev.ftb.mods.ftbguides.registry.ModItems;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 
 public class ClientSetup {
     public static void init(IEventBus modBus) {

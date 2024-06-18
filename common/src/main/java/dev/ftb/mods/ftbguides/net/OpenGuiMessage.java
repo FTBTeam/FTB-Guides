@@ -5,6 +5,7 @@ import dev.architectury.networking.simple.BaseS2CMessage;
 import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +26,7 @@ public class OpenGuiMessage extends BaseS2CMessage {
     }
 
     @Override
-    public void write(FriendlyByteBuf buf) {
+    public void write(RegistryFriendlyByteBuf buf) {
         buf.writeNullable(id, FriendlyByteBuf::writeUtf);
     }
 

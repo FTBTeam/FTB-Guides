@@ -7,5 +7,6 @@
   "ftbguides.gui.matches": "%s match(es) for '%s'",
   "ftbguides.gui.no_matches": "No matches for '%s'",
   "item.ftbguides.book": "Guide Book",
-  "itemGroup.ftbguides.ftbguides": "FTB Guides"
+  "itemGroup.ftbguides.ftbguides": "FTB Guides",
+  "ftbguides.message.set_data": "Set guide data for %s to '%s'"
 }
