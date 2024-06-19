@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "ftbguides",
+  "version": "${version}",
+  "name": "FTB Guides",
+  "description": "Guide book mod providing in-game documentation",
+  "authors": [
+    "FTB Team"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "All Rights Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.ftb.mods.ftbguides.fabric.FTBGuidesFabric"
+    ]
+  },
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.19.2",
+    "architectury": ">=6.5.77",
+    "ftblibrary": ">=1902.4.1-build.232"
+  },
+  "breaks": {
+  }
+}

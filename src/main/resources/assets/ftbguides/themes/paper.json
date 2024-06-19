@@ -1,7 +1,0 @@
-{
-	"title": {"translate": "item.paper.name"},
-	"background": "ftbguides:textures/background.png",
-	"text": "#7B6534",
-	"text_mouse_over": "#D5A71A",
-	"lines": "#C6B285"
-}

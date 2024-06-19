@@ -1,9 +1,0 @@
-{
-	"guides": {
-		"group": "ftblib:info",
-		"icon": "ftbguides:textures/items/book.png",
-		"x": 600,
-		"click": "ftbguides:open_gui",
-		"custom_text": true
-	}
-}

@@ -16,7 +16,11 @@ out
 # gradle
 build
 .gradle
+logs
+.vscode
 
 # other
 eclipse
 run
+.architectury-transformer/
+**/extra-mods-*
