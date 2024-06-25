@@ -3,11 +3,15 @@ package dev.ftb.mods.ftbguides.client.gui;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
 import dev.ftb.mods.ftbguides.config.ClientConfig;
 import dev.ftb.mods.ftbguides.docs.*;
+import dev.ftb.mods.ftbguides.net.UpdateGuideBookNodeMessage;
+import dev.ftb.mods.ftbguides.registry.GuideBookData;
+import dev.ftb.mods.ftbguides.registry.ModItems;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
@@ -16,11 +20,14 @@ import dev.ftb.mods.ftblibrary.ui.input.Key;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import dev.ftb.mods.ftblibrary.util.TooltipList;
 import net.minecraft.ChatFormatting;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 
@@ -146,6 +153,19 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         }
     }
 
+    @Override
+    public void onClosed() {
+        super.onClosed();
+
+        if (Minecraft.getInstance().player != null && activeNode != null) {
+            ItemStack heldItem = Minecraft.getInstance().player.getMainHandItem();
+            GuideBookData data = heldItem.get(ModItems.GUIDE_DATA.get());
+            if (data != null && !data.guide().equals(activeNode.pageId().toString())) {
+                NetworkManager.sendToServer(new UpdateGuideBookNodeMessage(activeNode.pageId().toString()));
+            }
+        }
+    }
+
     public void showSearchResults(String searchTerm) {
         final String searchL = searchTerm.toLowerCase(Locale.ROOT);
 
@@ -201,7 +221,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     private static void addSearchTarget(DocsLoader.NodeWithMeta nodeWithMeta, DocsManager mgr, Multimap<String, DocsLoader.NodeWithMeta> matches) {
         GuideIndex index = mgr.getIndex(nodeWithMeta.pageId().getNamespace());
-        String guideName = index.categories().get(0).name();
+        String guideName = index.categories().getFirst().name();
         matches.put(guideName, nodeWithMeta);
     }
 
@@ -267,31 +287,44 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     public boolean navigateTo(String target, boolean addToHistory) {
         String[] parts = target.split("#");
-        String pageId = parts[0];
+        String pageId = parts[0].replaceAll("\\.md$", "");
         String anchor = parts.length >= 2 ? parts[1] : "";
 
-        pageId = pageId.replaceAll("\\.md$", "");
-
-        ResourceLocation location;
         if (pageId.isEmpty() && !anchor.isEmpty()) {
             // just jumping to an anchor in the current doc
             if (scrollToAnchor(anchor)) {
                 if (addToHistory) addToHistory(anchor);
             }
-        // TODO: I think I ported the parse logic wrong here
-        } else if ((location = ResourceLocation.tryParse(pageId)) != null) {
-            ResourceLocation newPage = pageId.contains(":") ?
-                    location :
-                    activeNode != null ? ResourceLocation.fromNamespaceAndPath(activeNode.pageId().getNamespace(), pageId) : rl(pageId);
-            if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
-                if (addToHistory) addToHistory(anchor);
-            } else {
-                FTBGuidesClient.displayError(Component.translatable("ftbguides.gui.cant_navigate", target));
-                FTBGuides.LOGGER.warn("can't navigate to {}", target);
-            }
+        } else {
+            parsePageId(pageId).ifPresentOrElse(
+                    newPage -> {
+                        if (setActivePage(newPage) && (anchor.isEmpty() || scrollToAnchor(anchor))) {
+                            if (addToHistory) addToHistory(anchor);
+                        } else {
+                            FTBGuidesClient.displayError(Component.translatable("ftbguides.gui.cant_navigate", target));
+                        }
+                    },
+                    () -> FTBGuidesClient.displayError(Component.translatable("ftbguides.gui.invalid_page_id", pageId))
+            );
         }
 
         return true;
+    }
+
+    private Optional<ResourceLocation> parsePageId(String pageId) {
+        // if the page id has a namespace, use it verbatim
+        // if no namespace, use the namespace of the current active page, or "ftbguides" if no active page
+        try {
+            if (pageId.contains(":")) {
+                return Optional.ofNullable(ResourceLocation.tryParse(pageId));
+            } else if (activeNode != null) {
+                return Optional.of(ResourceLocation.fromNamespaceAndPath(activeNode.pageId().getNamespace(), pageId));
+            } else {
+                return Optional.of(rl(pageId));
+            }
+        } catch (ResourceLocationException ignored) {
+            return Optional.empty();
+        }
     }
 
     private void addToHistory(String anchor) {

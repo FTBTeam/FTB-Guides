@@ -1,6 +1,7 @@
 package dev.ftb.mods.ftbguides.client;
 
 import dev.architectury.registry.ReloadListenerRegistry;
+import dev.ftb.mods.ftbguides.FTBGuides;
 import dev.ftb.mods.ftbguides.client.gui.GuideScreen;
 import dev.ftb.mods.ftbguides.config.ClientConfig;
 import dev.ftb.mods.ftbguides.docs.DocsLoader;
@@ -27,5 +28,6 @@ public class FTBGuidesClient {
 
     public static void displayError(Component error) {
         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, Component.translatable("ftbguides.gui.error"), error));
+        FTBGuides.LOGGER.warn(error.getString());
     }
 }

@@ -1,6 +1,7 @@
 {
   "ftbguides.gui.error": "Error",
   "ftbguides.gui.cant_navigate": "Can't navigate to: %s",
+  "ftbguides.gui.invalid_page_id": "Invalid page ID: %s",
   "ftbguides.gui.this_guide": "In this guide",
   "ftbguides.gui.all_guides": "In all guides",
   "ftbguides.gui.search_results": "Search Results",
