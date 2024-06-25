@@ -12,6 +12,7 @@ import dev.ftb.mods.ftbguides.docs.*;
 import dev.ftb.mods.ftbguides.net.UpdateGuideBookNodeMessage;
 import dev.ftb.mods.ftbguides.registry.GuideBookData;
 import dev.ftb.mods.ftbguides.registry.ModItems;
+import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
@@ -27,6 +28,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
@@ -90,6 +92,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     @Override
     public boolean onInit() {
+        setCustomGuiScale(ClientConfig.GUI_SCALE.get());
         return setFullscreen();
     }
 
@@ -141,8 +144,31 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
                     new SearchScreen(this).openGuiLater();
                 }
             }
+            case InputConstants.KEY_EQUALS -> adjustScale(1);
+            case InputConstants.KEY_MINUS -> adjustScale(-1);
         }
         return super.keyPressed(key);
+    }
+
+    private void adjustScale(int adjust) {
+        int guiScale = ClientConfig.GUI_SCALE.get();
+        if (guiScale == 0) guiScale = (int) getScreen().getGuiScale();
+
+        int max = getScreen().calculateScale(0, Minecraft.getInstance().isEnforceUnicode());
+        int newScale = Mth.clamp(guiScale + adjust, 1, max);
+
+        setCustomGuiScale(newScale);
+    }
+
+    private void setCustomGuiScale(int newScale) {
+        if (newScale != 0 && newScale != getScreen().getGuiScale()) {
+            int max = getScreen().calculateScale(0, Minecraft.getInstance().isEnforceUnicode());
+            newScale = Mth.clamp(newScale, 1, max);
+            getScreen().setGuiScale(newScale);
+            ClientConfig.setGuiScale(newScale);
+            setFullscreen();
+            refreshWidgets();
+        }
     }
 
     @Override
@@ -163,6 +189,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             if (data != null && !data.guide().equals(activeNode.pageId().toString())) {
                 NetworkManager.sendToServer(new UpdateGuideBookNodeMessage(activeNode.pageId().toString()));
             }
+        }
+
+        int origScale = Minecraft.getInstance().options.guiScale().get();
+        if (origScale != getScreen().getGuiScale()) {
+            getScreen().setGuiScale(origScale);
         }
     }
 
@@ -279,6 +310,15 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
             }
         }
         return navigateTo(event.getValue());
+    }
+
+    @Override
+    public boolean mouseScrolled(double scroll) {
+        if (ScreenWrapper.hasControlDown()) {
+            adjustScale((int) Math.signum(scroll));
+            return true;
+        }
+        return super.mouseScrolled(scroll);
     }
 
     public boolean navigateTo(String target) {
@@ -516,7 +556,6 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         public void alignWidgets() {
             align(new WidgetLayout.Vertical(0, 4, 0));
 
-//            docsScrollbar.setMaxValue(getContentHeight());
             docsScrollbar.setValue(lastScrollPos);
         }
 
@@ -540,6 +579,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
     private class ToolbarPanel extends Panel {
         private final Button pinButton;
         private final Button searchButton;
+        private final SimpleButton configButton;
         private final SimpleButton closeButton;
 
         public ToolbarPanel() {
@@ -558,6 +598,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
                     list.add(Component.literal("[Ctrl+F]").withStyle(ChatFormatting.DARK_GRAY));
                 }
             };
+            configButton = new SimpleButton(this, Component.empty(), Icons.SETTINGS,
+                    (btn, mb) -> new EditConfigScreen(ClientConfig.createConfigGroup()).setAutoclose(true).openGui());
             closeButton = new SimpleButton(this, Component.empty(), Icons.CLOSE,
                     (btn, mb) -> closeGui());
         }
@@ -566,6 +608,7 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         public void addWidgets() {
             add(pinButton);
             add(searchButton);
+            add(configButton);
             add(closeButton);
         }
 
@@ -573,7 +616,8 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         public void alignWidgets() {
             pinButton.setPosAndSize(2, 2, 16, 16);
             searchButton.setPosAndSize(20, 2, 16, 16);
-            closeButton.setPosAndSize(width - 16, 3, 15, 15);
+            configButton.setPosAndSize(width - 34, 3, 16, 16);
+            closeButton.setPosAndSize(width - 16, 3, 16, 16);
         }
 
         @Override

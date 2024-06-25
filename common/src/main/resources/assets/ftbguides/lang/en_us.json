@@ -9,5 +9,12 @@
   "ftbguides.gui.no_matches": "No matches for '%s'",
   "item.ftbguides.book": "Guide Book",
   "itemGroup.ftbguides.ftbguides": "FTB Guides",
-  "ftbguides.message.set_data": "Set guide data for %s to '%s'"
+  "ftbguides.message.set_data": "Set guide data for %s to '%s'",
+  "ftbguides.client_settings.general.gui_scale": "Custom GUI Scale",
+  "ftbguides.client_settings.general.gui_scale.tooltip": "Custom GUI scale while the guidebook is open\nThis may be clamped, based on your current screen resolution\nA value of 0 means to use default Minecraft GUI scaling\nAdjustable in the GUI with =/- keys, or Ctrl + Mouse Wheel",
+  "ftbguides.client_settings.general.home": "Home Page ID",
+  "ftbguides.client_settings.general.home.tooltip": "Pressing Alt+Home goes to this guide page",
+  "ftbguides.client_settings.general.pinned": "Index Panel Stays Open",
+  "ftbguides.client_settings.general.search_this_guide_only": "Search This Guide Only",
+  "ftbguides.client_settings.general.search_this_guide_only.tooltip": "Searching only looks for pages in the same guide namespace as the current page"
 }
