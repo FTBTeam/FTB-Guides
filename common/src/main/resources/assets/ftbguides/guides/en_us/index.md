@@ -21,6 +21,7 @@ FTB Guides 3 is your very own in-game guidebook framework for creating in-game g
 * [Getting Started](getting_started.md)
 * [Adding Markdown Files](adding_markdown.md)
 * [Icon and Image Syntax](icon_image_syntax.md)
+* [Displaying Recipes](recipe_syntax.md)
 
 ## Reloading
 

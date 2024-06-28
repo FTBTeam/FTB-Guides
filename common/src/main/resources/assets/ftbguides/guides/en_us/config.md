@@ -1,6 +1,6 @@
 ---
 title: Configuration
-order: 5
+order: 6
 category: manual
 ---
 # Configuration

@@ -2,11 +2,8 @@ package dev.ftb.mods.ftbguides.docs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.ftb.mods.ftbguides.client.gui.GuideScreen;
-import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icon;
 import dev.ftb.mods.ftblibrary.snbt.SNBT;
 import dev.ftb.mods.ftblibrary.snbt.SNBTSyntaxException;
@@ -14,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.crypto.Data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,8 +62,8 @@ public record DocMetadata(String title, String categoryId, Icon icon, int order,
             throw new IOException("no header found!");
         }
 
-        if (!headerLines.get(0).startsWith("{")) {
-            headerLines.add(0, "{");
+        if (!headerLines.getFirst().startsWith("{")) {
+            headerLines.addFirst("{");
             headerLines.add("}");
         }
 

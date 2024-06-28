@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.InteractionEvent;
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.Env;
@@ -37,6 +38,8 @@ public class FTBGuides {
     public static final String MOD_NAME = "FTB Guides";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
+    public static boolean isFTBQuestsInstalled;
+
     public static void init() {
         CommandRegistrationEvent.EVENT.register(FTBGuides::registerCommands);
         InteractionEvent.RIGHT_CLICK_ITEM.register(FTBGuides::rightClickItem);
@@ -46,6 +49,8 @@ public class FTBGuides {
         ModItems.register();
 
         EnvExecutor.runInEnv(Env.CLIENT, () -> FTBGuidesClient::init);
+
+        isFTBQuestsInstalled = Platform.isModLoaded("ftbquests");
     }
 
     public static ResourceLocation rl(String path) {

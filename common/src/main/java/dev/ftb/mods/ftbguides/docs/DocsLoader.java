@@ -59,7 +59,10 @@ public class DocsLoader extends SimplePreparableReloadListener<DocsLoader.RawGui
 
         int len = subDir.length() + 1;
 
-        Parser parser = Parser.builder().extensions(EXTENSIONS).build();
+        Parser parser = Parser.builder()
+                .customBlockParserFactory(RecipeNodeParser.Factory.INSTANCE)
+                .extensions(EXTENSIONS)
+                .build();
 
         resourceManager.listResources(subDir, e -> e.getPath().endsWith(PATH_SUFFIX))
                 .forEach((entryLoc, resource) ->
