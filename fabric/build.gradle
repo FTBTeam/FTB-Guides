@@ -27,6 +27,7 @@ dependencies {
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
 
     modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive false }
+    modApi("dev.ftb.mods:ftb-quests-fabric:${rootProject.ftb_quests_version}")
 
     implementation("org.commonmark:commonmark:0.21.0")
     implementation("org.commonmark:commonmark-ext-image-attributes:0.21.0")

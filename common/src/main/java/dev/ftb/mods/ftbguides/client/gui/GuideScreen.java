@@ -9,6 +9,7 @@ import dev.ftb.mods.ftbguides.client.FTBGuidesClient;
 import dev.ftb.mods.ftbguides.client.gui.widgets.Anchorable;
 import dev.ftb.mods.ftbguides.config.ClientConfig;
 import dev.ftb.mods.ftbguides.docs.*;
+import dev.ftb.mods.ftbguides.integration.FTBQuestsIntegration;
 import dev.ftb.mods.ftbguides.net.UpdateGuideBookNodeMessage;
 import dev.ftb.mods.ftbguides.registry.GuideBookData;
 import dev.ftb.mods.ftbguides.registry.ModItems;
@@ -304,6 +305,9 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         if (parts.length > 1) {
             if (parts[0].equals("search")) {
                 showSearchResults(parts[1]);
+                return true;
+            } else if (parts[0].equals("quest") && FTBGuides.isFTBQuestsInstalled) {
+                FTBQuestsIntegration.openQuest(parts[1]);
                 return true;
             } else if (VANILLA_PROTOCOLS.contains(parts[0])) {
                 return false; // let vanilla screen handle it

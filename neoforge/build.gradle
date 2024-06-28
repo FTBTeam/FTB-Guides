@@ -25,6 +25,7 @@ dependencies {
     modApi "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
 
     modApi("dev.ftb.mods:ftb-library-neoforge:${rootProject.ftb_library_version}") { transitive false }
+    modApi("dev.ftb.mods:ftb-quests-neoforge:${rootProject.ftb_quests_version}")
 
     def commonMarkVersion = "0.21.0"
     implementation("org.commonmark:commonmark:${commonMarkVersion}")

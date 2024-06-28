@@ -10,6 +10,7 @@
   "item.ftbguides.book": "Guide Book",
   "itemGroup.ftbguides.ftbguides": "FTB Guides",
   "ftbguides.message.set_data": "Set guide data for %s to '%s'",
+  "ftbguides.message.invalid_quest_id": "Invalid Quest ID: %s",
   "ftbguides.client_settings.general.gui_scale": "Custom GUI Scale",
   "ftbguides.client_settings.general.gui_scale.tooltip": "Custom GUI scale while the guidebook is open\nThis may be clamped, based on your current screen resolution\nA value of 0 means to use default Minecraft GUI scaling\nAdjustable in the GUI with =/- keys, or Ctrl + Mouse Wheel",
   "ftbguides.client_settings.general.home": "Home Page ID",
