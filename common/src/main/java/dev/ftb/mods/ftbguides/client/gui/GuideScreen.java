@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbguides.client.gui;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbguides.FTBGuides;
@@ -151,6 +152,11 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
         return super.keyPressed(key);
     }
 
+    @Override
+    public boolean drawDefaultBackground(GuiGraphics graphics) {
+        return true;
+    }
+
     private void adjustScale(int adjust) {
         int guiScale = ClientConfig.GUI_SCALE.get();
         if (guiScale == 0) guiScale = (int) getScreen().getGuiScale();
@@ -163,9 +169,17 @@ public class GuideScreen extends BaseScreen implements ClickEventHandler, GuideT
 
     private void setCustomGuiScale(int newScale) {
         if (newScale != 0 && newScale != getScreen().getGuiScale()) {
-            int max = getScreen().calculateScale(0, Minecraft.getInstance().isEnforceUnicode());
+            Minecraft mc = Minecraft.getInstance();
+
+            int max = getScreen().calculateScale(0, mc.isEnforceUnicode());
             newScale = Mth.clamp(newScale, 1, max);
+
             getScreen().setGuiScale(newScale);
+            if (mc.screen != null) {
+                mc.screen.width = getScreen().getGuiScaledWidth();
+                mc.screen.height = getScreen().getGuiScaledHeight();
+            }
+
             ClientConfig.setGuiScale(newScale);
             setFullscreen();
             refreshWidgets();
