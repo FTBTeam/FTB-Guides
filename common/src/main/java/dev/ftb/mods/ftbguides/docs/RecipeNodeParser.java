@@ -30,7 +30,7 @@ public class RecipeNodeParser extends AbstractBlockParser {
 
     private static Optional<ResourceLocation> findRecipeId(ParserState state, int index) {
         CharSequence line = state.getLine().getContent();
-        if (state.getIndent() < Parsing.CODE_BLOCK_INDENT && index < line.length()) {
+        if (state.getIndent() < 4 && index < line.length()) {
             String s = line.toString().substring(index);
             Matcher m = PAT.matcher(s);
             if (m.matches() && ResourceLocation.tryParse(m.group(1)) != null) {

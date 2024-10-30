@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbguides.docs;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ftb.mods.ftbguides.client.gui.GuideThemeProvider;
 import dev.ftb.mods.ftbguides.client.gui.panel.BlockQuotePanel;
 import dev.ftb.mods.ftbguides.client.gui.widgets.CodeBlockWidget;
@@ -16,9 +15,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.*;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.ext.image.attributes.ImageAttributes;
-import org.commonmark.internal.renderer.text.BulletListHolder;
-import org.commonmark.internal.renderer.text.ListHolder;
-import org.commonmark.internal.renderer.text.OrderedListHolder;
 import org.commonmark.node.*;
 import org.commonmark.renderer.NodeRenderer;
 import org.jetbrains.annotations.Nullable;
@@ -76,7 +72,7 @@ public class DocRenderer {
 
         private List<Widget> widgets = new ArrayList<>();
 
-        private ListHolder listHolder = null;
+        private CustomListHolder listHolder = null;
 
         private MutableComponent component = Component.empty();
         private PanelHolder panelHolder;
@@ -255,7 +251,7 @@ public class DocRenderer {
                 commitComponent(new VerticalSpaceWidget(getPanel(), 4));
             }
 
-            listHolder = new OrderedListHolder(listHolder, orderedList);
+            listHolder = new CustomListHolder.Ordered(listHolder, orderedList);
             visitChildren(orderedList);
 
             if (listHolder.getParent() != null) {
@@ -277,7 +273,7 @@ public class DocRenderer {
                 commitComponent(new VerticalSpaceWidget(getPanel(), 4));
             }
 
-            listHolder = new BulletListHolder(listHolder, bulletList);
+            listHolder = new CustomListHolder.Bullet(listHolder, bulletList);
             visitChildren(bulletList);
 
             if (listHolder.getParent() != null) {
@@ -295,7 +291,7 @@ public class DocRenderer {
         @Override
         public void visit(ListItem listItem) {
             String before;
-            if (listHolder instanceof OrderedListHolder orderedListHolder) {
+            if (listHolder instanceof CustomListHolder.Ordered orderedListHolder) {
                 String indent = orderedListHolder.getIndent();
 
                 before = indent + orderedListHolder.getCounter() + orderedListHolder.getDelimiter() + " ";
@@ -303,7 +299,7 @@ public class DocRenderer {
                 visitChildren(listItem);
 
                 orderedListHolder.increaseCounter();
-            } else if (listHolder instanceof BulletListHolder bulletListHolder) {
+            } else if (listHolder instanceof CustomListHolder.Bullet bulletListHolder) {
                 before = bulletListHolder.getIndent() + "• ";
                 component.append(Component.literal(before));
                 visitChildren(listItem);

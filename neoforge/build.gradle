@@ -27,13 +27,12 @@ dependencies {
     modApi("dev.ftb.mods:ftb-library-neoforge:${rootProject.ftb_library_version}") { transitive false }
     modApi("dev.ftb.mods:ftb-quests-neoforge:${rootProject.ftb_quests_version}")
 
-    def commonMarkVersion = "0.21.0"
-    implementation("org.commonmark:commonmark:${commonMarkVersion}")
-    implementation("org.commonmark:commonmark-ext-image-attributes:${commonMarkVersion}")
-    forgeRuntimeLibrary("org.commonmark:commonmark:${commonMarkVersion}")
-    forgeRuntimeLibrary("org.commonmark:commonmark-ext-image-attributes:${commonMarkVersion}")
-    include("org.commonmark:commonmark:${commonMarkVersion}")
-    include("org.commonmark:commonmark-ext-image-attributes:${commonMarkVersion}")
+    implementation("org.commonmark:commonmark:${rootProject.commonmark_version}")
+    implementation("org.commonmark:commonmark-ext-image-attributes:${rootProject.commonmark_version}")
+    forgeRuntimeLibrary("org.commonmark:commonmark:${rootProject.commonmark_version}")
+    forgeRuntimeLibrary("org.commonmark:commonmark-ext-image-attributes:${rootProject.commonmark_version}")
+    include("org.commonmark:commonmark:${rootProject.commonmark_version}")
+    include("org.commonmark:commonmark-ext-image-attributes:${rootProject.commonmark_version}")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
